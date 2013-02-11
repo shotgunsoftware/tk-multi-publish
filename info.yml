@@ -1,0 +1,46 @@
+#
+# Copyright (c) 2013 Shotgun Software, Inc
+# ----------------------------------------------------
+#
+# Metadata defining the behaviour and requirements for this app
+
+# expected fields in the configuration file for this app
+configuration:
+
+    # publish paths
+    template_publish:
+        type: template
+        required_fields: [version]
+        optional_fields: [name]
+        description: Defines where publishes should go on disk.
+
+    # hooks
+    # hook_publish_file:
+    #    type: hook
+    #    description: Called when a file is published, e.g. copied from a work area to a publish area.
+    #    parameters: [source_path, target_path]
+    #    default_value: nuke_publish_file
+
+# this app works in all engines - it does not contain 
+# any host application specific commands
+supported_engines: [tk-nuke]
+
+# the Shotgun fields that this app needs in order to operate correctly
+requires_shotgun_fields:
+
+# More verbose description of this item 
+display_name: "Publish"
+description: "Provides ability to publish files to Shotgun."
+
+# Required minimum versions for this item to run
+requires_shotgun_version:
+requires_core_version: "v0.12.5"
+requires_engine_version: 
+
+# the engines that this app can operate in:
+supported_engines: [tk-nuke]
+
+# the frameworks required to run this app
+frameworks:
+    - {"name": "tk-framework-widget", "version": "v0.1.3"}
+    
