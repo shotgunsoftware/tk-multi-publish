@@ -10,10 +10,12 @@ import time
 import threading
 """
 
+# (AD) - TODO - replace with tank core versions so works with PyQt
 from PySide import QtCore, QtGui
 
+
+from .ui.publish_ui import Ui_Form
 """
-from .ui.dialog import Ui_Dialog
 from .ui.progress import Ui_Progress
 """
 
@@ -22,11 +24,12 @@ class PublishUI(QtGui.QWidget):
     def __init__(self, app):
         QtGui.QWidget.__init__(self)#, parent = QtGui.QApplication.activeWindow())#(AD) - this should be derived from TankDialog
         self._app = app
-        """
+        
         # set up the UI
-        self.ui = Ui_Dialog() 
+        self.ui = Ui_Form() 
         self.ui.setupUi(self)
         
+        """
         # set up the browsers
         self.ui.left_browser.set_app(self._app)
         self.ui.left_browser.set_label("Step 1. Choose items to publish")
