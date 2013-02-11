@@ -46,7 +46,8 @@ class MultiPublish(tank.platform.Application):
         """
         
         def do_publish():
-            pass
+            publish_handler = tk_multi_publish.PublishHandler(self)
+            publish_handler.show_dialog()
         
         # register commands:
         self.engine.register_command("Multi Publish...", do_publish)# (AD) - temp name!

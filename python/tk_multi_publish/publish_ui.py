@@ -17,10 +17,10 @@ from .ui.dialog import Ui_Dialog
 from .ui.progress import Ui_Progress
 """
 
-class PublishDialog(QtGui.QDialog):
+class PublishUI(QtGui.QWidget):
     
     def __init__(self, app):
-        QtGui.QDialog.__init__(self, parent = QtGui.QApplication.activeWindow())#(AD) - this should be derived from TankDialog
+        QtGui.QWidget.__init__(self)#, parent = QtGui.QApplication.activeWindow())#(AD) - this should be derived from TankDialog
         self._app = app
         """
         # set up the UI
