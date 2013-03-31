@@ -1,115 +1,203 @@
 """
-Copyright (c) 2012 Shotgun Software, Inc
+Copyright (c) 2013 Shotgun Software, Inc
 ----------------------------------------------------
 """
-"""
-import tank
-import os
-import sys
-import time
-import threading
-"""
 
-# (AD) - TODO - replace with tank core versions so works with PyQt
-from PySide import QtCore, QtGui
-
-
-from .ui.publish_ui import Ui_Form
-"""
-from .ui.progress import Ui_Progress
-"""
+from tank.platform.qt import QtCore, QtGui
+from .ui.publish_ui import Ui_publish_form
 
 class PublishUI(QtGui.QWidget):
+    """
+    Implementation of the main publish UI
+    """
+
+    # signals
+    publish = QtCore.Signal()
+    #closed = QtCore.Signal()
     
-    def __init__(self, app):
-        QtGui.QWidget.__init__(self)#, parent = QtGui.QApplication.activeWindow())#(AD) - this should be derived from TankDialog
+    def __init__(self, app, handler):
+        """
+        Construction
+        """
+        QtGui.QWidget.__init__(self)
         self._app = app
+        self._handler = handler
+    
+        self._tasks = []
+        
+        # TODO - temp selection mechanism - should be 
+        # retrieved from task list in UI
+        self._selected_tasks = []
         
         # set up the UI
-        self.ui = Ui_Form() 
-        self.ui.setupUi(self)
+        self._ui = Ui_publish_form() 
+        self._ui.setupUi(self)
         
+        self._ui.publish_btn.clicked.connect(self._on_publish)
+        self._ui.cancel_btn.clicked.connect(self._on_cancel)
+        
+        self._ui.select_all_btn.clicked.connect(self._on_select_all)
+        self._ui.select_req_only_btn.clicked.connect(self._on_select_req_only)
+        self._ui.select_random_btn.clicked.connect(self._on_select_random)
+        
+        self._update_ui()
+        
+    @property
+    def selected_tasks(self):
         """
-        # set up the browsers
-        self.ui.left_browser.set_app(self._app)
-        self.ui.left_browser.set_label("Step 1. Choose items to publish")
-        self.ui.left_browser.enable_multi_select(True)
-        self.ui.left_browser.enable_search(False)
-                
-        self.ui.right_browser.set_app(self._app)
+        The currently selected tasks
+        """
+        return self._selected_tasks
+    
+    @property
+    def shotgun_task(self):
+        """
+        The shotgun task that the publish should be linked to
+        """
+        return self._shotgun_task
+    
+    @property
+    def thumbnail(self):
+        """
+        The thumbnail to use for the publish
+        """
+        return None
+    
+    @property
+    def comment(self):
+        """
+        The comment to use for the publish
+        """
+        return ""
         
-        entity_type = self._app.context.entity.get("type", "")
-        entity_name = self._app.context.entity.get("name", "")
+    def reload(self):
+        """
+        Load UI with data provided by the handler:
+        """
+        self._tasks = self._handler.get_tasks()
         
-        self.ui.right_browser.set_label("Step 2. Select a Task (%s %s)" % (entity_type, entity_name))
-        self.ui.right_browser.enable_search(False)
+        for task in self._tasks:
+            if task.output.selected:
+                self._selected_tasks.append(task)
+        
+        self._update_ui()
+        
+    def update_tasks(self):
+        """
+        Placeholder to update UI for all tasks without reloading
+        - UI will ultimately update via a signal from the task
+        itself
+        """
+        self._update_ui()
+        
+    def _on_publish(self):
+        """
+        Slot called when the publish button in the dialog is clicked
+        """
+        self.publish.emit()
+        
+    def _on_cancel(self):
+        """
+        Slot called when the cancel button in the dialog is clicked
+        """
+        self.window().close()
+    
+    # (AD) - temp for proxy UI
+    def _on_select_all(self):
+        self._selected_tasks = self._tasks
+        self._update_ui()
+        
+    def _on_select_req_only(self):
+        self._selected_tasks = []
+        for task in self._tasks:
+            if task.output.required:
+                self._selected_tasks.append(task)
+        self._update_ui()
 
-        # refresh when the checkbox is clicked
-        self.ui.hide_tasks.toggled.connect( self._load_tasks )
-        
-        # publish
-        self.ui.publish.clicked.connect( self.accept )
-        
-        # load data from shotgun
-        self._load_scene_contents()    
-        self._load_tasks()    
+    def _on_select_random(self):
+        import random
+        self._selected_tasks = []
+        for task in self._tasks:
+            if task.output.required:
+                self._selected_tasks.append(task)
+            else:
+                if random.random() > 0.5:
+                    self._selected_tasks.append(task)
+        self._update_ui()
+ 
+    def _update_ui(self):
         """
+        Update the UI following a change to the data
+        """
+        msg = ""
         
-    """
-    ########################################################################################
-    # make sure we trap when the dialog is closed so that we can shut down 
-    # our threads. Nuke does not do proper cleanup on exit.
-    
-    def _cleanup(self):
-        self.ui.left_browser.destroy()
-        self.ui.right_browser.destroy()
-        
-    def closeEvent(self, event):
-        self._cleanup()
-        # okay to close!
-        event.accept()
-        
-    def accept(self):
-        self._cleanup()
-        QtGui.QDialog.accept(self)
-        
-    def reject(self):
-        self._cleanup()
-        QtGui.QDialog.reject(self)
-        
-    def done(self, status):
-        self._cleanup()
-        QtGui.QDialog.done(self, status)
-        
-    ########################################################################################
-    # basic business logic        
-        
-    def _load_scene_contents(self): 
-        self.ui.left_browser.clear()
-        self.ui.left_browser.load({})
-        
-    def _load_tasks(self): 
-        self.ui.right_browser.clear()
-        d = {}
-        d["own_tasks_only"] = self.ui.hide_tasks.isChecked()        
-        self.ui.right_browser.load(d)
-    
-    def get_description(self):
-        return self.ui.comments.toPlainText()
-        
-    def get_task(self):
-        task_item = self.ui.right_browser.get_selected_item()
-        if task_item:
-            return task_item.sg_data
+        if not self._tasks:
+            msg = "Nothing to publish!"
         else:
-            return None
-    
-    def get_selected_nodes(self):
-        # the mandatory nuke script node returns item.node None so check for that
-        tank_write_nodes = []
-        for x in self.ui.left_browser.get_selected_items():
-            if x.node:
-                tank_write_nodes.append(x.node)
-        return tank_write_nodes
-    """
+            selected_char = [[" ", "X"], [" ", "R"]]
+            error_char = ["", "(!)"]
+
+            group_info = {}
+            group_order = []
+            for task in self._tasks:
+                if task.output.display_group not in group_order:
+                    group_order.append(task.output.display_group)
+                    
+                group_info.setdefault(task.output.display_group, dict())
+                group_info[task.output.display_group].setdefault("outputs", set()).add(task.output)
+                group_info[task.output.display_group].setdefault("selected_outputs", set())
+                group_info[task.output.display_group].setdefault("error_outputs", set())
+                group_info[task.output.display_group].setdefault("items", set()).add(task.item)
+                group_info[task.output.display_group].setdefault("selected_items", set())
+                group_info[task.output.display_group].setdefault("error_items", set())
+                group_info[task.output.display_group].setdefault("errors", list())
+                if task in self._selected_tasks:
+                    group_info[task.output.display_group]["selected_outputs"].add(task.output)
+                    group_info[task.output.display_group]["selected_items"].add(task.item)
+                if task.pre_publish_errors:
+                    group_info[task.output.display_group]["error_outputs"].add(task.output)
+                    group_info[task.output.display_group]["error_items"].add(task.item)
+                    group_info[task.output.display_group]["errors"].extend(task.pre_publish_errors)
+                    
+            msg = "Select things to publish...\n\n"
+            for g in group_order:
+                msg += "\n  %s" % g
+                info = group_info[g]
+                
+                msg += "\n    Outputs:"
+                any_output_is_required = False
+                for output in info["outputs"]:
+                    is_selected = output in info["selected_outputs"]
+                    is_required = output.required
+                    has_errors = output in info["error_outputs"]
+                    if is_required:
+                        any_output_is_required = True
+                    msg += "\n      - [%s] %s %s" % (selected_char[is_required][is_selected], output.display_name, error_char[has_errors])
+                    
+                msg += "\n    Items:"
+                for item in info["items"]:
+                    is_selected = item in info["selected_items"]
+                    has_errors = item in info["error_items"]
+                    msg += "\n      - [%s] %s %s" % (selected_char[any_output_is_required][is_selected], item.name, error_char[has_errors])
+                    
+                errors = info["errors"]
+                if errors:
+                    msg += "\n    %d Errors:" % len(errors)
+                    for ei, error in enumerate(errors):
+                        msg += "\n      (%d) - %s" % (ei+1, error)
+                    
+            
+        self._ui.publish_details.setText(msg)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         

@@ -6,31 +6,141 @@
 
 # expected fields in the configuration file for this app
 configuration:
+    
+    display_name:
+        type: str
+        default_value: Publish
+        description: Specify the name that should be used in menus and the main
+                     publish dialog
+    
+    hook_thumbnail:
+        type: hook
+        parameters: [engine_name]
+        default_value: thumbnail
+        description: Specify a hook to pre-generate a thumbnail for the publish.
 
-    # publish paths
-    template_publish:
+    template_work:
         type: template
+        description: A reference to a template which locates a work file on disk.
         required_fields: [version]
         optional_fields: [name]
-        description: Defines where publishes should go on disk.
 
-    # hooks
-    # hook_publish_file:
-    #    type: hook
-    #    description: Called when a file is published, e.g. copied from a work area to a publish area.
-    #    parameters: [source_path, target_path]
-    #    default_value: nuke_publish_file
+    hook_scan_scene: 
+        type: hook
+        parameters: [engine_name]
+        default_value: scan_scene
+        description: Specify a hook to scan for items to publish.  
+                     The hook should return a list dictionaries containing the following
+                     keys
+                        name - ...
+                        type - ...
+                        ...
 
-# this app works in all engines - it does not contain 
-# any host application specific commands
-supported_engines: [tk-nuke]
+    hook_pre_publish:
+        type: hook
+        parameters: [engine_name, tasks, progress_cb]
+        default_value: pre_publish
+        description: Specify the hook that will run before the publish.  This hook can be
+                     used to perform any validaiton on the tasks that are passed in to ensure
+                     that they are ready to be published.
+        
+    hook_publish:
+        type: hook
+        parameters: [engine_name, tasks, work_template, comment, thumbnail_path, sg_task, progress_cb]
+        default_value: publish
+        description: Specify the hook that will actually do the publish.  This hook is 
+                     passed a list of tasks that are to be published.
+                     The hook is responsible for the entire publish process and should
+                     ensure to register the published files with Shotgun
 
+    primary_output:
+        type: dict
+        items:
+            scene_item_type:
+                type: str
+                description: Type used to match up items returned from the scan scene
+                             hook with specific outputs
+            display_name:
+                type: str
+                description: The name this output will be given in the UI
+            description:
+                type: str
+                description: Description of this output used in the UI
+            icon:
+                type: str
+                description: Icon used for this output in the UI
+            tank_type:
+                type: tank_type
+                description: Tank Type that will be used when registering any published
+                             files published for this output.  
+                             If None then this must be determined within the publish hook.
+            publish_template:
+                type: template
+                required_fields: [version]
+                optional_fields: [name]
+                description: Template used to locate published files within the file system.
+                             If None then this must be determined within the publish hook.
+        description: Specify the primary output that is required and defines the base 
+                     scene export.
+                     The primary output is always named "primary" and a single item from
+                     the scan scene hook must be returned for this output
+
+    secondary_outputs:
+        type: list
+        values:
+            type: dict
+            items:
+                name:
+                    type: str
+                    description: Identifying name of this output.  This is provided to the
+                                 pre-publish and publish hooks to allow them to determine
+                                 what they should publish for task.
+                scene_item_type:
+                    type: str
+                    description: Type used to match up items returned from the scan scene
+                                 hook with specific outputs
+                display_name:
+                    type: str
+                    description: The name this output will be given in the UI
+                display_group:
+                    type: str
+                    description: The group that this output should appear in within the UI
+                description:
+                    type: str
+                    description: Description of this output used in the UI
+                icon:
+                    type: str
+                    description: Icon used for this output in the UI
+                selected:
+                    type: bool
+                    description: Initial state for outputs of this type in the UI
+                required:
+                    type: bool
+                    description: Specify if this output is required for the publish or not.
+                                 If an output is required then it will not be deselectable in
+                                 the UI.
+                tank_type:
+                    type: tank_type
+                    description: Tank Type that will be used when registering any published
+                                 files published for this output.  
+                                 If None then this must be determined within the publish hook.
+                publish_template:
+                    type: template
+                    required_fields: [version]
+                    optional_fields: [name]
+                    description: Template used to locate published files within the file system.
+                                 If None then this must be determined within the publish hook.
+        decription: Specify all other outputs that are supported.
+                    All non-primary items returned from the scan scene hook must match
+                    up with one of these secondary types
+            
+            
 # the Shotgun fields that this app needs in order to operate correctly
 requires_shotgun_fields:
 
 # More verbose description of this item 
 display_name: "Publish"
-description: "Provides ability to publish files to Shotgun."
+description: "Provides UI and functionality to publish files to Shotgun."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
@@ -38,7 +148,7 @@ requires_core_version: "v0.12.5"
 requires_engine_version: 
 
 # the engines that this app can operate in:
-supported_engines: [tk-nuke]
+supported_engines: [tk-nuke, tk-maya]
 
 # the frameworks required to run this app
 frameworks:
