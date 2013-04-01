@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'output_group_ui.ui'
+# Form implementation generated from reading ui file 'group_header_ui.ui'
 #
-# Created: Mon Apr  1 14:35:35 2013
+# Created: Mon Apr  1 19:08:01 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!

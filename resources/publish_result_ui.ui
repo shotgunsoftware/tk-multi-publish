@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
-    <height>445</height>
+    <width>494</width>
+    <height>386</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>117</height>
+       <height>97</height>
       </size>
      </property>
     </spacer>
@@ -118,6 +118,9 @@ font-size: 24px;
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
          </property>
+         <property name="wordWrap">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -145,7 +148,7 @@ font-size: 24px;
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>117</height>
+       <height>97</height>
       </size>
      </property>
     </spacer>
@@ -166,7 +169,7 @@ font-size: 24px;
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="close_btn">
        <property name="text">
         <string>Close</string>
        </property>

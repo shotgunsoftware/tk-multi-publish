@@ -45,7 +45,7 @@ border-radius: 2px;
          <widget class="QLabel" name="section_label">
           <property name="styleSheet">
            <string notr="true">#section_label {
-font-size: 10px
+font-size: 10pt
 }</string>
           </property>
           <property name="text">

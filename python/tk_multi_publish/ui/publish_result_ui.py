@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_result_ui.ui'
 #
-# Created: Mon Apr  1 14:35:35 2013
+# Created: Mon Apr  1 19:08:01 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,10 +12,10 @@ from PySide import QtCore, QtGui
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(620, 445)
+        Form.resize(494, 386)
         self.verticalLayout_4 = QtGui.QVBoxLayout(Form)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        spacerItem = QtGui.QSpacerItem(20, 117, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem = QtGui.QSpacerItem(20, 97, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -47,6 +47,7 @@ class Ui_Form(object):
         self.verticalLayout_3.addWidget(self.status_title)
         self.status_details = QtGui.QLabel(Form)
         self.status_details.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.status_details.setWordWrap(False)
         self.status_details.setObjectName("status_details")
         self.verticalLayout_3.addWidget(self.status_details)
         self.verticalLayout_3.setStretch(1, 1)
@@ -57,15 +58,15 @@ class Ui_Form(object):
         self.horizontalLayout.setStretch(2, 1)
         self.horizontalLayout.setStretch(3, 1)
         self.verticalLayout_4.addLayout(self.horizontalLayout)
-        spacerItem4 = QtGui.QSpacerItem(20, 117, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem4 = QtGui.QSpacerItem(20, 97, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem4)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem5)
-        self.pushButton = QtGui.QPushButton(Form)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_2.addWidget(self.pushButton)
+        self.close_btn = QtGui.QPushButton(Form)
+        self.close_btn.setObjectName("close_btn")
+        self.horizontalLayout_2.addWidget(self.close_btn)
         self.verticalLayout_4.addLayout(self.horizontalLayout_2)
         self.verticalLayout_4.setStretch(0, 1)
         self.verticalLayout_4.setStretch(1, 1)
@@ -78,7 +79,7 @@ class Ui_Form(object):
         Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.status_title.setText(QtGui.QApplication.translate("Form", "Success!", None, QtGui.QApplication.UnicodeUTF8))
         self.status_details.setText(QtGui.QApplication.translate("Form", "Details...", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("Form", "Close", None, QtGui.QApplication.UnicodeUTF8))
+        self.close_btn.setText(QtGui.QApplication.translate("Form", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc
 from . import resources_rc

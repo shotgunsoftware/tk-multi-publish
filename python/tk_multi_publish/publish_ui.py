@@ -13,13 +13,12 @@ class PublishUI(QtGui.QWidget):
 
     # signals
     publish = QtCore.Signal()
-    #closed = QtCore.Signal()
     
-    def __init__(self, app, handler):
+    def __init__(self, app, handler, parent=None):
         """
         Construction
         """
-        QtGui.QWidget.__init__(self)
+        QtGui.QWidget.__init__(self, parent)
         self._app = app
         self._handler = handler
     
@@ -33,12 +32,14 @@ class PublishUI(QtGui.QWidget):
         self._ui = Ui_publish_form() 
         self._ui.setupUi(self)
         
-        self._ui.publish_btn.clicked.connect(self._on_publish)
-        self._ui.cancel_btn.clicked.connect(self._on_cancel)
+        self._ui.publish_details.publish.connect(self._on_publish)
+        self._ui.publish_details.cancel.connect(self._on_close)
+        self._ui.publish_result.close.connect(self._on_close)
+        self._ui.pages.setCurrentWidget(self._ui.publish_details)
         
-        self._ui.select_all_btn.clicked.connect(self._on_select_all)
-        self._ui.select_req_only_btn.clicked.connect(self._on_select_req_only)
-        self._ui.select_random_btn.clicked.connect(self._on_select_random)
+        #self._ui.select_all_btn.clicked.connect(self._on_select_all)
+        #self._ui.select_req_only_btn.clicked.connect(self._on_select_req_only)
+        #self._ui.select_random_btn.clicked.connect(self._on_select_random)
         
         self._update_ui()
         
@@ -96,9 +97,10 @@ class PublishUI(QtGui.QWidget):
         """
         self.publish.emit()
         
-    def _on_cancel(self):
+    def _on_close(self):
         """
-        Slot called when the cancel button in the dialog is clicked
+        Slot called when the cancel or close signals in the dialog 
+        are recieved
         """
         self.window().close()
     
@@ -129,6 +131,7 @@ class PublishUI(QtGui.QWidget):
         """
         Update the UI following a change to the data
         """
+        
         msg = ""
         
         if not self._tasks:
@@ -187,7 +190,7 @@ class PublishUI(QtGui.QWidget):
                         msg += "\n      (%d) - %s" % (ei+1, error)
                     
             
-        self._ui.publish_details.setText(msg)
+        #self._ui.publish_details.setText(msg)
         
         
         
