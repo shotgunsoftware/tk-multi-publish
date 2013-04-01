@@ -223,7 +223,7 @@ class NukePublisher(Publisher):
                 results.append({"task":task, "errors":errors})
                 
         # finally, version up the script:
-        self._version_up_script(work_template)
+        self._version_up_script(work_template, write_node_app)
 
         return results
 
@@ -355,13 +355,14 @@ class NukePublisher(Publisher):
 
         return dependency_paths
 
-    def _version_up_script(self, work_template):
+    def _version_up_script(self, work_template, write_node_app):
         """
         Version up the script and ensure any associated write nodes 
         are also updated
         """
         import nuke
         
+        # find the new version and path:
         original_path = nuke.root().name()
         script_path = os.path.abspath(original_path.replace("/", os.path.sep))
         fields = work_template.get_fields(script_path)
@@ -370,22 +371,18 @@ class NukePublisher(Publisher):
         new_path = work_template.apply_fields(fields)
         
         self.parent.log_debug("Version up work file %s --> %s..." % (script_path, new_path))
-        try:
-            # rename script:
-            nuke.root()["name"].setValue(new_path)
+
+        # rename script:
+        nuke.root()["name"].setValue(new_path)
     
-            # reset all write nodes:
-            # TODO: expose interface on tk-nuke-writenode to do this
-            """
-            for write_node in self._write_node_handler.get_nodes():
-                self._write_node_handler.reset_render_path(write_node)
-            """
-            
-            # save script:
-            nuke.scriptSaveAs(new_path)
-        except:
-            nuke.root()["name"].setValue(original_path)
-            raise
+        if write_node_app:
+            self.parent.log_debug("Resetting render paths for all write nodes")
+            # reset render paths for all write nodes:
+            for wn in write_node_app.get_write_nodes():
+                 write_node_app.reset_node_render_path(wn)
+                        
+        # save the script:
+        nuke.scriptSaveAs(new_path)
 
 
 class MayaPublisher(Publisher):
