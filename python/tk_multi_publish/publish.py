@@ -53,16 +53,25 @@ class PublishHandler(object):
         self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishUI, self._app, self)
         self._publish_ui.publish.connect(self._on_publish)
         
-        # load ui:
-        self._publish_ui.reload()
+        # get the tasks and update the UI:
+        items = self._scan_scene()
+        tasks = self._build_task_list(items)
+        self._publish_ui.set_tasks(tasks)
         
+        # and any other info:
+        thumbnail = None# TODO: run hook
+        self._publish_ui.thumbnail = thumbnail
+        
+        # shotgun tasks:
+        # TODO...
+        
+        
+    """
     def get_tasks(self):
-        """
-        Build and return the list of publishable tasks
-        """
         items = self._scan_scene()
         tasks = self._build_task_list(items)
         return tasks
+    """
     
     def _on_publish(self):
         """
@@ -79,9 +88,18 @@ class PublishHandler(object):
             return
             
         # TODO - pull from UI
-        sg_task = None
-        thumbnail=None
-        comment="This is a placeholder comment!"
+        sg_task = self._publish_ui.shotgun_task
+        thumbnail = self._publish_ui.thumbnail
+        comment = self._publish_ui.comment
+        
+        print "About to do publish using details:"
+        print "  Shotgun task: %s" % sg_task
+        print "  Thumbnail: %s" % thumbnail
+        print "  Comment: %s" % comment
+        print "  Tasks = %s" % selected_tasks
+        
+        # TODO - remove (obviously)
+        raise Exception("Publish currently disabled whilst building UI!")
                 
         # create progress reporter and connect to UI:
         progress = ProgressReporter()

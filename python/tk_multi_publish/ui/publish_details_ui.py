@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_ui.ui'
 #
-# Created: Mon Apr  1 19:08:01 2013
+# Created: Mon Apr  1 19:42:34 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -79,11 +79,14 @@ class Ui_Form(object):
         self.label_7.setObjectName("label_7")
         self.verticalLayout_6.addWidget(self.label_7)
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
+        self.horizontalLayout_6.setSpacing(0)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem1)
         self.thumbnail_frame = QtGui.QFrame(self.info_frame)
         self.thumbnail_frame.setStyleSheet("#thumbnail_frame {\n"
-"border-style: none;\n"
-"border-radius: 2px;\n"
+"border-style: Solid;\n"
+"border-radius: 3px;\n"
 "background: rgb(32,32,32);\n"
 "}")
         self.thumbnail_frame.setFrameShape(QtGui.QFrame.StyledPanel)
@@ -99,11 +102,11 @@ class Ui_Form(object):
         self.thumbnail_widget.setObjectName("thumbnail_widget")
         self.horizontalLayout_3.addWidget(self.thumbnail_widget)
         self.horizontalLayout_6.addWidget(self.thumbnail_frame)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem1)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem2)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
-        spacerItem2 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        self.verticalLayout_6.addItem(spacerItem2)
+        spacerItem3 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        self.verticalLayout_6.addItem(spacerItem3)
         self.label_8 = QtGui.QLabel(self.info_frame)
         self.label_8.setObjectName("label_8")
         self.verticalLayout_6.addWidget(self.label_8)
@@ -119,8 +122,8 @@ class Ui_Form(object):
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem3)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem4)
         self.cancel_btn = QtGui.QPushButton(Form)
         self.cancel_btn.setMinimumSize(QtCore.QSize(80, 0))
         self.cancel_btn.setObjectName("cancel_btn")

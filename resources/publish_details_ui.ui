@@ -135,12 +135,28 @@ font-size: 12pt;
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
             <item>
              <widget class="QFrame" name="thumbnail_frame">
               <property name="styleSheet">
                <string notr="true">#thumbnail_frame {
-border-style: none;
-border-radius: 2px;
+border-style: Solid;
+border-radius: 3px;
 background: rgb(32,32,32);
 }</string>
               </property>

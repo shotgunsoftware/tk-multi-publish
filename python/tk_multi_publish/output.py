@@ -11,6 +11,8 @@ class PublishOutput(object):
     loaded from the configuration
     """
     
+    PRIMARY_GROUP_NAME = "primary"
+    
     def __init__(self, app, fields={}, name=None, selected=None, required=None, display_group=None):
         """
         Construction
@@ -66,5 +68,9 @@ class PublishOutput(object):
     @property
     def required(self):
         return self._required
+    
+    @property
+    def is_primary(self):
+        return self.display_group == PublishOutput.PRIMARY_GROUP_NAME
     
     

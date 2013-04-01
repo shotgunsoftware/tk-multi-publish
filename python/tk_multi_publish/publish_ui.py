@@ -20,6 +20,8 @@ class PublishUI(QtGui.QWidget):
         """
         QtGui.QWidget.__init__(self, parent)
         self._app = app
+        
+        # TODO: shouldn't need the handler
         self._handler = handler
     
         self._tasks = []
@@ -27,6 +29,7 @@ class PublishUI(QtGui.QWidget):
         # TODO - temp selection mechanism - should be 
         # retrieved from task list in UI
         self._selected_tasks = []
+        self._shotgun_task = None
         
         # set up the UI
         self._ui = Ui_publish_form() 
@@ -36,10 +39,6 @@ class PublishUI(QtGui.QWidget):
         self._ui.publish_details.cancel.connect(self._on_close)
         self._ui.publish_result.close.connect(self._on_close)
         self._ui.pages.setCurrentWidget(self._ui.publish_details)
-        
-        #self._ui.select_all_btn.clicked.connect(self._on_select_all)
-        #self._ui.select_req_only_btn.clicked.connect(self._on_select_req_only)
-        #self._ui.select_random_btn.clicked.connect(self._on_select_random)
         
         self._update_ui()
         
@@ -55,26 +54,58 @@ class PublishUI(QtGui.QWidget):
         """
         The shotgun task that the publish should be linked to
         """
-        return self._shotgun_task
-    
+        return self._ui.publish_details.shotgun_task
+    @shotgun_task.setter
+    def shotgun_task(self, value):
+        self._ui.publish_details.shotgun_task = value
+        
     @property
     def thumbnail(self):
         """
         The thumbnail to use for the publish
         """
-        return None
-    
+        return self._ui.publish_details.thumbnail
+    @thumbnail.setter
+    def thumbnail(self, value):
+        self._ui.publish_details.thumbnail = value
+         
     @property
     def comment(self):
         """
         The comment to use for the publish
         """
-        return ""
+        return self._ui.publish_details.comment
+    @comment.setter
+    def comment(self, value):
+        self._ui.publish_details.comment = value
         
+    def set_tasks(self, tasks):
+        """
+        Set the tasks to display in the UI.
+        """
+        # split tasks into primary and secondary:
+        primary_task = None
+        secondary_tasks = []
+        for task in tasks:
+            if task.output.is_primary:
+                if primary_task:
+                    # should never get this far but just in case!
+                    raise Exception("Found multiple primary tasks - don't know how to handle this!")
+                primary_task = task
+            else:
+                secondary_tasks.append(task)
+
+        self._set_primary_task(primary_task)
+        self._ui.publish_details.set_tasks(secondary_tasks)
+        
+        # (AD) TEMP
+        self._selected_tasks = tasks
+        
+    def _set_primary_task(self, task):
+        pass
+        
+    """
     def reload(self):
-        """
-        Load UI with data provided by the handler:
-        """
         self._tasks = self._handler.get_tasks()
         
         for task in self._tasks:
@@ -82,7 +113,8 @@ class PublishUI(QtGui.QWidget):
                 self._selected_tasks.append(task)
         
         self._update_ui()
-        
+    """
+     
     def update_tasks(self):
         """
         Placeholder to update UI for all tasks without reloading
@@ -103,7 +135,8 @@ class PublishUI(QtGui.QWidget):
         are recieved
         """
         self.window().close()
-    
+        
+    """    
     # (AD) - temp for proxy UI
     def _on_select_all(self):
         self._selected_tasks = self._tasks
@@ -126,7 +159,8 @@ class PublishUI(QtGui.QWidget):
                 if random.random() > 0.5:
                     self._selected_tasks.append(task)
         self._update_ui()
- 
+    """
+    
     def _update_ui(self):
         """
         Update the UI following a change to the data
