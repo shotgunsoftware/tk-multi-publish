@@ -39,15 +39,11 @@ configuration:
 
     hook_scan_scene: 
         type: hook
-        parameters: [engine_name]
-        default_value: scan_scene
-        #default_value: "scan_scene_{engine_name}"
+        parameters: []
+        default_value: "scan_scene_{engine_name}"
         description: Specify a hook to scan for items to publish.  
                      The hook should return a list dictionaries containing the following
-                     keys
-                        name - ...
-                        type - ...
-                        ...
+                        (TODO - finish)
 
     hook_pre_publish:
         type: hook
