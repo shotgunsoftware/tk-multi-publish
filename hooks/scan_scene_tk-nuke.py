@@ -14,7 +14,7 @@ class ScanSceneHook(Hook):
     Hook to scan scene for items to publish
     """
     
-    def execute(self, engine_name, **kwargs):
+    def execute(self, **kwargs):
         """
         Main hook entry point
         """
