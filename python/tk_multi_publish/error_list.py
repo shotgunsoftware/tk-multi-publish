@@ -69,8 +69,7 @@ class ErrorList(QtGui.QWidget):
         self._update_ui()
     
     def _update_ui(self):
-        #self.setVisible(len(self._error_widgets) > 0)
-        pass
+        self.setVisible(len(self._error_widgets) > 0)
 
 
 
