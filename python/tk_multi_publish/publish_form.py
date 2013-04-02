@@ -3,8 +3,9 @@ Copyright (c) 2013 Shotgun Software, Inc
 ----------------------------------------------------
 """
 
+import os
+
 from tank.platform.qt import QtCore, QtGui
-from .ui.publish_ui import Ui_publish_form
 
 class PublishUI(QtGui.QWidget):
     """
@@ -24,6 +25,7 @@ class PublishUI(QtGui.QWidget):
         # TODO: shouldn't need the handler
         self._handler = handler
     
+        self._primary_task = None
         self._tasks = []
         
         # TODO - temp selection mechanism - should be 
@@ -32,7 +34,8 @@ class PublishUI(QtGui.QWidget):
         self._shotgun_task = None
         
         # set up the UI
-        self._ui = Ui_publish_form() 
+        from .ui.publish_ui import Ui_PublishForm
+        self._ui = Ui_PublishForm() 
         self._ui.setupUi(self)
         
         self._ui.publish_details.publish.connect(self._on_publish)
@@ -102,7 +105,25 @@ class PublishUI(QtGui.QWidget):
         self._selected_tasks = tasks
         
     def _set_primary_task(self, task):
-        pass
+        """
+        Set the primary task and update the UI accordingly
+        """
+        self._primary_task = task
+        
+        # update UI for primary task:
+        icon_path = task.output.icon_path
+        if not icon_path or not os.path.exists(icon_path):
+            icon_path = ":/res/default_header.png"
+        icon = QtGui.QPixmap(icon_path)
+        
+        lines = []
+        lines.append("<b>%s - %s</b>" % (task.output.display_name, task.item.name))
+        lines.append("%s" % task.output.description)
+        lines.append("%s" % task.item.description)
+        details_txt = "<br>".join(lines)
+        
+        self._ui.primary_icon_label.setPixmap(icon)
+        self._ui.primary_details_label.setText(details_txt)
         
     """
     def reload(self):

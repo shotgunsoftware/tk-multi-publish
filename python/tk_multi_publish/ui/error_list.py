@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'error_list_ui.ui'
+# Form implementation generated from reading ui file 'error_list.ui'
 #
-# Created: Mon Apr  1 19:42:35 2013
+# Created: Tue Apr  2 11:26:05 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(400, 158)
-        self.horizontalLayout = QtGui.QHBoxLayout(Form)
+class Ui_ErrorList(object):
+    def setupUi(self, ErrorList):
+        ErrorList.setObjectName("ErrorList")
+        ErrorList.resize(400, 158)
+        self.horizontalLayout = QtGui.QHBoxLayout(ErrorList)
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.main_frame = QtGui.QFrame(Form)
+        self.main_frame = QtGui.QFrame(ErrorList)
         self.main_frame.setStyleSheet("#main_frame {\n"
 "border-style: solid;\n"
 "border-width: 1;\n"
@@ -50,12 +50,12 @@ class Ui_Form(object):
         self.verticalLayout.setStretch(2, 1)
         self.horizontalLayout.addWidget(self.main_frame)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(ErrorList)
+        QtCore.QMetaObject.connectSlotsByName(ErrorList)
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.section_label.setText(QtGui.QApplication.translate("Form", "<font color=\'orange\'>Validation checks returned some messages for your attention:</font>", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self, ErrorList):
+        ErrorList.setWindowTitle(QtGui.QApplication.translate("ErrorList", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.section_label.setText(QtGui.QApplication.translate("ErrorList", "<font color=\'orange\'>Validation checks returned some messages for your attention:</font>", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc
 from . import resources_rc

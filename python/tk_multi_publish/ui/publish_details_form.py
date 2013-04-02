@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'publish_details_ui.ui'
+# Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Mon Apr  1 19:42:34 2013
+# Created: Tue Apr  2 11:26:05 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(858, 537)
-        self.verticalLayout = QtGui.QVBoxLayout(Form)
+class Ui_PublishDetailsForm(object):
+    def setupUi(self, PublishDetailsForm):
+        PublishDetailsForm.setObjectName("PublishDetailsForm")
+        PublishDetailsForm.resize(858, 537)
+        self.verticalLayout = QtGui.QVBoxLayout(PublishDetailsForm)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtGui.QHBoxLayout()
@@ -21,13 +21,13 @@ class Ui_Form(object):
         self.verticalLayout_7 = QtGui.QVBoxLayout()
         self.verticalLayout_7.setSpacing(4)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.items_title_label = QtGui.QLabel(Form)
+        self.items_title_label = QtGui.QLabel(PublishDetailsForm)
         self.items_title_label.setStyleSheet("#items_title_label {\n"
 "font-size: 14pt\n"
 "}")
         self.items_title_label.setObjectName("items_title_label")
         self.verticalLayout_7.addWidget(self.items_title_label)
-        self.items_scroll = QtGui.QScrollArea(Form)
+        self.items_scroll = QtGui.QScrollArea(PublishDetailsForm)
         self.items_scroll.setStyleSheet("#items_scroll {\n"
 "border-style: solid;\n"
 "border-width: 1px;\n"
@@ -46,13 +46,13 @@ class Ui_Form(object):
         self.verticalLayout_5 = QtGui.QVBoxLayout()
         self.verticalLayout_5.setSpacing(4)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.info_title_label = QtGui.QLabel(Form)
+        self.info_title_label = QtGui.QLabel(PublishDetailsForm)
         self.info_title_label.setStyleSheet("#info_title_label {\n"
 "font-size: 14pt\n"
 "}")
         self.info_title_label.setObjectName("info_title_label")
         self.verticalLayout_5.addWidget(self.info_title_label)
-        self.info_frame = QtGui.QFrame(Form)
+        self.info_frame = QtGui.QFrame(PublishDetailsForm)
         self.info_frame.setStyleSheet("#info_frame {\n"
 "border-style: solid;\n"
 "border-width: 1px;\n"
@@ -124,29 +124,29 @@ class Ui_Form(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem4)
-        self.cancel_btn = QtGui.QPushButton(Form)
+        self.cancel_btn = QtGui.QPushButton(PublishDetailsForm)
         self.cancel_btn.setMinimumSize(QtCore.QSize(80, 0))
         self.cancel_btn.setObjectName("cancel_btn")
         self.horizontalLayout_2.addWidget(self.cancel_btn)
-        self.publish_btn = QtGui.QPushButton(Form)
+        self.publish_btn = QtGui.QPushButton(PublishDetailsForm)
         self.publish_btn.setMinimumSize(QtCore.QSize(80, 0))
         self.publish_btn.setObjectName("publish_btn")
         self.horizontalLayout_2.addWidget(self.publish_btn)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.verticalLayout.setStretch(0, 1)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(PublishDetailsForm)
+        QtCore.QMetaObject.connectSlotsByName(PublishDetailsForm)
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.items_title_label.setText(QtGui.QApplication.translate("Form", "Choose Additional Items to Publish:", None, QtGui.QApplication.UnicodeUTF8))
-        self.info_title_label.setText(QtGui.QApplication.translate("Form", "Add Information about your Publish:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("Form", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("Form", "Add a Thumbnail?", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("Form", "Any Comments?", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancel_btn.setText(QtGui.QApplication.translate("Form", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
-        self.publish_btn.setText(QtGui.QApplication.translate("Form", "Publish", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self, PublishDetailsForm):
+        PublishDetailsForm.setWindowTitle(QtGui.QApplication.translate("PublishDetailsForm", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.items_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Choose Additional Items to Publish:", None, QtGui.QApplication.UnicodeUTF8))
+        self.info_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add Information about your Publish:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("PublishDetailsForm", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add a Thumbnail?", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setText(QtGui.QApplication.translate("PublishDetailsForm", "Any Comments?", None, QtGui.QApplication.UnicodeUTF8))
+        self.cancel_btn.setText(QtGui.QApplication.translate("PublishDetailsForm", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
+        self.publish_btn.setText(QtGui.QApplication.translate("PublishDetailsForm", "Publish", None, QtGui.QApplication.UnicodeUTF8))
 
 from ..publish_details_widget import ThumbnailWidget
 from . import resources_rc

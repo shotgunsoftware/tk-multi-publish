@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>GroupHeader</class>
+ <widget class="QWidget" name="GroupHeader">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -62,8 +62,6 @@ font-size: 16px
     </layout>
    </item>
   </layout>
-  <zorder>verticalLayoutWidget</zorder>
-  <zorder>name_label</zorder>
  </widget>
  <resources/>
  <connections/>

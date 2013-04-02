@@ -11,9 +11,9 @@ class PublishOutput(object):
     loaded from the configuration
     """
     
-    PRIMARY_GROUP_NAME = "primary"
+    PRIMARY_NAME = "primary"
     
-    def __init__(self, app, fields={}, name=None, selected=None, required=None, display_group=None):
+    def __init__(self, app, fields={}, name=None, selected=None, required=None):
         """
         Construction
         """
@@ -27,7 +27,6 @@ class PublishOutput(object):
         self._name = [name, fields.get("name", "")][name == None]
         self._required = [required, fields.get("required", False)][required == None]
         self._selected = self._required or [selected, fields.get("selected", True)][selected == None]
-        self._display_group = [display_group, fields.get("display_group", "")][display_group == None]
     
     @property
     def name(self):
@@ -43,7 +42,7 @@ class PublishOutput(object):
     
     @property
     def display_group(self):
-        return self._display_group
+        return self._raw_fields.get("display_group", "")
     
     @property
     def description(self):
@@ -71,6 +70,6 @@ class PublishOutput(object):
     
     @property
     def is_primary(self):
-        return self.display_group == PublishOutput.PRIMARY_GROUP_NAME
+        return self.name == PublishOutput.PRIMARY_NAME
     
     

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>publish_form</class>
- <widget class="QWidget" name="publish_form">
+ <class>PublishForm</class>
+ <widget class="QWidget" name="PublishForm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -58,6 +58,11 @@
      </item>
      <item>
       <widget class="QLabel" name="primary_details_label">
+       <property name="styleSheet">
+        <string notr="true">#primary_details_label {
+font-size: 16pt;
+}</string>
+       </property>
        <property name="text">
         <string>&lt;b&gt;Output Name&lt;/b&gt;&lt;br&gt;Description...&lt;br&gt;the third line...</string>
        </property>
@@ -74,7 +79,7 @@
    <item>
     <widget class="QStackedWidget" name="pages">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="publish">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -85,7 +90,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="PublishDetailsWidget" name="publish_details" native="true"/>
+        <widget class="PublishDetailsForm" name="publish_details" native="true"/>
        </item>
       </layout>
      </widget>
@@ -98,7 +103,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="PublishResultWidget" name="publish_result" native="true"/>
+        <widget class="PublishResultForm" name="publish_result" native="true"/>
        </item>
       </layout>
      </widget>
@@ -108,15 +113,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PublishDetailsWidget</class>
+   <class>PublishDetailsForm</class>
    <extends>QWidget</extends>
-   <header>..publish_details_widget</header>
+   <header>..publish_details_form</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>PublishResultWidget</class>
+   <class>PublishResultForm</class>
    <extends>QWidget</extends>
-   <header>..publish_result_widget</header>
+   <header>..publish_result_form</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

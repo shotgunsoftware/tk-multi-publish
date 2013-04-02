@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'item_list_ui.ui'
+# Form implementation generated from reading ui file 'item_list.ui'
 #
-# Created: Mon Apr  1 19:42:34 2013
+# Created: Tue Apr  2 11:26:05 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(397, 265)
-        self.horizontalLayout_2 = QtGui.QHBoxLayout(Form)
+class Ui_ItemList(object):
+    def setupUi(self, ItemList):
+        ItemList.setObjectName("ItemList")
+        ItemList.resize(397, 265)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(ItemList)
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.main_frame = QtGui.QFrame(Form)
+        self.main_frame = QtGui.QFrame(ItemList)
         self.main_frame.setStyleSheet("#main_frame {\n"
 "border-style: solid;\n"
 "border-width: 1;\n"
@@ -62,11 +62,11 @@ class Ui_Form(object):
         self.verticalLayout.setStretch(2, 1)
         self.horizontalLayout_2.addWidget(self.main_frame)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(ItemList)
+        QtCore.QMetaObject.connectSlotsByName(ItemList)
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.section_label.setText(QtGui.QApplication.translate("Form", "<b>n items available</b>, <i>expand to turn individual items on and off</i>", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self, ItemList):
+        ItemList.setWindowTitle(QtGui.QApplication.translate("ItemList", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.section_label.setText(QtGui.QApplication.translate("ItemList", "<b>n items available</b>, <i>expand to turn individual items on and off</i>", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc

@@ -5,14 +5,10 @@ Copyright (c) 2013 Shotgun Software, Inc
 
 import tank
 from tank.platform.qt import QtCore, QtGui
- 
-class PublishResultWidget(QtGui.QWidget):
+
+class GroupHeaderWidget(QtGui.QWidget):
     """
-    Implementation of the main publish UI
     """
-    
-    close = QtCore.Signal()
-    
     def __init__(self, parent=None):
         """
         Construction
@@ -20,11 +16,6 @@ class PublishResultWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.publish_result_ui import Ui_Form
+        from .ui.group_header_ui import Ui_GroupHeader
         self._ui = Ui_Form() 
         self._ui.setupUi(self)
-        
-        self._ui.close_btn.clicked.connect(self._on_close)
-        
-    def _on_close(self):
-        self.close.emit()

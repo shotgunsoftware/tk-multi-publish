@@ -32,7 +32,7 @@ class PublishHandler(object):
         self._work_template = self._app.get_template("template_work")
 
         # load outputs from configuration:
-        self._primary_output = PublishOutput(self._app, self._app.get_setting("primary_output"), name="primary", selected=True, required=True, display_group="PRIMARY")
+        self._primary_output = PublishOutput(self._app, self._app.get_setting("primary_output"), name=PublishOutput.PRIMARY_NAME, selected=True, required=True)
         self._secondary_outputs = [PublishOutput(self._app, output) for output in self._app.get_setting("secondary_outputs")]
         
         # make sure that the scene_item_type used for the primary output is 

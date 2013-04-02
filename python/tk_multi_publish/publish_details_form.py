@@ -31,7 +31,7 @@ class PublishDetailsWidget(QtGui.QWidget):
         self._shotgun_task = None
     
         # set up the UI
-        from .ui.publish_details_ui import Ui_Form
+        from .ui.publish_details_ui import Ui_PublishDetailsForm
         self._ui = Ui_Form() 
         self._ui.setupUi(self)
         
@@ -64,6 +64,9 @@ class PublishDetailsWidget(QtGui.QWidget):
         self._ui.thumbnail_widget.thumbnail = value
         
     def set_tasks(self, tasks):
+        
+        print "Settings tasks: %s" % tasks
+        
         """
         Set the list of tasks to be displayed
         """
@@ -74,3 +77,15 @@ class PublishDetailsWidget(QtGui.QWidget):
         
     def _on_cancel(self):
         self.cancel.emit()
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

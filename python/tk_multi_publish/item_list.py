@@ -5,8 +5,8 @@ Copyright (c) 2013 Shotgun Software, Inc
 
 import tank
 from tank.platform.qt import QtCore, QtGui
-              
-class OutputItemWidget(QtGui.QWidget):
+
+class ItemWidget(QtGui.QWidget):
     """
     """
     def __init__(self, parent=None):
@@ -16,9 +16,20 @@ class OutputItemWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.output_item_ui import Ui_Form
+        from .ui.item_ui import Ui_Item
         self._ui = Ui_Form() 
         self._ui.setupUi(self)
         
-
-        
+class ItemListWidget(QtGui.QWidget):
+    """
+    """
+    def __init__(self, parent=None):
+        """
+        Construction
+        """
+        QtGui.QWidget.__init__(self, parent)
+    
+        # set up the UI
+        from .ui.item_list_ui import Ui_ItemList
+        self._ui = Ui_Form() 
+        self._ui.setupUi(self)
