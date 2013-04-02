@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_form.ui'
 #
-# Created: Tue Apr  2 19:00:24 2013
+# Created: Tue Apr  2 20:26:22 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -47,6 +47,9 @@ class Ui_PublishForm(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.pages.addWidget(self.publish_details)
+        self.publish_progress = PublishProgressForm()
+        self.publish_progress.setObjectName("publish_progress")
+        self.pages.addWidget(self.publish_progress)
         self.publish_result = PublishResultForm()
         self.publish_result.setObjectName("publish_result")
         self.horizontalLayout = QtGui.QHBoxLayout(self.publish_result)
@@ -64,6 +67,7 @@ class Ui_PublishForm(object):
         PublishForm.setWindowTitle(QtGui.QApplication.translate("PublishForm", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.primary_details_label.setText(QtGui.QApplication.translate("PublishForm", "<b>Output Name</b><br>Description...<br>the third line...", None, QtGui.QApplication.UnicodeUTF8))
 
-from ..publish_result_form import PublishResultForm
+from ..publish_progress_form import PublishProgressForm
 from ..publish_details_form import PublishDetailsForm
+from ..publish_result_form import PublishResultForm
 from . import resources_rc

@@ -6,12 +6,10 @@ Copyright (c) 2013 Shotgun Software, Inc
 import tank
 from tank.platform.qt import QtCore, QtGui
  
-class PublishResultForm(QtGui.QWidget):
+class PublishProgressForm(QtGui.QWidget):
     """
     Implementation of the main publish UI
     """
-    
-    close = QtCore.Signal()
     
     def __init__(self, parent=None):
         """
@@ -20,11 +18,10 @@ class PublishResultForm(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.publish_result_form import Ui_PublishResultForm
-        self._ui = Ui_PublishResultForm() 
+        from .ui.publish_result_form import Ui_PublishProgressForm
+        self._ui = Ui_PublishProgressForm() 
         self._ui.setupUi(self)
         
-        self._ui.close_btn.clicked.connect(self._on_close)
-        
-    def _on_close(self):
-        self.close.emit()
+    def report(self, percent, msg):
+        # (AD) - or something..
+        pass

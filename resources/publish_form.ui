@@ -91,6 +91,7 @@ font-size: 16pt;
        </property>
       </layout>
      </widget>
+     <widget class="PublishProgressForm" name="publish_progress"/>
      <widget class="PublishResultForm" name="publish_result">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="spacing">
@@ -116,6 +117,12 @@ font-size: 16pt;
    <class>PublishResultForm</class>
    <extends>QWidget</extends>
    <header>..publish_result_form</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PublishProgressForm</class>
+   <extends>QWidget</extends>
+   <header>..publish_progress_form</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

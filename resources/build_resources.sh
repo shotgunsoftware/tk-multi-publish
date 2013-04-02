@@ -6,6 +6,7 @@
 echo "building user interfaces..."
 pyside-uic --from-imports publish_form.ui > ../python/tk_multi_publish/ui/publish_form.py
 pyside-uic --from-imports publish_details_form.ui > ../python/tk_multi_publish/ui/publish_details_form.py
+pyside-uic --from-imports publish_result_form.ui > ../python/tk_multi_publish/ui/publish_progress_form.py
 pyside-uic --from-imports publish_result_form.ui > ../python/tk_multi_publish/ui/publish_result_form.py
 
 pyside-uic --from-imports output_item.ui > ../python/tk_multi_publish/ui/output_item.py
