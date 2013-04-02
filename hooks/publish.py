@@ -433,10 +433,10 @@ class MayaPublisher(Publisher):
         """
         Publish the main Maya scene
         """
-        import maya.cmds as mc
+        import maya.cmds as cmds
         
         # get scene path
-        scene_path = os.path.abspath(mc.file(query=True, sn=True))
+        scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         
         if not work_template.validate(scene_path):
             raise Exception("File '%s' is not a valid work path, unable to publish!" % scene_path)
@@ -453,7 +453,7 @@ class MayaPublisher(Publisher):
         
         # save the scene:
         self.parent.log_debug("Saving the scene...")
-        mc.file(save=True, force=True)
+        cmds.file(save=True, force=True)
         
         # copy the file:
         try:
@@ -486,9 +486,9 @@ class MayaPublisher(Publisher):
         Version up the current Maya scene to the new version.
         """
   
-        import maya.cmds as mc
+        import maya.cmds as cmds
   
-        scene_path = os.path.abspath(mc.file(query=True, sn=True))
+        scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         fields = work_template.get_fields(scene_path)
         next_version = self._get_next_work_file_version(fields, work_template)
         fields["version"] = next_version 
@@ -497,8 +497,8 @@ class MayaPublisher(Publisher):
         self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
         
         # save the file
-        mc.file(rename=new_scene_path)
-        mc.file(save=True)
+        cmds.file(rename=new_scene_path)
+        cmds.file(save=True)
         
 
 

@@ -205,7 +205,7 @@ class MayaPrePublisher(PrePublisher):
         """
         Pre-publish tasks for Maya
         """
-        import maya.cmds as mc
+        import maya.cmds as cmds
         
         results = []
         
@@ -225,7 +225,7 @@ class MayaPrePublisher(PrePublisher):
             if output["name"] == "primary":
                 # primary output is the maya scene - validate 
                 # that it can be published:
-                scene_file = mc.file(query=True, sn=True)
+                scene_file = cmds.file(query=True, sn=True)
                 if scene_file:
                     scene_file = os.path.abspath(scene_file)
                 errors.extend(self._validate_work_file(scene_file, work_template, output))

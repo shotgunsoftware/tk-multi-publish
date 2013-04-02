@@ -61,12 +61,12 @@ class ScanSceneHook(Hook):
         """
         find items for Maya
         """
-        import maya.cmds as mc
+        import maya.cmds as cmds
         
         items = []
         
         # get the main scene:
-        scene_path = os.path.abspath(mc.file(query=True, sn=True))
+        scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         name = os.path.basename(scene_path)
         if not name:
             name = "untitled"    
