@@ -81,7 +81,7 @@ font-size: 16pt;
      <property name="currentIndex">
       <number>1</number>
      </property>
-     <widget class="QWidget" name="publish">
+     <widget class="PublishDetailsForm" name="publish_details">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <property name="spacing">
         <number>0</number>
@@ -89,12 +89,9 @@ font-size: 16pt;
        <property name="margin">
         <number>0</number>
        </property>
-       <item>
-        <widget class="PublishDetailsForm" name="publish_details" native="true"/>
-       </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="result">
+     <widget class="PublishResultForm" name="publish_result">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="spacing">
         <number>0</number>
@@ -102,9 +99,6 @@ font-size: 16pt;
        <property name="margin">
         <number>0</number>
        </property>
-       <item>
-        <widget class="PublishResultForm" name="publish_result" native="true"/>
-       </item>
       </layout>
      </widget>
     </widget>

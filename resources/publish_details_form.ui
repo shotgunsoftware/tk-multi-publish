@@ -37,7 +37,7 @@ font-size: 14pt
         </widget>
        </item>
        <item>
-        <widget class="QScrollArea" name="items_scroll">
+        <widget class="QScrollArea" name="task_scroll">
          <property name="styleSheet">
           <string notr="true">#items_scroll {
 border-style: solid;

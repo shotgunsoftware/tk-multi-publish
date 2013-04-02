@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Tue Apr  2 12:07:40 2013
+# Created: Tue Apr  2 18:23:41 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,20 +27,20 @@ class Ui_PublishDetailsForm(object):
 "}")
         self.items_title_label.setObjectName("items_title_label")
         self.verticalLayout_7.addWidget(self.items_title_label)
-        self.items_scroll = QtGui.QScrollArea(PublishDetailsForm)
-        self.items_scroll.setStyleSheet("#items_scroll {\n"
+        self.task_scroll = QtGui.QScrollArea(PublishDetailsForm)
+        self.task_scroll.setStyleSheet("#items_scroll {\n"
 "border-style: solid;\n"
 "border-width: 1px;\n"
 "border-radius: 2px;\n"
 "border-color: rgb(32,32,32);\n"
 "}")
-        self.items_scroll.setWidgetResizable(True)
-        self.items_scroll.setObjectName("items_scroll")
+        self.task_scroll.setWidgetResizable(True)
+        self.task_scroll.setObjectName("task_scroll")
         self.contents = QtGui.QWidget()
         self.contents.setGeometry(QtCore.QRect(0, 0, 514, 468))
         self.contents.setObjectName("contents")
-        self.items_scroll.setWidget(self.contents)
-        self.verticalLayout_7.addWidget(self.items_scroll)
+        self.task_scroll.setWidget(self.contents)
+        self.verticalLayout_7.addWidget(self.task_scroll)
         self.verticalLayout_7.setStretch(1, 1)
         self.horizontalLayout.addLayout(self.verticalLayout_7)
         self.verticalLayout_5 = QtGui.QVBoxLayout()

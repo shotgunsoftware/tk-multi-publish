@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'output_item.ui'
 #
-# Created: Tue Apr  2 12:07:40 2013
+# Created: Tue Apr  2 18:23:42 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ class Ui_OutputItem(object):
         OutputItem.setMaximumSize(QtCore.QSize(16777215, 56))
         self.horizontalLayout = QtGui.QHBoxLayout(OutputItem)
         self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
+        self.horizontalLayout.setContentsMargins(12, 2, 2, 2)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")

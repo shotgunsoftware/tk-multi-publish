@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'item_list.ui'
 #
-# Created: Tue Apr  2 12:07:40 2013
+# Created: Tue Apr  2 18:23:42 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,7 +14,7 @@ class Ui_ItemList(object):
         ItemList.setObjectName("ItemList")
         ItemList.resize(397, 265)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(ItemList)
-        self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
+        self.horizontalLayout_2.setContentsMargins(12, 2, 2, 2)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.main_frame = QtGui.QFrame(ItemList)
         self.main_frame.setStyleSheet("#main_frame {\n"
@@ -35,6 +35,7 @@ class Ui_ItemList(object):
         self.section_label.setStyleSheet("#section_label {\n"
 "font-size: 10pt\n"
 "}")
+        self.section_label.setIndent(4)
         self.section_label.setObjectName("section_label")
         self.horizontalLayout.addWidget(self.section_label)
         self.expand_label = QtGui.QLabel(self.main_frame)
@@ -55,6 +56,9 @@ class Ui_ItemList(object):
         self.line.setObjectName("line")
         self.verticalLayout.addWidget(self.line)
         self.item_frame = QtGui.QFrame(self.main_frame)
+        self.item_frame.setStyleSheet("#item_frame {\n"
+"border-style: none;\n"
+"}")
         self.item_frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.item_frame.setFrameShadow(QtGui.QFrame.Raised)
         self.item_frame.setObjectName("item_frame")

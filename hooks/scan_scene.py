@@ -76,4 +76,26 @@ class ScanSceneHook(Hook):
             "name": name,
             "description": ""})
         
+        # (AD) - FOR DEBUG ONLY!
+        
+        """
+        items.append({ 
+            "type": "light_rig", 
+            "name": "|primary_lighting",
+            "description": "blah blah blah"})
+        """
+        items.append({ 
+            "type": "light_rig", 
+            "name": "|secondary_lighting",
+            "description": "blah blah blah"})
+        
+        items.append({ 
+            "type": "model", 
+            "name": "|car",
+            "description": "blah blah blah"})
+        items.append({ 
+            "type": "model", 
+            "name": "|boat",
+            "description": "blah blah blah"})
+        
         return items

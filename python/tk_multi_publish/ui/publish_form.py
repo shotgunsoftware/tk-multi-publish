@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_form.ui'
 #
-# Created: Tue Apr  2 12:07:40 2013
+# Created: Tue Apr  2 18:23:41 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -40,26 +40,20 @@ class Ui_PublishForm(object):
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.pages = QtGui.QStackedWidget(PublishForm)
         self.pages.setObjectName("pages")
-        self.publish = QtGui.QWidget()
-        self.publish.setObjectName("publish")
-        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.publish)
+        self.publish_details = PublishDetailsForm()
+        self.publish_details.setObjectName("publish_details")
+        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.publish_details)
         self.horizontalLayout_3.setSpacing(0)
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.publish_details = PublishDetailsForm(self.publish)
-        self.publish_details.setObjectName("publish_details")
-        self.horizontalLayout_3.addWidget(self.publish_details)
-        self.pages.addWidget(self.publish)
-        self.result = QtGui.QWidget()
-        self.result.setObjectName("result")
-        self.horizontalLayout = QtGui.QHBoxLayout(self.result)
+        self.pages.addWidget(self.publish_details)
+        self.publish_result = PublishResultForm()
+        self.publish_result.setObjectName("publish_result")
+        self.horizontalLayout = QtGui.QHBoxLayout(self.publish_result)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.publish_result = PublishResultForm(self.result)
-        self.publish_result.setObjectName("publish_result")
-        self.horizontalLayout.addWidget(self.publish_result)
-        self.pages.addWidget(self.result)
+        self.pages.addWidget(self.publish_result)
         self.verticalLayout.addWidget(self.pages)
 
         self.retranslateUi(PublishForm)

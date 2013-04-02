@@ -53,18 +53,27 @@ class PublishHandler(object):
         self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
         self._publish_ui.publish.connect(self._on_publish)
         
-        # get the tasks and update the UI:
+        # build list of publish tasks:
         items = self._scan_scene()
         tasks = self._build_task_list(items)
-        self._publish_ui.set_tasks(tasks)
         
-        # and any other info:
+        # get list of shotgun tasks for the current context:
+        sg_tasks = self._get_shotgun_tasks()
+        
+        # initialize UI:
+        self._publish_ui.initialize(tasks, sg_tasks)
+        
+        # thumbnail:
         thumbnail = None# TODO: run hook
         self._publish_ui.thumbnail = thumbnail
         
-        # shotgun tasks:
-        # TODO...
-        
+        if self._app.context.task:
+            self._publish_ui.shotgun_task = self._app.context.task
+            # if current task successfully set to the context task
+            # then disable task selection:
+            current_task = self._publish_ui.shotgun_task
+            self._publish_ui.can_change_shotgun_task = (current_task and current_task["id"] != self._app.context.task["id"])
+
         
     """
     def get_tasks(self):
@@ -96,7 +105,14 @@ class PublishHandler(object):
         print "  Shotgun task: %s" % sg_task
         print "  Thumbnail: %s" % thumbnail
         print "  Comment: %s" % comment
-        print "  Tasks = %s" % selected_tasks
+        print "  Tasks:"
+        for task in selected_tasks:
+            print " > %s - %s" % (task.output.display_name, task.item.name)
+        
+        # ...
+        
+        # show publish result:
+        #self._publish_ui.show_publish_result(None)
         
         # TODO - remove (obviously)
         raise Exception("Publish currently disabled whilst building UI!")
@@ -159,6 +175,10 @@ class PublishHandler(object):
         Takes a list of items and builds a list of tasks containing
         each item and it's corresponding output
         """
+        
+        #TODO - build list by looping through outputs to order by output by default
+        # this will make much more sense
+        
         
         # create index from scene_item_type to output
         outputs_by_type = {}
@@ -299,6 +319,22 @@ class PublishHandler(object):
             else:
                 task.publish_errors = []
                 
+    def _get_shotgun_tasks(self):
+        """
+        Pull a list of tasks from shotgun based on the current context
+        """
+
+        filters = [["entity", "is", self._app.context.entity]]
+        if self._app.context.step:
+            filters += [["step", "is", self._app.context.step]]
+        order = [{"field_name":"step", "direction":"asc"}, {"field_name":"content", "direction":"asc"}]
+        fields = ["step", "content"]
+        
+        print "Filters: %s" % filters
+        sg_tasks = self._app.shotgun.find("Task", filters=filters, fields=fields, order=order)
+
+        return sg_tasks
+             
                 
     """
     # (AD) - old code but may be needed

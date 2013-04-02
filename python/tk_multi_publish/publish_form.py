@@ -28,11 +28,6 @@ class PublishForm(QtGui.QWidget):
         self._primary_task = None
         self._tasks = []
         
-        # TODO - temp selection mechanism - should be 
-        # retrieved from task list in UI
-        self._selected_tasks = []
-        self._shotgun_task = None
-        
         # set up the UI
         from .ui.publish_form import Ui_PublishForm
         self._ui = Ui_PublishForm() 
@@ -43,14 +38,14 @@ class PublishForm(QtGui.QWidget):
         self._ui.publish_result.close.connect(self._on_close)
         self._ui.pages.setCurrentWidget(self._ui.publish_details)
         
-        self._update_ui()
+        #self._update_ui()
         
     @property
     def selected_tasks(self):
         """
         The currently selected tasks
         """
-        return self._selected_tasks
+        return self._get_selected_tasks()
     
     @property
     def shotgun_task(self):
@@ -61,6 +56,16 @@ class PublishForm(QtGui.QWidget):
     @shotgun_task.setter
     def shotgun_task(self, value):
         self._ui.publish_details.shotgun_task = value
+        
+    @property
+    def can_change_shotgun_task(self):
+        """
+        Control if the shotgun task can be changed or not
+        """
+        return self._ui.publish_details.can_change_shotgun_task
+    @can_change_shotgun_task.setter
+    def can_change_shotgun_task(self, value):
+        self._ui.publish_details.can_change_shotgun_task = value
         
     @property
     def thumbnail(self):
@@ -82,10 +87,21 @@ class PublishForm(QtGui.QWidget):
     def comment(self, value):
         self._ui.publish_details.comment = value
         
-    def set_tasks(self, tasks):
+    def show_publish_result(self, result):
         """
-        Set the tasks to display in the UI.
+        Show the result of the publish in the UI
         """
+        # update UI with result:
+        # TODO...
+        
+        # show page:
+        self._ui.pages.setCurrentWidget(self._ui.publish_result)
+        
+    def initialize(self, tasks, sg_tasks):
+        """
+        Initialize UI with information provided
+        """
+        
         # split tasks into primary and secondary:
         primary_task = None
         secondary_tasks = []
@@ -97,21 +113,34 @@ class PublishForm(QtGui.QWidget):
                 primary_task = task
             else:
                 secondary_tasks.append(task)
-
-        QtGui.QMessageBox.information(None, "", "")
-
+                
+        # initialize primary task UI:
         self._set_primary_task(primary_task)
-        self._ui.publish_details.set_tasks(secondary_tasks)
+
+        # initialize publish details form:
+        self._ui.publish_details.initialize(secondary_tasks, sg_tasks)
+
         
-        # (AD) TEMP
-        self._selected_tasks = tasks
+    def _get_selected_tasks(self):
+        """
+        Get a list of the selected tasks that 
+        should be published
+        """
+        
+        # always publish primary task:
+        selected_tasks = [self._primary_task]
+        
+        # get secondary tasks from details form:
+        selected_tasks.extend(self._ui.publish_details.selected_tasks)
+        
+        return selected_tasks
         
     def _set_primary_task(self, task):
         """
         Set the primary task and update the UI accordingly
         """
         self._primary_task = task
-        print "EH?"
+        
         # update UI for primary task:
         icon_path = task.output.icon_path
         print "ICON PATH: %s" % icon_path
@@ -190,6 +219,8 @@ class PublishForm(QtGui.QWidget):
         Update the UI following a change to the data
         """
         
+        pass
+        """
         msg = ""
         
         if not self._tasks:
@@ -249,6 +280,7 @@ class PublishForm(QtGui.QWidget):
                     
             
         #self._ui.publish_details.setText(msg)
+        """
         
         
         

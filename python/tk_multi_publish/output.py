@@ -24,10 +24,10 @@ class PublishOutput(object):
         
         # special case handling of some fields that can be provided either
         # as args or through the fields
-        self._name = [name, fields.get("name", "")][name == None]
-        self._required = [required, fields.get("required", False)][required == None]
-        self._selected = self._required or [selected, fields.get("selected", True)][selected == None]
-    
+        self._name = (fields.get("name", "") if name == None else name)
+        self._required = (fields.get("required", False) if required == None else required)
+        self._selected = self._required or (fields.get("selected", True) if selected == None else selected)
+        
     @property
     def name(self):
         return self._name    
