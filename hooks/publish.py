@@ -93,23 +93,6 @@ class Publisher(object):
         max_v_no = max(version_numbers)
         return max(curr_v_no, max_v_no) + 1
 
-    def _copy_file(self, source_path, target_path):
-        """
-        Copy file, ensuring target directory exists
-        """
-        
-        # create the publish folder if it doesn't exist
-        dirname = os.path.dirname(target_path)
-        if not os.path.isdir(dirname):            
-            old_umask = os.umask(0)
-            os.makedirs(dirname, 0777)
-            os.umask(old_umask)            
-        
-        shutil.copy(source_path, target_path) 
-        
-        # make it readonly
-        os.chmod(target_path, 0444)
-
     def _register_publish(self, path, name, publish_version, tank_type, dependency_paths=None, thumbnail_path=None):
         """
         Helper method to register publish using the 
@@ -251,7 +234,7 @@ class NukePublisher(Publisher):
             try:
                 target_folder = os.path.dirname(target_path)
                 self.parent.ensure_folder_exists(target_folder)
-                self._copy_file(rf, target_path)
+                self.parent.copy_file(rf, target_path)
             except Exception, e:
                 raise Exception("Failed to copy file from %s to %s - %s" % (rf, target_path, e))
             
@@ -317,7 +300,7 @@ class NukePublisher(Publisher):
             publish_folder = os.path.dirname(publish_path)
             self.parent.ensure_folder_exists(publish_folder)
             self.parent.log_debug("Copying %s --> %s..." % (script_path, publish_path))
-            self._copy_file(script_path, publish_path)
+            self.parent.copy_file(script_path, publish_path)
         except Exception, e:
             raise Exception("Failed to copy file from %s to %s - %s" % (script_path, publish_path, e))
 
@@ -460,7 +443,7 @@ class MayaPublisher(Publisher):
             publish_folder = os.path.dirname(publish_path)
             self.parent.ensure_folder_exists(publish_folder)
             self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
-            self._copy_file(scene_path, publish_path)
+            self.parent.copy_file(scene_path, publish_path)
         except Exception, e:
             raise Exception("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
