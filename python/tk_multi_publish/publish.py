@@ -115,7 +115,7 @@ class PublishHandler(object):
         #self._publish_ui.show_publish_result(None)
         
         # TODO - remove (obviously)
-        raise Exception("Publish currently disabled whilst building UI!")
+        #raise Exception("Publish currently disabled whilst building UI!")
                 
         # create progress reporter and connect to UI:
         progress = ProgressReporter()

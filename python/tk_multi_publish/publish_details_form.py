@@ -107,10 +107,11 @@ class PublishDetailsForm(QtGui.QWidget):
         # populate shotgun task list:
         self._populate_shotgun_tasks(sg_tasks)
         
-        # populate outputs list:
+        # connect up modified signal on tasks:
         self._tasks = tasks
+
+        # populate outputs list:
         self._populate_task_list()
-        
         
     def _populate_shotgun_tasks(self, sg_tasks, allow_no_task = True):
         """
@@ -174,6 +175,7 @@ class PublishDetailsForm(QtGui.QWidget):
             group.setdefault("outputs", set()).add(task.output)
             group.setdefault("items", set()).add(task.item)
             #group.setdefault("errors", list()).extend(task.errors)
+            group.setdefault("tasks", list()).append(task)
 
             if not task.output.display_group in group_order:
                 group_order.append(task.output.display_group)            
@@ -204,8 +206,8 @@ class PublishDetailsForm(QtGui.QWidget):
                 widget_info["item_list"] = item_list
                 
             # always add error list:
-            error_list = ErrorList(task_scroll_widget)
-            error_list.setVisible(False)
+            error_list = ErrorList(tasks_by_group[group]["tasks"], task_scroll_widget)
+            #error_list.setVisible(False)
             layout.addWidget(error_list)
             widget_info["error_list"] = error_list
             
