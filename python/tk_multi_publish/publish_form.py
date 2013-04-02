@@ -7,7 +7,7 @@ import os
 
 from tank.platform.qt import QtCore, QtGui
 
-class PublishUI(QtGui.QWidget):
+class PublishForm(QtGui.QWidget):
     """
     Implementation of the main publish UI
     """
@@ -34,7 +34,7 @@ class PublishUI(QtGui.QWidget):
         self._shotgun_task = None
         
         # set up the UI
-        from .ui.publish_ui import Ui_PublishForm
+        from .ui.publish_form import Ui_PublishForm
         self._ui = Ui_PublishForm() 
         self._ui.setupUi(self)
         
@@ -98,6 +98,8 @@ class PublishUI(QtGui.QWidget):
             else:
                 secondary_tasks.append(task)
 
+        QtGui.QMessageBox.information(None, "", "")
+
         self._set_primary_task(primary_task)
         self._ui.publish_details.set_tasks(secondary_tasks)
         
@@ -109,9 +111,10 @@ class PublishUI(QtGui.QWidget):
         Set the primary task and update the UI accordingly
         """
         self._primary_task = task
-        
+        print "EH?"
         # update UI for primary task:
         icon_path = task.output.icon_path
+        print "ICON PATH: %s" % icon_path
         if not icon_path or not os.path.exists(icon_path):
             icon_path = ":/res/default_header.png"
         icon = QtGui.QPixmap(icon_path)

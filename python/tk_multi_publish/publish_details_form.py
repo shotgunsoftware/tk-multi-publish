@@ -8,11 +8,9 @@ from tank.platform.qt import QtCore, QtGui
 
 thumbnail_widget = tank.platform.import_framework("tk-framework-widget", "thumbnail_widget")
 class ThumbnailWidget(thumbnail_widget.ThumbnailWidget):
-    """
-    """
     pass
         
-class PublishDetailsWidget(QtGui.QWidget):
+class PublishDetailsForm(QtGui.QWidget):
     """
     Implementation of the main publish UI
     """
@@ -31,8 +29,8 @@ class PublishDetailsWidget(QtGui.QWidget):
         self._shotgun_task = None
     
         # set up the UI
-        from .ui.publish_details_ui import Ui_PublishDetailsForm
-        self._ui = Ui_Form() 
+        from .ui.publish_details_form import Ui_PublishDetailsForm
+        self._ui = Ui_PublishDetailsForm() 
         self._ui.setupUi(self)
         
         self._ui.publish_btn.clicked.connect(self._on_publish)

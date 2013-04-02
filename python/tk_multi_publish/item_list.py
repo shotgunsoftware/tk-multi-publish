@@ -16,11 +16,11 @@ class ItemWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.item_ui import Ui_Item
-        self._ui = Ui_Form() 
+        from .ui.item import Ui_Item
+        self._ui = Ui_Item() 
         self._ui.setupUi(self)
         
-class ItemListWidget(QtGui.QWidget):
+class ItemList(QtGui.QWidget):
     """
     """
     def __init__(self, parent=None):
@@ -30,6 +30,6 @@ class ItemListWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.item_list_ui import Ui_ItemList
-        self._ui = Ui_Form() 
+        from .ui.item_list import Ui_ItemList
+        self._ui = Ui_ItemList() 
         self._ui.setupUi(self)

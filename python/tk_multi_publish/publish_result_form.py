@@ -6,7 +6,7 @@ Copyright (c) 2013 Shotgun Software, Inc
 import tank
 from tank.platform.qt import QtCore, QtGui
  
-class PublishResultWidget(QtGui.QWidget):
+class PublishResultForm(QtGui.QWidget):
     """
     Implementation of the main publish UI
     """
@@ -20,8 +20,8 @@ class PublishResultWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.publish_result_ui import Ui_PublishResulForm
-        self._ui = Ui_Form() 
+        from .ui.publish_result_form import Ui_PublishResulForm
+        self._ui = Ui_PublishResulForm() 
         self._ui.setupUi(self)
         
         self._ui.close_btn.clicked.connect(self._on_close)

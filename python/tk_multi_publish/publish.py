@@ -11,7 +11,7 @@ import tank
 from tank.platform.qt import QtCore, QtGui
 
 from .progress import ProgressReporter
-from .publish_ui import PublishUI
+from .publish_form import PublishForm
 
 from .output import PublishOutput
 from .item import *
@@ -48,9 +48,9 @@ class PublishHandler(object):
         """
         
         # create new multi-publish dialog instance
-        from .publish_ui import PublishUI
+        from .publish_form import PublishForm
         display_name = self._app.get_setting("display_name")
-        self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishUI, self._app, self)
+        self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
         self._publish_ui.publish.connect(self._on_publish)
         
         # get the tasks and update the UI:

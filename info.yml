@@ -29,6 +29,7 @@ configuration:
         type: hook
         parameters: [engine_name]
         default_value: scan_scene
+        #default_value: "scan_scene_{engine_name}"
         description: Specify a hook to scan for items to publish.  
                      The hook should return a list dictionaries containing the following
                      keys
@@ -40,6 +41,7 @@ configuration:
         type: hook
         parameters: [engine_name, tasks, progress_cb]
         default_value: pre_publish
+        #default_value: "pre_publish_{engine_name}"
         description: Specify the hook that will run before the publish.  This hook can be
                      used to perform any validaiton on the tasks that are passed in to ensure
                      that they are ready to be published.
@@ -48,6 +50,7 @@ configuration:
         type: hook
         parameters: [engine_name, tasks, work_template, comment, thumbnail_path, sg_task, progress_cb]
         default_value: publish
+        #default_value: "publish_{engine_name}"
         description: Specify the hook that will actually do the publish.  This hook is 
                      passed a list of tasks that are to be published.
                      The hook is responsible for the entire publish process and should
@@ -67,7 +70,7 @@ configuration:
                 type: str
                 description: Description of this output used in the UI
             icon:
-                type: str
+                type: config_path
                 description: Icon used for this output in the UI
             tank_type:
                 type: tank_type
@@ -109,7 +112,7 @@ configuration:
                     type: str
                     description: Description of this output used in the UI
                 icon:
-                    type: str
+                    type: config_path
                     description: Icon used for this output in the UI
                 selected:
                     type: bool
