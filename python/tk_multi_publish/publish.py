@@ -111,8 +111,8 @@ class PublishHandler(object):
         
         # ...
         
-        # show publish result:
-        #self._publish_ui.show_publish_result(None)
+        # show publish progress:
+        self._publish_ui.show_publish_progress(None)
         
         # TODO - remove (obviously)
         #raise Exception("Publish currently disabled whilst building UI!")
@@ -129,6 +129,8 @@ class PublishHandler(object):
             # TODO - show tank dialog!
             QtGui.QMessageBox.information(self._publish_ui, "Pre-publish Failed", 
                                           "Pre-publish failed due to an unexpected exception:\n\n\t%s\n\nUnable to continue!" % e)
+            
+            self._publish_ui.show_publish_details()
             raise
             #return
         
@@ -142,7 +144,8 @@ class PublishHandler(object):
                                              "Pre-publish returned %d errors\n\nWould you like to publish anyway?" % num_errors,
                                              QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if res != QtGui.QMessageBox.Yes:
-                self._publish_ui.update_tasks()
+                #self._publish_ui.update_tasks() 
+                self._publish_ui.show_publish_details()
                 return
                 
         # do the publish
@@ -164,11 +167,14 @@ class PublishHandler(object):
         
         if not publish_errors:
             QtGui.QMessageBox.information(self._publish_ui, "Publish Succeeded", "Publish Succeeded - yay!")
-            self._publish_ui.close()
+            #self._publish_ui.close()
         else:
             # TODO - return to dialog and upate with error information
             error_msg = "Published encountered the following errors:\n %s" % ("\n    - ".join(publish_errors))
             QtGui.QMessageBox.critical(self._publish_ui, "Publish Failed", error_msg)
+            
+        # show publish result:
+        self._publish_ui.show_publish_result(None)
 
     def _build_task_list(self, items):
         """

@@ -36,7 +36,9 @@ class PublishForm(QtGui.QWidget):
         self._ui.publish_details.publish.connect(self._on_publish)
         self._ui.publish_details.cancel.connect(self._on_close)
         self._ui.publish_result.close.connect(self._on_close)
-        self._ui.pages.setCurrentWidget(self._ui.publish_details)
+        
+        # always start with the details page:
+        self.show_publish_details()
         
         #self._update_ui()
         
@@ -86,6 +88,12 @@ class PublishForm(QtGui.QWidget):
     @comment.setter
     def comment(self, value):
         self._ui.publish_details.comment = value
+    
+    def show_publish_details(self):
+        self._ui.pages.setCurrentWidget(self._ui.publish_details)
+        
+    def show_publish_progress(self):
+        self._ui.pages.setCurrentWidget(self._ui.publish_progress)
         
     def show_publish_result(self, result):
         """
@@ -168,13 +176,13 @@ class PublishForm(QtGui.QWidget):
         self._update_ui()
     """
      
-    def update_tasks(self):
-        """
-        Placeholder to update UI for all tasks without reloading
-        - UI will ultimately update via a signal from the task
-        itself
-        """
-        self._update_ui()
+    #def update_tasks(self):
+    #    """
+    #    Placeholder to update UI for all tasks without reloading
+    #    - UI will ultimately update via a signal from the task
+    #    itself
+    #    """
+    #    self._update_ui()
         
     def _on_publish(self):
         """
