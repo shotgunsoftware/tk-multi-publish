@@ -204,8 +204,7 @@ class PublishHandler(object):
         Find the list of 'items' to publish
         """
         # find the items:
-        items = [Item(item) for item in self._app.execute_hook("hook_scan_scene", 
-                                                               engine_name = self._app.engine.name)]
+        items = [Item(item) for item in self._app.execute_hook("hook_scan_scene")]
     
         # validate that only one matches the primary type
         # and that all items are valid:
@@ -243,8 +242,7 @@ class PublishHandler(object):
         hook_tasks = [task.as_dictionary() for task in tasks]
         
         # do pre-publish using pre-publish hook:
-        pp_results = self._app.execute_hook("hook_pre_publish", 
-                                            engine_name=self._app.engine.name, 
+        pp_results = self._app.execute_hook("hook_pre_publish",  
                                             tasks=hook_tasks, 
                                             work_template = self._work_template,
                                             progress_cb=progress_cb)
@@ -285,8 +283,7 @@ class PublishHandler(object):
         # TODO: save thumbnail...
         
         # do publish using publish hook:
-        p_results = self._app.execute_hook("hook_publish", 
-                                             engine_name=self._app.engine.name, 
+        p_results = self._app.execute_hook("hook_publish",  
                                              tasks=hook_tasks, 
                                              work_template = self._work_template,
                                              comment = comment,
