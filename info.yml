@@ -55,9 +55,8 @@ configuration:
         
     hook_publish:
         type: hook
-        parameters: [engine_name, tasks, work_template, comment, thumbnail_path, sg_task, progress_cb]
-        default_value: publish
-        #default_value: "publish_{engine_name}"
+        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, progress_cb]
+        default_value: "publish_{engine_name}"
         description: Specify the hook that will actually do the publish.  This hook is 
                      passed a list of tasks that are to be published.
                      The hook is responsible for the entire publish process and should
