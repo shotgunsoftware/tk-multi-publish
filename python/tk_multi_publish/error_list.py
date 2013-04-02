@@ -9,7 +9,7 @@ from tank.platform.qt import QtCore, QtGui
 class ErrorItem(QtGui.QWidget):
     """
     """
-    def __init__(self, parent=None):
+    def __init__(self, txt, parent=None):
         """
         Construction
         """
@@ -19,6 +19,8 @@ class ErrorItem(QtGui.QWidget):
         from .ui.error_item import Ui_ErrorItem
         self._ui = Ui_ErrorItem() 
         self._ui.setupUi(self)
+        
+        self._ui.error_label.setText(txt)
 
 class ErrorList(QtGui.QWidget):
     """
@@ -62,7 +64,8 @@ class ErrorList(QtGui.QWidget):
         layout = self._ui.item_frame.layout()
         for task in self._tasks:
             for pp_error in task.pre_publish_errors:
-                item = ErrorItem(self._ui.item_frame)
+                error_txt = "<font color='orange'>%s - %s</font><br>%s" % (task.output.display_name, task.item.name, pp_error)
+                item = ErrorItem(error_txt, self._ui.item_frame)
                 layout.addWidget(item)
                 self._error_widgets.append(item)
                 

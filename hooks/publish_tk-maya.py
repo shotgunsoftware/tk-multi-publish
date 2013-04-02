@@ -13,15 +13,7 @@ from tank import Hook
 class PublishHook(Hook):
     """
     Single hook that implements publish functionality
-    """
-    def __init__(self):
-        Hook.__init__()
-        
-        self._work_template = None
-        self._sg_task = None
-        self._comment = ""
-        self._thumbnail_path = ""
-    
+    """    
     def execute(self, tasks, work_template, comment, thumbnail_path, sg_task, progress_cb, **kwargs):
         """
         Main hook entry point
@@ -149,7 +141,7 @@ class PublishHook(Hook):
   
         scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         fields = self._work_template.get_fields(scene_path)
-        next_version = self._get_next_work_file_version(fields, self._work_template)
+        next_version = self._get_next_work_file_version(fields)
         fields["version"] = next_version 
         new_scene_path = self._work_template.apply_fields(fields)
         

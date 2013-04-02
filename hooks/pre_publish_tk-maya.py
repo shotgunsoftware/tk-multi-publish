@@ -40,8 +40,8 @@ class PrePublishHook(Hook):
                     scene_file = os.path.abspath(scene_file)
                 errors.extend(self._validate_work_file(scene_file, work_template, output))
             else:
-                # other output types have no validation
-                pass        
+                # don't know how to publish other output types!
+                errors.append("Don't know how to publish this item!")        
 
             # if there is anything to report then add to result
             if len(errors) > 0:

@@ -95,7 +95,7 @@ class PublishForm(QtGui.QWidget):
     def show_publish_progress(self):
         self._ui.pages.setCurrentWidget(self._ui.publish_progress)
         
-    def show_publish_result(self, result):
+    def show_publish_result(self, success, errors):
         """
         Show the result of the publish in the UI
         """
@@ -104,6 +104,8 @@ class PublishForm(QtGui.QWidget):
         
         # show page:
         self._ui.pages.setCurrentWidget(self._ui.publish_result)
+        self._ui.publish_result.status = success
+        self._ui.publish_result.errors = errors
         
     def initialize(self, tasks, sg_tasks):
         """

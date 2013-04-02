@@ -18,7 +18,7 @@ class PublishProgressForm(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
     
         # set up the UI
-        from .ui.publish_result_form import Ui_PublishProgressForm
+        from .ui.publish_progress_form import Ui_PublishProgressForm
         self._ui = Ui_PublishProgressForm() 
         self._ui.setupUi(self)
         

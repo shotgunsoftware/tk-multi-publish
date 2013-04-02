@@ -31,7 +31,7 @@ configuration:
         default_value: copy_file
         description: Specify a hook to copy the file 'source_path' to 'target_path'.
                      This hook is used in the 'copy_file' utility function and can
-                     be accessed from other hooks by calling:
+                     be accessed from other hooks by calling
                      
                         self.parent.copy_file(source_path, target_path)
                      

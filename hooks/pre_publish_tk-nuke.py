@@ -56,8 +56,8 @@ class PrePublishHook(Hook):
                         # do pre-publish:              
                         errors = self._nuke_pre_publish_write_node_render(write_node, write_node_app)
             else:
-                # other output types have no validation
-                pass        
+                # don't know how to publish other output types!
+                errors.append("Don't know how to publish this item!")      
 
             # if there is anything to report then add to result
             if len(errors) > 0:

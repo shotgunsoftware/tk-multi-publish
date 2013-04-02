@@ -112,7 +112,7 @@ class PublishHandler(object):
         # ...
         
         # show publish progress:
-        self._publish_ui.show_publish_progress(None)
+        self._publish_ui.show_publish_progress()
         
         # TODO - remove (obviously)
         #raise Exception("Publish currently disabled whilst building UI!")
@@ -165,6 +165,7 @@ class PublishHandler(object):
             for error in task.publish_errors:
                 publish_errors.append("%s, %s:\n    %s" % (task.item.name, task.output.name, error))
         
+        """
         if not publish_errors:
             QtGui.QMessageBox.information(self._publish_ui, "Publish Succeeded", "Publish Succeeded - yay!")
             #self._publish_ui.close()
@@ -172,9 +173,10 @@ class PublishHandler(object):
             # TODO - return to dialog and upate with error information
             error_msg = "Published encountered the following errors:\n %s" % ("\n    - ".join(publish_errors))
             QtGui.QMessageBox.critical(self._publish_ui, "Publish Failed", error_msg)
-            
+        """
+         
         # show publish result:
-        self._publish_ui.show_publish_result(None)
+        self._publish_ui.show_publish_result(not publish_errors, publish_errors)
 
     def _build_task_list(self, items):
         """
