@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Tue Apr  2 23:53:15 2013
+# Created: Wed Apr  3 16:46:44 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -148,5 +148,5 @@ class Ui_PublishDetailsForm(object):
         self.cancel_btn.setText(QtGui.QApplication.translate("PublishDetailsForm", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
         self.publish_btn.setText(QtGui.QApplication.translate("PublishDetailsForm", "Publish", None, QtGui.QApplication.UnicodeUTF8))
 
-from ..publish_details_widget import ThumbnailWidget
+from ..publish_details_form import ThumbnailWidget
 from . import resources_rc

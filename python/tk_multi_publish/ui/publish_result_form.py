@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_result_form.ui'
 #
-# Created: Tue Apr  2 23:53:15 2013
+# Created: Wed Apr  3 16:46:45 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!

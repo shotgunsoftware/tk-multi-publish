@@ -296,7 +296,7 @@ background: rgb(32,32,32);
   <customwidget>
    <class>ThumbnailWidget</class>
    <extends>QWidget</extends>
-   <header>..publish_details_widget</header>
+   <header>..publish_details_form</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
