@@ -153,7 +153,7 @@ description: "Provides UI and functionality to publish files to Shotgun."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.12.5"
+requires_core_version: "v0.12.21"
 requires_engine_version: 
 
 # the engines that this app can operate in:
@@ -161,5 +161,5 @@ supported_engines: [tk-nuke, tk-maya]
 
 # the frameworks required to run this app
 frameworks:
-    - {"name": "tk-framework-widget", "version": "v0.1.6"}
+    - {"name": "tk-framework-widget", "version": "v0.1.7"}
     
