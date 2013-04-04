@@ -48,10 +48,6 @@ class PublishDetailsForm(QtGui.QWidget):
         self._ui.publish_btn.clicked.connect(self._on_publish)
         self._ui.cancel_btn.clicked.connect(self._on_cancel)
         
-        # TODO: remove browse functionality completely from
-        # widget in framework
-        self._ui.thumbnail_widget.enable_fs_browse(False)
-        
         self.can_change_shotgun_task = True
 
     @property
