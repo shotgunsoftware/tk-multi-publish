@@ -34,6 +34,15 @@ class ScanSceneHook(Hook):
                             description:    String
                                             Description of the item to use in the UI
                                             
+                            selected:       Bool
+                                            Initial selected state of item in the UI.  
+                                            Items are selected by default.
+                                            
+                            required:       Bool
+                                            Required state of item in the UI.  If True then
+                                            item will not be deselectable.  Items are not
+                                            required by default.
+                                            
                             other_params:   Dictionary
                                             Optional dictionary that will be passed to the
                                             pre-publish and publish hooks
@@ -64,15 +73,19 @@ class ScanSceneHook(Hook):
         items.append({ 
             "type": "light_rig", 
             "name": "|secondary_lighting",
+            "selected":True,
             "description": "blah blah blah"})
         
         items.append({ 
             "type": "model", 
             "name": "|car",
+            "required":True,
             "description": "blah blah blah"})
         items.append({ 
             "type": "model", 
             "name": "|boat",
+            "selected":False,
+            "required":False,
             "description": "blah blah blah"})
         
         return items

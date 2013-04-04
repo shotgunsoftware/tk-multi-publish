@@ -22,11 +22,15 @@ class ItemWidget(QtGui.QWidget):
         self._ui = Ui_Item() 
         self._ui.setupUi(self)
         
-        # always checked by default:
-        self._ui.select_cb.setChecked(True)
+        # update selected state:
+        self._ui.select_cb.setChecked(item.selected)
+        self._ui.select_cb.setEnabled(not item.required)        
         
-        # update ui:
-        self._update_ui()
+        # update description
+        lines = []
+        lines.append("<b>%s</b>" % self._item.name)
+        lines.append("%s" % self._item.description)
+        self._ui.details_label.setText("<br>".join(lines))
         
     @property
     def item(self):
@@ -39,21 +43,8 @@ class ItemWidget(QtGui.QWidget):
     def mousePressEvent(self, event):
         if self._ui.select_cb.isEnabled():
             self._ui.select_cb.setChecked(not self._ui.select_cb.isChecked())
-        
-    def _update_ui(self):
-        """
-        Update UI
-        """
-        lines = []
-        lines.append("<b>%s</b>" % self._item.name)
-        lines.append("%s" % self._item.description)
-        self._ui.details_label.setText("<br>".join(lines))
-        
-        
-        
-        
-        
 
+        
         
 class ItemList(QtGui.QWidget):
     """

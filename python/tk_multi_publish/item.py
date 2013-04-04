@@ -26,6 +26,14 @@ class Item(object):
     def description(self):
         return self._raw_fields.get("description")
     
+    @property
+    def selected(self):
+        return self.required or self._raw_fields.get("selected", True)
+
+    @property
+    def required(self):
+        return self._raw_fields.get("required", False)
+    
     def validate(self):
         required_keys = ["name", "type"]
         for rk in required_keys:

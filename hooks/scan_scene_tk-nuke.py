@@ -32,7 +32,16 @@ class ScanSceneHook(Hook):
                             
                             description:    String
                                             Description of the item to use in the UI
+                                                                             
+                            selected:       Bool
+                                            Initial selected state of item in the UI.  
+                                            Items are selected by default.
                                             
+                            required:       Bool
+                                            Required state of item in the UI.  If True then
+                                            item will not be deselectable.  Items are not
+                                            required by default.
+                                                       
                             other_params:   Dictionary
                                             Optional dictionary that will be passed to the
                                             pre-publish and publish hooks
