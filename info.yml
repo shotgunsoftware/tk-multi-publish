@@ -13,17 +13,17 @@ configuration:
         description: Specify the name that should be used in menus and the main
                      publish dialog
     
-    hook_thumbnail:
-        type: hook
-        parameters: [engine_name]
-        default_value: thumbnail
-        description: Specify a hook to pre-generate a thumbnail for the publish.
-
     template_work:
         type: template
         description: A reference to a template which locates a work file on disk.
         required_fields: [version]
         optional_fields: [name]
+
+    hook_thumbnail:
+        type: hook
+        parameters: [engine_name]
+        default_value: thumbnail
+        description: Specify a hook to pre-generate a thumbnail for the publish.
 
     hook_copy_file:
         type: hook
@@ -93,6 +93,14 @@ configuration:
                      scene export.
                      The primary output is always named "primary" and a single item from
                      the scan scene hook must be returned for this output
+                     
+        default_value: {
+            scene_item_type: current_scene,
+            display_name: "Current Work File",
+            description: "Publish and version up the current work file",
+            icon: "",
+            tank_type: null,
+            publish_template: null} 
 
     secondary_outputs:
         type: list
@@ -142,6 +150,9 @@ configuration:
         decription: Specify all other outputs that are supported.
                     All non-primary items returned from the scan scene hook must match
                     up with one of these secondary types
+                    
+        allows_empty: True
+        default_value: []
             
             
 # the Shotgun fields that this app needs in order to operate correctly
