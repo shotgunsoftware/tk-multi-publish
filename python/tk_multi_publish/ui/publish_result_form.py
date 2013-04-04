@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_result_form.ui'
 #
-# Created: Wed Apr  3 16:46:45 2013
+# Created: Thu Apr  4 16:24:48 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_PublishResultForm(object):
     def setupUi(self, PublishResultForm):
         PublishResultForm.setObjectName("PublishResultForm")
-        PublishResultForm.resize(494, 386)
+        PublishResultForm.resize(479, 467)
         self.verticalLayout_4 = QtGui.QVBoxLayout(PublishResultForm)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         spacerItem = QtGui.QSpacerItem(20, 97, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -68,9 +68,9 @@ class Ui_PublishResultForm(object):
         self.close_btn.setObjectName("close_btn")
         self.horizontalLayout_2.addWidget(self.close_btn)
         self.verticalLayout_4.addLayout(self.horizontalLayout_2)
-        self.verticalLayout_4.setStretch(0, 1)
+        self.verticalLayout_4.setStretch(0, 2)
         self.verticalLayout_4.setStretch(1, 1)
-        self.verticalLayout_4.setStretch(2, 1)
+        self.verticalLayout_4.setStretch(2, 3)
 
         self.retranslateUi(PublishResultForm)
         QtCore.QMetaObject.connectSlotsByName(PublishResultForm)

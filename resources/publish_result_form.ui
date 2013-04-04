@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>494</width>
-    <height>386</height>
+    <width>479</width>
+    <height>467</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1,1,0">
+  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="2,1,3,0">
    <item>
     <spacer name="verticalSpacer_2">
      <property name="orientation">

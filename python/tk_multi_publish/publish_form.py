@@ -92,8 +92,12 @@ class PublishForm(QtGui.QWidget):
     def show_publish_details(self):
         self._ui.pages.setCurrentWidget(self._ui.publish_details)
         
-    def show_publish_progress(self):
+    def show_publish_progress(self, stage):
         self._ui.pages.setCurrentWidget(self._ui.publish_progress)
+        self._ui.publish_progress.title = stage
+    
+    def set_progress_reporter(self, reporter):
+        self._ui.publish_progress.set_reporter(reporter)
         
     def show_publish_result(self, success, errors):
         """
@@ -153,7 +157,6 @@ class PublishForm(QtGui.QWidget):
         
         # update UI for primary task:
         icon_path = task.output.icon_path
-        print "ICON PATH: %s" % icon_path
         if not icon_path or not os.path.exists(icon_path):
             icon_path = ":/res/default_header.png"
         icon = QtGui.QPixmap(icon_path)

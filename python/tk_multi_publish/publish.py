@@ -47,16 +47,26 @@ class PublishHandler(object):
         """
         Displays the publish dialog
         """
+
+        # scan scene for items
+        items = []
+        try:
+            # build list of publish tasks:
+            items = self._scan_scene()
+        except Exception, e:
+            # TODO: replace with tank dialog!
+            QtGui.QMessageBox.critical(self._publish_ui, "Unable to publish!", 
+                                          "Unable to publish:\n\n\t%s\n\n" % e)
+            return
+
+        # build task list:            
+        tasks = self._build_task_list(items)
         
         # create new multi-publish dialog instance
         from .publish_form import PublishForm
         display_name = self._app.get_setting("display_name")
         self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
         self._publish_ui.publish.connect(self._on_publish)
-        
-        # build list of publish tasks:
-        items = self._scan_scene()
-        tasks = self._build_task_list(items)
         
         # get list of shotgun tasks for the current context:
         sg_tasks = self._get_shotgun_tasks()
@@ -94,6 +104,7 @@ class PublishHandler(object):
         thumbnail = self._publish_ui.thumbnail
         comment = self._publish_ui.comment
         
+        """
         print "About to do publish using details:"
         print "  Shotgun task: %s" % sg_task
         print "  Thumbnail: %s" % thumbnail
@@ -101,19 +112,40 @@ class PublishHandler(object):
         print "  Tasks:"
         for task in selected_tasks:
             print " > %s - %s" % (task.output.display_name, task.item.name)
+        """
         
-        # TODO - remove (obviously)
-        #raise Exception("Publish currently disabled whilst building UI!")
-
-        # show publish progress:
-        self._publish_ui.show_publish_progress()
-                
         # create progress reporter and connect to UI:
         progress = ProgressReporter()
-        # TODO - create progress UI and connect to reporter
+        self._publish_ui.set_progress_reporter(progress)
+
+        # show publish progress:
+        self._publish_ui.show_publish_progress("Doing Pre-Publish...")
+        
+        # make dialog modal whilst we're doing work:
+        """
+        (AD) - whilst this almost works, returning from modal state seems to
+        completely mess up the window parenting in Maya so may need to have another
+        way to do this or (more likely) move it to a separate dialog!
+        
+        geom = self._publish_ui.window().geometry() 
+        self._publish_ui.window().setWindowModality(QtCore.Qt.ApplicationModal)
+        self._publish_ui.window().hide()
+        self._publish_ui.window().show()
+        self._publish_ui.window().setGeometry(geom)
+        """
+        
+        """
+        # (AD) - do some dummy progress...
+        import time
+        for p in range(1, 11):
+            progress.report(p * 10.0, "Doing something I guess - on %d of %d" % (p, 10))
+            time.sleep(1.0)
+        """
+                    
+        # TODO - remove (obviously)
+        #raise Exception("Publish currently disabled whilst building UI!")        
         
         # do pre-publish:
-        QtGui.QMessageBox.information(self._publish_ui, "Pre-publish (debug)", "Doing pre-publish\n%s" % self._debug_format_tasks_str(selected_tasks))
         try:
             self._do_pre_publish(selected_tasks, progress.report)
         except Exception, e:
@@ -123,7 +155,16 @@ class PublishHandler(object):
             
             self._publish_ui.show_publish_details()
             raise
-            #return
+        finally:
+            """
+            # restore window to be modeless
+            self._publish_ui.window().setWindowModality(QtCore.Qt.NonModal)
+            self._publish_ui.window().hide()
+            self._publish_ui.window().show()  
+            self._publish_ui.window().setGeometry(geom)
+            QtGui.QApplication.processEvents()
+            """
+            pass
         
         # check that we can continue:
         num_errors = 0
@@ -139,8 +180,10 @@ class PublishHandler(object):
                 self._publish_ui.show_publish_details()
                 return
                 
+        self._publish_ui.show_publish_progress("Publishing...")
+                
         # do the publish
-        QtGui.QMessageBox.information(self._publish_ui, "Publish (debug)", "Doing publish\n%s" % self._debug_format_tasks_str(selected_tasks))
+        #QtGui.QMessageBox.information(self._publish_ui, "Publish (debug)", "Doing publish\n%s" % self._debug_format_tasks_str(selected_tasks))
         try:
             self._do_publish(selected_tasks, sg_task, thumbnail, comment, progress.report)
         except Exception, e:
@@ -283,7 +326,7 @@ class PublishHandler(object):
             tmp_file = tempfile.NamedTemporaryFile(suffix=".png", prefix="tanktmp", delete=False)
             thumbnail_path = tmp_file.name
             tmp_file.close()
-            thumbnail.save(tmp_file)
+            thumbnail.save(thumbnail_path)
         
         
         # do publish using publish hook:            
@@ -297,7 +340,8 @@ class PublishHandler(object):
                                                  progress_cb=progress_cb)
         finally:
             # delete temporary thumbnail file:
-            os.remove(thumbnail_path)
+            if thumbnail_path:
+                os.remove(thumbnail_path)
 
         # TODO: delete temporary thumbnail:
         # ...
@@ -335,7 +379,6 @@ class PublishHandler(object):
         order = [{"field_name":"step", "direction":"asc"}, {"field_name":"content", "direction":"asc"}]
         fields = ["step", "content"]
         
-        print "Filters: %s" % filters
         sg_tasks = self._app.shotgun.find("Task", filters=filters, fields=fields, order=order)
 
         return sg_tasks

@@ -6,27 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>494</width>
-    <height>386</height>
+    <width>651</width>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1,1">
-   <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>97</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,5,1">
      <item>
@@ -43,14 +30,27 @@
       </spacer>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1,0">
+      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="2,0,0,0,3">
        <property name="spacing">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <item>
-        <widget class="QLabel" name="status_title">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>97</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="title">
          <property name="styleSheet">
-          <string notr="true">#status_title {
+          <string notr="true">#title {
 font-size: 24px;
 }</string>
          </property>
@@ -60,7 +60,7 @@ font-size: 24px;
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="status_details">
+        <widget class="QLabel" name="details">
          <property name="text">
           <string>(Details)</string>
          </property>
@@ -73,11 +73,24 @@ font-size: 24px;
         </widget>
        </item>
        <item>
-        <widget class="QProgressBar" name="progressBar">
+        <widget class="QProgressBar" name="progress_bar">
          <property name="value">
           <number>24</number>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -95,19 +108,6 @@ font-size: 24px;
       </spacer>
      </item>
     </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>97</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

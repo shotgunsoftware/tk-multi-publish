@@ -3,15 +3,23 @@ Copyright (c) 2012 Shotgun Software, Inc
 ----------------------------------------------------
 """
 
-class ProgressReporter(object):
+from tank.platform.qt import QtCore 
+
+class ProgressReporter(QtCore.QObject):
     """
     Simple progress interface
     """
+    
+    progress = QtCore.Signal(float, str)
+    
     def __init__(self):
         """
         Construction
         """
-        pass
+        QtCore.QObject.__init__(self)
+        
+
     
     def report(self, percent, msg):
-        print "(%d%%) - %s" % (percent, msg)
+        self.progress.emit(percent, msg)
+        #print "(%d%%) - %s" % (percent, msg)
