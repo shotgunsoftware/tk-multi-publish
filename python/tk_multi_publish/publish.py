@@ -6,6 +6,7 @@ Copyright (c) 2012 Shotgun Software, Inc
 
 import os
 import pprint
+import tempfile
 
 import tank
 from tank.platform.qt import QtCore, QtGui
@@ -73,14 +74,6 @@ class PublishHandler(object):
             # then disable task selection:
             current_task = self._publish_ui.shotgun_task
             self._publish_ui.can_change_shotgun_task = (current_task and current_task["id"] != self._app.context.task["id"])
-
-        
-    """
-    def get_tasks(self):
-        items = self._scan_scene()
-        tasks = self._build_task_list(items)
-        return tasks
-    """
     
     def _on_publish(self):
         """
@@ -96,7 +89,7 @@ class PublishHandler(object):
             QtGui.QMessageBox.information(self._publish_ui, "Publish", "Nothing selected to publish - unable to continue!")
             return
             
-        # TODO - pull from UI
+        # pull rest of info from UI
         sg_task = self._publish_ui.shotgun_task
         thumbnail = self._publish_ui.thumbnail
         comment = self._publish_ui.comment
@@ -109,13 +102,11 @@ class PublishHandler(object):
         for task in selected_tasks:
             print " > %s - %s" % (task.output.display_name, task.item.name)
         
-        # ...
-        
-        # show publish progress:
-        self._publish_ui.show_publish_progress()
-        
         # TODO - remove (obviously)
         #raise Exception("Publish currently disabled whilst building UI!")
+
+        # show publish progress:
+        self._publish_ui.show_publish_progress()
                 
         # create progress reporter and connect to UI:
         progress = ProgressReporter()
@@ -288,16 +279,25 @@ class PublishHandler(object):
         
         # save the thumbnail to a temporary location:
         thumbnail_path = ""
-        # TODO: save thumbnail...
+        if thumbnail and not thumbnail.isNull():
+            tmp_file = tempfile.NamedTemporaryFile(suffix=".png", prefix="tanktmp", delete=False)
+            thumbnail_path = tmp_file.name
+            tmp_file.close()
+            thumbnail.save(tmp_file)
         
-        # do publish using publish hook:
-        p_results = self._app.execute_hook("hook_publish",  
-                                             tasks=hook_tasks, 
-                                             work_template = self._work_template,
-                                             comment = comment,
-                                             thumbnail_path = thumbnail_path,
-                                             sg_task = sg_task,
-                                             progress_cb=progress_cb)
+        
+        # do publish using publish hook:            
+        try:
+            p_results = self._app.execute_hook("hook_publish",  
+                                                 tasks=hook_tasks, 
+                                                 work_template = self._work_template,
+                                                 comment = comment,
+                                                 thumbnail_path = thumbnail_path,
+                                                 sg_task = sg_task,
+                                                 progress_cb=progress_cb)
+        finally:
+            # delete temporary thumbnail file:
+            os.remove(thumbnail_path)
 
         # TODO: delete temporary thumbnail:
         # ...
