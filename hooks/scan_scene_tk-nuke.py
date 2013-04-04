@@ -17,6 +17,26 @@ class ScanSceneHook(Hook):
     def execute(self, **kwargs):
         """
         Main hook entry point
+        :returns:       A list of any items that were found to be published.  
+                        Each item in the list should be a dictionary containing 
+                        the following keys:
+                        {
+                            type:   String
+                                    This should match a scene_item_type defined in
+                                    one of the outputs in the configuration and is 
+                                    used to determine the outputs that should be 
+                                    published for the item
+                                    
+                            name:   String
+                                    Name to use for the item in the UI
+                            
+                            description:    String
+                                            Description of the item to use in the UI
+                                            
+                            other_params:   Dictionary
+                                            Optional dictionary that will be passed to the
+                                            pre-publish and publish hooks
+                        }
         """
         
         items = []

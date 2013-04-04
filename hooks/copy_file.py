@@ -15,6 +15,15 @@ class CopyFile(Hook):
     """
     
     def execute(self, source_path, target_path, **kwargs):
+        """
+        Main hook entry point
+        
+        :source_path:   String
+                        Source file path to copy
+                        
+        :target_path:   String
+                        Target file path to copy to
+        """
         
         # create the folder if it doesn't exist
         dirname = os.path.dirname(target_path)
