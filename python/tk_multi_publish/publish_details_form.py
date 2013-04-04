@@ -51,6 +51,8 @@ class PublishDetailsForm(QtGui.QWidget):
         # TODO: remove browse functionality completely from
         # widget in framework
         self._ui.thumbnail_widget.enable_fs_browse(False)
+        
+        self.can_change_shotgun_task = True
 
     @property
     def selected_tasks(self):
@@ -83,10 +85,11 @@ class PublishDetailsForm(QtGui.QWidget):
         """
         Control if the shotgun task can be changed or not
         """
-        return self._ui.sg_task_combo.isEnabled()
+        return self._ui.sg_task_stacked_widget.currenWidget() == self._ui.sg_task_menu_page
     @can_change_shotgun_task.setter
     def can_change_shotgun_task(self, value):
-        self._ui.sg_task_combo.setEnabled(value)
+        page = [self._ui.sg_task_label_page, self._ui.sg_task_menu_page][value]
+        self._ui.sg_task_stacked_widget.setCurrentWidget(page)
         
         
     def set_shotgun_task_selection_enabled(self, enabled=True):

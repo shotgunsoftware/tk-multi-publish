@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Wed Apr  3 16:46:44 2013
+# Created: Thu Apr  4 11:42:08 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -70,9 +70,30 @@ class Ui_PublishDetailsForm(object):
         self.label_6 = QtGui.QLabel(self.info_frame)
         self.label_6.setObjectName("label_6")
         self.verticalLayout_6.addWidget(self.label_6)
-        self.sg_task_combo = QtGui.QComboBox(self.info_frame)
+        self.sg_task_stacked_widget = QtGui.QStackedWidget(self.info_frame)
+        self.sg_task_stacked_widget.setObjectName("sg_task_stacked_widget")
+        self.sg_task_menu_page = QtGui.QWidget()
+        self.sg_task_menu_page.setObjectName("sg_task_menu_page")
+        self.horizontalLayout_4 = QtGui.QHBoxLayout(self.sg_task_menu_page)
+        self.horizontalLayout_4.setSpacing(0)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.sg_task_combo = QtGui.QComboBox(self.sg_task_menu_page)
         self.sg_task_combo.setObjectName("sg_task_combo")
-        self.verticalLayout_6.addWidget(self.sg_task_combo)
+        self.horizontalLayout_4.addWidget(self.sg_task_combo)
+        self.sg_task_stacked_widget.addWidget(self.sg_task_menu_page)
+        self.sg_task_label_page = QtGui.QWidget()
+        self.sg_task_label_page.setObjectName("sg_task_label_page")
+        self.horizontalLayout_5 = QtGui.QHBoxLayout(self.sg_task_label_page)
+        self.horizontalLayout_5.setSpacing(0)
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label = QtGui.QLabel(self.sg_task_label_page)
+        self.label.setIndent(12)
+        self.label.setObjectName("label")
+        self.horizontalLayout_5.addWidget(self.label)
+        self.sg_task_stacked_widget.addWidget(self.sg_task_label_page)
+        self.verticalLayout_6.addWidget(self.sg_task_stacked_widget)
         spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout_6.addItem(spacerItem)
         self.label_7 = QtGui.QLabel(self.info_frame)
@@ -136,6 +157,7 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout.setStretch(0, 1)
 
         self.retranslateUi(PublishDetailsForm)
+        self.sg_task_stacked_widget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(PublishDetailsForm)
 
     def retranslateUi(self, PublishDetailsForm):
@@ -143,6 +165,7 @@ class Ui_PublishDetailsForm(object):
         self.items_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Choose Additional Items to Publish:", None, QtGui.QApplication.UnicodeUTF8))
         self.info_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add Information about your Publish:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("PublishDetailsForm", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Anm, Animation", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add a Thumbnail?", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("PublishDetailsForm", "Any Comments?", None, QtGui.QApplication.UnicodeUTF8))
         self.cancel_btn.setText(QtGui.QApplication.translate("PublishDetailsForm", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
