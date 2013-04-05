@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Thu Apr  4 16:24:48 2013
+# Created: Fri Apr  5 10:28:16 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_PublishDetailsForm(object):
     def setupUi(self, PublishDetailsForm):
         PublishDetailsForm.setObjectName("PublishDetailsForm")
-        PublishDetailsForm.resize(858, 537)
+        PublishDetailsForm.resize(706, 562)
         self.verticalLayout = QtGui.QVBoxLayout(PublishDetailsForm)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -27,8 +27,17 @@ class Ui_PublishDetailsForm(object):
 "}")
         self.items_title_label.setObjectName("items_title_label")
         self.verticalLayout_7.addWidget(self.items_title_label)
-        self.task_scroll = QtGui.QScrollArea(PublishDetailsForm)
-        self.task_scroll.setStyleSheet("#items_scroll {\n"
+        self.publishes_stacked_widget = QtGui.QStackedWidget(PublishDetailsForm)
+        self.publishes_stacked_widget.setStyleSheet("")
+        self.publishes_stacked_widget.setObjectName("publishes_stacked_widget")
+        self.publishes_page = QtGui.QWidget()
+        self.publishes_page.setObjectName("publishes_page")
+        self.horizontalLayout_7 = QtGui.QHBoxLayout(self.publishes_page)
+        self.horizontalLayout_7.setSpacing(0)
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.task_scroll = QtGui.QScrollArea(self.publishes_page)
+        self.task_scroll.setStyleSheet("#task_scroll {\n"
 "border-style: solid;\n"
 "border-width: 1px;\n"
 "border-radius: 2px;\n"
@@ -37,11 +46,51 @@ class Ui_PublishDetailsForm(object):
         self.task_scroll.setWidgetResizable(True)
         self.task_scroll.setObjectName("task_scroll")
         self.contents = QtGui.QWidget()
-        self.contents.setGeometry(QtCore.QRect(0, 0, 514, 468))
+        self.contents.setGeometry(QtCore.QRect(0, 0, 241, 426))
         self.contents.setObjectName("contents")
         self.task_scroll.setWidget(self.contents)
-        self.verticalLayout_7.addWidget(self.task_scroll)
-        self.verticalLayout_7.setStretch(1, 1)
+        self.horizontalLayout_7.addWidget(self.task_scroll)
+        self.publishes_stacked_widget.addWidget(self.publishes_page)
+        self.no_publishes_page = QtGui.QWidget()
+        self.no_publishes_page.setStyleSheet("")
+        self.no_publishes_page.setObjectName("no_publishes_page")
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.no_publishes_page)
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.no_publishes_frame = QtGui.QFrame(self.no_publishes_page)
+        self.no_publishes_frame.setStyleSheet("#no_publishes_frame {\n"
+"border-style: solid;\n"
+"border-width: 1px;\n"
+"border-radius: 2px;\n"
+"border-color: rgb(32,32,32);\n"
+"}")
+        self.no_publishes_frame.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.no_publishes_frame.setFrameShadow(QtGui.QFrame.Raised)
+        self.no_publishes_frame.setObjectName("no_publishes_frame")
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.no_publishes_frame)
+        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        spacerItem = QtGui.QSpacerItem(0, 88, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem)
+        self.horizontalLayout_9 = QtGui.QHBoxLayout()
+        self.horizontalLayout_9.setObjectName("horizontalLayout_9")
+        spacerItem1 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_9.addItem(spacerItem1)
+        self.label_3 = QtGui.QLabel(self.no_publishes_frame)
+        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3.setWordWrap(True)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_9.addWidget(self.label_3)
+        spacerItem2 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_9.addItem(spacerItem2)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_9)
+        spacerItem3 = QtGui.QSpacerItem(0, 88, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem3)
+        self.verticalLayout_2.addWidget(self.no_publishes_frame)
+        self.publishes_stacked_widget.addWidget(self.no_publishes_page)
+        self.verticalLayout_7.addWidget(self.publishes_stacked_widget)
         self.horizontalLayout.addLayout(self.verticalLayout_7)
         self.verticalLayout_5 = QtGui.QVBoxLayout()
         self.verticalLayout_5.setSpacing(4)
@@ -58,9 +107,6 @@ class Ui_PublishDetailsForm(object):
 "border-width: 1px;\n"
 "border-radius: 2px;\n"
 "border-color: rgb(32,32,32);\n"
-"}\n"
-"QLabel {\n"
-"font-size: 12pt;\n"
 "}")
         self.info_frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.info_frame.setFrameShadow(QtGui.QFrame.Raised)
@@ -68,6 +114,9 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout_6 = QtGui.QVBoxLayout(self.info_frame)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.label_6 = QtGui.QLabel(self.info_frame)
+        self.label_6.setStyleSheet("QLabel {\n"
+"font-size: 12pt;\n"
+"}")
         self.label_6.setObjectName("label_6")
         self.verticalLayout_6.addWidget(self.label_6)
         self.sg_task_stacked_widget = QtGui.QStackedWidget(self.info_frame)
@@ -94,16 +143,19 @@ class Ui_PublishDetailsForm(object):
         self.horizontalLayout_5.addWidget(self.label)
         self.sg_task_stacked_widget.addWidget(self.sg_task_label_page)
         self.verticalLayout_6.addWidget(self.sg_task_stacked_widget)
-        spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        self.verticalLayout_6.addItem(spacerItem)
+        spacerItem4 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        self.verticalLayout_6.addItem(spacerItem4)
         self.label_7 = QtGui.QLabel(self.info_frame)
+        self.label_7.setStyleSheet("QLabel {\n"
+"font-size: 12pt;\n"
+"}")
         self.label_7.setObjectName("label_7")
         self.verticalLayout_6.addWidget(self.label_7)
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
         self.horizontalLayout_6.setSpacing(0)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem1)
+        spacerItem5 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem5)
         self.thumbnail_frame = QtGui.QFrame(self.info_frame)
         self.thumbnail_frame.setStyleSheet("#thumbnail_frame {\n"
 "border-style: Solid;\n"
@@ -123,12 +175,15 @@ class Ui_PublishDetailsForm(object):
         self.thumbnail_widget.setObjectName("thumbnail_widget")
         self.horizontalLayout_3.addWidget(self.thumbnail_widget)
         self.horizontalLayout_6.addWidget(self.thumbnail_frame)
-        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem2)
+        spacerItem6 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem6)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
-        spacerItem3 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        self.verticalLayout_6.addItem(spacerItem3)
+        spacerItem7 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        self.verticalLayout_6.addItem(spacerItem7)
         self.label_8 = QtGui.QLabel(self.info_frame)
+        self.label_8.setStyleSheet("QLabel {\n"
+"font-size: 12pt;\n"
+"}")
         self.label_8.setObjectName("label_8")
         self.verticalLayout_6.addWidget(self.label_8)
         self.comments_edit = QtGui.QTextEdit(self.info_frame)
@@ -143,8 +198,8 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem4)
+        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem8)
         self.cancel_btn = QtGui.QPushButton(PublishDetailsForm)
         self.cancel_btn.setMinimumSize(QtCore.QSize(80, 0))
         self.cancel_btn.setObjectName("cancel_btn")
@@ -157,12 +212,14 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout.setStretch(0, 1)
 
         self.retranslateUi(PublishDetailsForm)
-        self.sg_task_stacked_widget.setCurrentIndex(1)
+        self.publishes_stacked_widget.setCurrentIndex(1)
+        self.sg_task_stacked_widget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(PublishDetailsForm)
 
     def retranslateUi(self, PublishDetailsForm):
         PublishDetailsForm.setWindowTitle(QtGui.QApplication.translate("PublishDetailsForm", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.items_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Choose Additional Items to Publish:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("PublishDetailsForm", "<i>This publisher does not have any optional items to choose from.<br><br>Only your current work file will be published.</i>", None, QtGui.QApplication.UnicodeUTF8))
         self.info_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add Information about your Publish:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("PublishDetailsForm", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Anm, Animation", None, QtGui.QApplication.UnicodeUTF8))

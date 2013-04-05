@@ -49,9 +49,10 @@ class OutputItem(QtGui.QWidget):
 
         # set icon:
         icon_path = self._output.icon_path
-        if os.path.isfile(icon_path):
-            pm = QtGui.QPixmap(icon_path)
-            self._ui.icon_label.setPixmap(pm)
+        if os.path.isfile(icon_path) and os.path.exists(icon_path):
+            icon = QtGui.QPixmap(icon_path)
+            if not icon.isNull():
+                self._ui.icon_label.setPixmap(icon)
         
         # selected state
         self._ui.select_cb.setChecked(self._output.selected)

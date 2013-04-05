@@ -95,12 +95,13 @@ configuration:
                      the scan scene hook must be returned for this output
                      
         default_value: {
-            scene_item_type: current_scene,
+            scene_item_type: work_file,
             display_name: "Current Work File",
             description: "Publish and version up the current work file",
             icon: "",
             tank_type: null,
-            publish_template: null} 
+            publish_template: null
+            } 
 
     secondary_outputs:
         type: list

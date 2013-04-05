@@ -51,10 +51,14 @@ class ScanSceneHook(Hook):
         items = []
         
         # get current script:
-        script_file = nuke.root().name().replace("/", os.path.sep)
+        script_name = nuke.root().name()
+        if script_name == "Root":
+            raise Exception("The current script has not been saved.  Please save as a valid work file before continuing")
+        
+        script_file = script_name.replace("/", os.path.sep)
         script_name = os.path.basename(script_file)
         items.append({ 
-            "type": "nuke_script",
+            "type": "work_file",
             "name": script_name, 
             "description": ""})
         

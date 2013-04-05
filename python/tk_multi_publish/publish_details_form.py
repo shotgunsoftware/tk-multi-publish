@@ -87,19 +87,10 @@ class PublishDetailsForm(QtGui.QWidget):
         page = [self._ui.sg_task_label_page, self._ui.sg_task_menu_page][value]
         self._ui.sg_task_stacked_widget.setCurrentWidget(page)
         
-        
-    def set_shotgun_task_selection_enabled(self, enabled=True):
-        """
-        Expose ability to enable/disable the shotgun task selection
-        combo box
-        """
-        self._ui.sg_task_combo.setEnabled(enabled)
-        
     def initialize(self, tasks, sg_tasks):
         """
         Initialize UI
         """
-        
         # reset UI to default state:
         self._ui.sg_task_combo.setEnabled(True)
         
@@ -165,6 +156,13 @@ class PublishDetailsForm(QtGui.QWidget):
         task_scroll_widget = self._ui.task_scroll.widget()
         self._group_widget_info = {}
         #TODO
+        
+        if len(self._tasks) == 0:
+            # no tasks so show no tasks text:
+            self._ui.publishes_stacked_widget.setCurrentWidget(self._ui.no_publishes_page)
+            return
+        else:
+            self._ui.publishes_stacked_widget.setCurrentWidget(self._ui.publishes_page)
         
         # group tasks by display group:
         group_order = []
@@ -254,12 +252,7 @@ class PublishDetailsForm(QtGui.QWidget):
                         selected_tasks.extend(tasks)
             
         return selected_tasks
-        
-        
-        
-        
-            
-                    
+                            
     def _on_publish(self):
         self.publish.emit()
         

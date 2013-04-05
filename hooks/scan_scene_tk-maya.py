@@ -52,23 +52,20 @@ class ScanSceneHook(Hook):
         items = []
         
         # get the main scene:
-        scene_path = os.path.abspath(cmds.file(query=True, sn=True))
+        scene_name = cmds.file(query=True, sn=True)
+        if not scene_name:
+            raise Exception("The current scene has not been saved.  Please save as a valid work file before continuing")
+        
+        scene_path = os.path.abspath(scene_name)
         name = os.path.basename(scene_path)
-        if not name:
-            name = "untitled"    
-            
+
+        # create the primary item - this will match the primary output 'scene_item_type':            
         items.append({ 
-            "type": "maya_scene", 
+            "type": "work_file", 
             "name": name,
             "description": ""})
         
         # (AD) - FOR DEBUG ONLY!
-        
-        """
-        items.append({ 
-            "type": "light_rig", 
-            "name": "|primary_lighting",
-            "description": "blah blah blah"})
         """
         items.append({ 
             "type": "light_rig", 
@@ -87,5 +84,5 @@ class ScanSceneHook(Hook):
             "selected":False,
             "required":False,
             "description": "blah blah blah"})
-        
+        """
         return items

@@ -157,37 +157,17 @@ class PublishForm(QtGui.QWidget):
         
         # update UI for primary task:
         icon_path = task.output.icon_path
-        if not icon_path or not os.path.exists(icon_path):
-            icon_path = ":/res/default_header.png"
-        icon = QtGui.QPixmap(icon_path)
-        
+        if os.path.isfile(icon_path) and os.path.exists(icon_path):
+            icon = QtGui.QPixmap(icon_path)
+            if not icon.isNull():
+                self._ui.primary_icon_label.setPixmap(icon)
+                    
         lines = []
         lines.append("<b>%s - %s</b>" % (task.output.display_name, task.item.name))
         lines.append("%s" % task.output.description)
         lines.append("%s" % task.item.description)
         details_txt = "<br>".join(lines)
-        
-        self._ui.primary_icon_label.setPixmap(icon)
         self._ui.primary_details_label.setText(details_txt)
-        
-    """
-    def reload(self):
-        self._tasks = self._handler.get_tasks()
-        
-        for task in self._tasks:
-            if task.output.selected:
-                self._selected_tasks.append(task)
-        
-        self._update_ui()
-    """
-     
-    #def update_tasks(self):
-    #    """
-    #    Placeholder to update UI for all tasks without reloading
-    #    - UI will ultimately update via a signal from the task
-    #    itself
-    #    """
-    #    self._update_ui()
         
     def _on_publish(self):
         """
@@ -201,103 +181,6 @@ class PublishForm(QtGui.QWidget):
         are recieved
         """
         self.window().close()
-        
-    """    
-    # (AD) - temp for proxy UI
-    def _on_select_all(self):
-        self._selected_tasks = self._tasks
-        self._update_ui()
-        
-    def _on_select_req_only(self):
-        self._selected_tasks = []
-        for task in self._tasks:
-            if task.output.required:
-                self._selected_tasks.append(task)
-        self._update_ui()
-
-    def _on_select_random(self):
-        import random
-        self._selected_tasks = []
-        for task in self._tasks:
-            if task.output.required:
-                self._selected_tasks.append(task)
-            else:
-                if random.random() > 0.5:
-                    self._selected_tasks.append(task)
-        self._update_ui()
-    """
-    
-    def _update_ui(self):
-        """
-        Update the UI following a change to the data
-        """
-        
-        pass
-        """
-        msg = ""
-        
-        if not self._tasks:
-            msg = "Nothing to publish!"
-        else:
-            selected_char = [[" ", "X"], [" ", "R"]]
-            error_char = ["", "(!)"]
-
-            group_info = {}
-            group_order = []
-            for task in self._tasks:
-                if task.output.display_group not in group_order:
-                    group_order.append(task.output.display_group)
-                    
-                group_info.setdefault(task.output.display_group, dict())
-                group_info[task.output.display_group].setdefault("outputs", set()).add(task.output)
-                group_info[task.output.display_group].setdefault("selected_outputs", set())
-                group_info[task.output.display_group].setdefault("error_outputs", set())
-                group_info[task.output.display_group].setdefault("items", set()).add(task.item)
-                group_info[task.output.display_group].setdefault("selected_items", set())
-                group_info[task.output.display_group].setdefault("error_items", set())
-                group_info[task.output.display_group].setdefault("errors", list())
-                if task in self._selected_tasks:
-                    group_info[task.output.display_group]["selected_outputs"].add(task.output)
-                    group_info[task.output.display_group]["selected_items"].add(task.item)
-                if task.pre_publish_errors:
-                    group_info[task.output.display_group]["error_outputs"].add(task.output)
-                    group_info[task.output.display_group]["error_items"].add(task.item)
-                    group_info[task.output.display_group]["errors"].extend(task.pre_publish_errors)
-                    
-            msg = "Select things to publish...\n\n"
-            for g in group_order:
-                msg += "\n  %s" % g
-                info = group_info[g]
-                
-                msg += "\n    Outputs:"
-                any_output_is_required = False
-                for output in info["outputs"]:
-                    is_selected = output in info["selected_outputs"]
-                    is_required = output.required
-                    has_errors = output in info["error_outputs"]
-                    if is_required:
-                        any_output_is_required = True
-                    msg += "\n      - [%s] %s %s" % (selected_char[is_required][is_selected], output.display_name, error_char[has_errors])
-                    
-                msg += "\n    Items:"
-                for item in info["items"]:
-                    is_selected = item in info["selected_items"]
-                    has_errors = item in info["error_items"]
-                    msg += "\n      - [%s] %s %s" % (selected_char[any_output_is_required][is_selected], item.name, error_char[has_errors])
-                    
-                errors = info["errors"]
-                if errors:
-                    msg += "\n    %d Errors:" % len(errors)
-                    for ei, error in enumerate(errors):
-                        msg += "\n      (%d) - %s" % (ei+1, error)
-                    
-            
-        #self._ui.publish_details.setText(msg)
-        """
-        
-        
-        
-        
         
         
         
