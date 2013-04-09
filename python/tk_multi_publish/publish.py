@@ -75,7 +75,7 @@ class PublishHandler(object):
         self._publish_ui.initialize(tasks, sg_tasks)
         
         # thumbnail:
-        thumbnail = None# TODO: run hook
+        thumbnail = QtGui.QPixmap(self._app.execute_hook("hook_thumbnail"))
         self._publish_ui.thumbnail = thumbnail
         
         if self._app.context.task:
