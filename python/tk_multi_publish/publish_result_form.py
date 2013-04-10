@@ -54,6 +54,6 @@ class PublishResultForm(QtGui.QWidget):
         
         self._ui.status_icon.setPixmap(QtGui.QPixmap([":/res/failure.png", ":/res/success.png"][self._status]))
         self._ui.status_title.setText(["Failure!", "Success"][self._status])
-        self._ui.status_details.setText("\n".join(self._errors))
+        self._ui.status_details.setText("\n\n".join(self._errors))
         
         

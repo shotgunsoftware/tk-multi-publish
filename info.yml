@@ -42,25 +42,51 @@ configuration:
         parameters: []
         default_value: "scan_scene_{engine_name}"
         description: Specify a hook to scan for items to publish.  
-                     The hook should return a list dictionaries containing the following
-                        (TODO - finish)
+                     The hook should return a list dictionaries that represent the items
+                     to be published.
 
-    hook_pre_publish:
+    hook_primary_pre_publish:
+        type: hook
+        parameters: [task, work_template, progress_cb]
+        default_value: primary_pre_publish
+        description: Specify the hook that will run before the primary publish.  This hook 
+                     can be used to perform any validaiton on the primary task that is 
+                     passed in to ensure that it is ready to be published.
+        
+    hook_primary_publish:
+        type: hook
+        parameters: [task, work_template, comment, thumbnail_path, sg_task, progress_cb]
+        default_value: primary_publish
+        description: Specify the hook that will actually do the publish of the primary
+                     task.  This hook is passed the primary task that should be published.
+                     The hook is responsible for the entire publish process and should
+                     ensure to register the publish with Shotgun.
+
+    hook_secondary_pre_publish:
         type: hook
         parameters: [tasks, progress_cb]
-        default_value: "pre_publish_{engine_name}"
+        default_value: "secondary_pre_publish_{engine_name}"
         description: Specify the hook that will run before the publish.  This hook can be
-                     used to perform any validaiton on the tasks that are passed in to ensure
-                     that they are ready to be published.
+                     used to perform any validaiton on the secondary tasks that are passed 
+                     in to ensure that they are ready to be published.
         
-    hook_publish:
+    hook_secondary_publish:
         type: hook
-        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, progress_cb]
-        default_value: "publish_{engine_name}"
-        description: Specify the hook that will actually do the publish.  This hook is 
-                     passed a list of tasks that are to be published.
+        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_publish_path, progress_cb]
+        default_value: "secondary_publish_{engine_name}"
+        description: Specify the hook that will be used to do the publish.  This hook is 
+                     passed a list of secondary tasks that are to be published.
                      The hook is responsible for the entire publish process and should
-                     ensure to register the published files with Shotgun
+                     ensure it registers the published files with Shotgun
+
+    hook_post_publish:
+        type: hook
+        parmaters: [work_template, progress_cb]
+        default_value: post_publish
+        description: Specify the hook that will be used to do any post-publish work.  Typically, 
+                     this hook will be responsible for versioning up the scene to the latest 
+                     version.
+
 
     primary_output:
         type: dict

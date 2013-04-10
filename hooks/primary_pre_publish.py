@@ -1,22 +1,21 @@
 """
 Copyright (c) 2013 Shotgun Software, Inc
 ----------------------------------------------------
-
 """
 import os
-import maya.cmds as cmds
 
 import tank
 from tank import Hook
+from tank import TankError
 
-class PrePublishHook(Hook):
+class PrimaryPrePublishHook(Hook):
     """
-    Single hook that implements pre-publish functionality
-    """
-    def execute(self, tasks, work_template, progress_cb, **kwargs):
+    Single hook that implements pre-publish of the primary task
+    """    
+    def execute(self, task, work_template, progress_cb, **kwargs):
         """
         Main hook entry point
-        :tasks:         List of tasks to be pre-published.  Each task is be a 
+        :task:          Primary task to be pre-published.  This is a
                         dictionary containing the following keys:
                         {   
                             item:   Dictionary
@@ -37,67 +36,69 @@ class PrePublishHook(Hook):
                                         tank_type:        String
                                     }
                         }
-                        
         :work_template: template
                         This is the template defined in the config that
                         represents the current work file
-               
+                        
         :progress_cb:   Function
                         A progress callback to log progress during pre-publish.  Call:
                         
                             progress_cb(percentage, msg)
                              
                         to report progress to the UI
-                        
-        :returns:       A list of any tasks that were found which have problems that
-                        need to be reported in the UI.  Each item in the list should
-                        be a dictionary containing the following keys:
-                        {
-                            task:   Dictionary
-                                    This is the task that was passed into the hook and
-                                    should not be modified
-                                    {
-                                        item:...
-                                        output:...
-                                    }
-                                    
-                            errors: List
-                                    A list of error messages (strings) to report    
-                        }
-        """       
-        results = []
-        
-        # validate tasks:
-        num_tasks = len(tasks)
-        for ti, task in enumerate(tasks):
-            item = task["item"]
-            output = task["output"]
-            errors = []
-        
-            # report progress:
-            progress = (100.0/num_tasks) * ti
-            msg = "Validating %s for output %s" % (item["name"], output["name"])
-            progress_cb(progress, msg)
-        
-            # depending on output type, do some specific validation:
-            if output["name"] == "primary":
-                # primary output is the maya scene - validate 
-                # that it can be published:
-                scene_file = cmds.file(query=True, sn=True)
-                if scene_file:
-                    scene_file = os.path.abspath(scene_file)
-                errors.extend(self._validate_work_file(scene_file, work_template, output))
-            else:
-                # don't know how to publish other output types!
-                errors.append("Don't know how to publish this item!")        
 
-            # if there is anything to report then add to result
-            if len(errors) > 0:
-                # add result:
-                results.append({"task":task, "errors":errors})
+        :returns:       List 
+                        A list of non-critical problems that should be 
+                        reported to the user but not stop the publish.
+                        
+                        Hook should raise a TankError if the primary task
+                        can't be published!
+        """
+        # get the engine name from the parent object (app/engine/etc.)
+        engine_name = self.parent.engine.name
+        
+        # depending on engine:
+        if engine_name == "tk-maya":
+            return self._do_maya_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-nuke":
+            return self._do_nuke_pre_publish(task, work_template, progress_cb)
+        else:
+            raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
+        
+    def _do_maya_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Maya primary pre-publish/scene validation
+        """
+        import maya.cmds as cmds
+        
+        # get the current scene file:
+        scene_file = cmds.file(query=True, sn=True)
+        if scene_file:
+            scene_file = os.path.abspath(scene_file)
             
-        return results
-    
+        # TODO: update progress
+            
+        # validate it:
+        scene_errors = self._validate_work_file(scene_file, work_template, task["output"])  
+        return scene_errors
+        
+    def _do_nuke_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Nuke primary pre-publish/scene validation
+        """
+        import nuke
+        
+        # get the current script file path:
+        script_file = nuke.root().name().replace("/", os.path.sep)
+        if script_file:
+            script_file = os.path.abspath(script_file)
+
+        # TODO: update progress
+            
+        # validate it
+        script_errors = self._validate_work_file(script_file, work_template, task["output"])
+        return script_errors
+        
     def _validate_work_file(self, path, work_template, output):
         """
         Validate that the given path is a valid work file and that
@@ -109,8 +110,7 @@ class PrePublishHook(Hook):
         errors = []
         
         if not work_template.validate(path):
-            work_template.get_fields(path)
-            return ["File '%s' is not a valid work path, unable to publish!" % path]
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % path)
         
         # find the publish path:
         fields = work_template.get_fields(path)
@@ -119,7 +119,7 @@ class PrePublishHook(Hook):
         publish_path = publish_template.apply_fields(fields) 
         
         if os.path.exists(publish_path):
-            return ["A published file named '%s' already exists!" % publish_path]
+            raise TankError("A published file named '%s' already exists!" % publish_path)
         
         # check the version number against existing versions:
         # TODO: this check is from the original maya publish - should
@@ -137,6 +137,4 @@ class PrePublishHook(Hook):
                    "will become v%03d, thereby shadowing some previous work. " % (curr_v_no, max_v_no, max_v_no + 1))
         
         return errors
-
-    
-    
+        

@@ -38,5 +38,5 @@ class Item(object):
         required_keys = ["name", "type"]
         for rk in required_keys:
             if rk not in self._raw_fields.keys():
-                raise Exception("Item does not contain required field '%s'" % rk)
+                raise TankError("Item does not contain required field '%s'" % rk)
     

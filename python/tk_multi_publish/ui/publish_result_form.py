@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_result_form.ui'
 #
-# Created: Thu Apr  4 16:24:48 2013
+# Created: Wed Apr 10 12:09:57 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_PublishResultForm(object):
     def setupUi(self, PublishResultForm):
         PublishResultForm.setObjectName("PublishResultForm")
-        PublishResultForm.resize(479, 467)
+        PublishResultForm.resize(546, 346)
         self.verticalLayout_4 = QtGui.QVBoxLayout(PublishResultForm)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         spacerItem = QtGui.QSpacerItem(20, 97, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -47,7 +47,7 @@ class Ui_PublishResultForm(object):
         self.verticalLayout_3.addWidget(self.status_title)
         self.status_details = QtGui.QLabel(PublishResultForm)
         self.status_details.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
-        self.status_details.setWordWrap(False)
+        self.status_details.setWordWrap(True)
         self.status_details.setObjectName("status_details")
         self.verticalLayout_3.addWidget(self.status_details)
         self.verticalLayout_3.setStretch(1, 1)
@@ -55,7 +55,7 @@ class Ui_PublishResultForm(object):
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem3)
         self.horizontalLayout.setStretch(0, 1)
-        self.horizontalLayout.setStretch(2, 1)
+        self.horizontalLayout.setStretch(2, 3)
         self.horizontalLayout.setStretch(3, 1)
         self.verticalLayout_4.addLayout(self.horizontalLayout)
         spacerItem4 = QtGui.QSpacerItem(20, 97, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)

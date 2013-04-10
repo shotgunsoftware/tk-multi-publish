@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>479</width>
-    <height>467</height>
+    <width>546</width>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,1,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,3,1">
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -119,7 +119,7 @@ font-size: 24px;
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
          </property>
          <property name="wordWrap">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
         </widget>
        </item>

@@ -9,6 +9,7 @@ import pprint
 import tempfile
 
 import tank
+from tank import TankError
 from tank.platform.qt import QtCore, QtGui
 
 from .progress import ProgressReporter
@@ -53,7 +54,7 @@ class PublishHandler(object):
         try:
             # build list of publish tasks:
             items = self._scan_scene()
-        except Exception, e:
+        except TankError, e:
             # TODO: replace with tank dialog!
             QtGui.QMessageBox.critical(self._publish_ui, "Unable to publish!", 
                                           "Unable to publish:\n\n\t%s\n\n" % e)
@@ -104,22 +105,13 @@ class PublishHandler(object):
         thumbnail = self._publish_ui.thumbnail
         comment = self._publish_ui.comment
         
-        """
-        print "About to do publish using details:"
-        print "  Shotgun task: %s" % sg_task
-        print "  Thumbnail: %s" % thumbnail
-        print "  Comment: %s" % comment
-        print "  Tasks:"
-        for task in selected_tasks:
-            print " > %s - %s" % (task.output.display_name, task.item.name)
-        """
-        
         # create progress reporter and connect to UI:
         progress = ProgressReporter()
         self._publish_ui.set_progress_reporter(progress)
 
-        # show publish progress:
+        # show pre-publish progress:
         self._publish_ui.show_publish_progress("Doing Pre-Publish...")
+        progress.report(0, "")
         
         # make dialog modal whilst we're doing work:
         """
@@ -142,19 +134,18 @@ class PublishHandler(object):
             time.sleep(1.0)
         """
                     
-        # TODO - remove (obviously)
-        #raise Exception("Publish currently disabled whilst building UI!")        
-        
         # do pre-publish:
         try:
             self._do_pre_publish(selected_tasks, progress.report)
-        except Exception, e:
+        except TankError, e:
+            # an exception means that we can't perform the publish so show
+            # dialog and stop processing
+            
             # TODO - show tank dialog!
             QtGui.QMessageBox.information(self._publish_ui, "Pre-publish Failed", 
-                                          "Pre-publish failed due to an unexpected exception:\n\n\t%s\n\nUnable to continue!" % e)
-            
+                                          "Publish has been stopped for the following reason:\n\n%s\n\nUnable to continue!" % e)
             self._publish_ui.show_publish_details()
-            raise
+            return
         finally:
             """
             # restore window to be modeless
@@ -180,35 +171,34 @@ class PublishHandler(object):
                 self._publish_ui.show_publish_details()
                 return
                 
+        # show publish progress:
         self._publish_ui.show_publish_progress("Publishing...")
+        progress.report(0, "")
                 
         # do the publish
-        #QtGui.QMessageBox.information(self._publish_ui, "Publish (debug)", "Doing publish\n%s" % self._debug_format_tasks_str(selected_tasks))
+        publish_errors = []
+        publish_failed = False
         try:
             self._do_publish(selected_tasks, sg_task, thumbnail, comment, progress.report)
-        except Exception, e:
-            # TODO: replace with tank dialog!
-            QtGui.QMessageBox.critical(self._publish_ui, "Publish Failed", 
-                                          "Publish failed due to an unexpected exception:\n\n\t%s\n\nUnable to continue!" % e)
-            raise
-            #return
+        except TankError, e:
+            publish_errors.append("%s" % e)
+            publish_failed = True
         
-        # check that everything was published:
-        publish_errors = []
+        # check for any other publish errors:
         for task in selected_tasks:
             for error in task.publish_errors:
-                publish_errors.append("%s, %s:\n    %s" % (task.item.name, task.output.name, error))
+                publish_errors.append("%s, %s: %s" % (task.item.name, task.output.name, error))
         
-        """
-        if not publish_errors:
-            QtGui.QMessageBox.information(self._publish_ui, "Publish Succeeded", "Publish Succeeded - yay!")
-            #self._publish_ui.close()
+        # if publish didn't fail then do post publish:
+        if publish_failed:
+            # inform that post-publish didn't run
+            publish_errors.append("Post-publish was not run due to previous errors!")
         else:
-            # TODO - return to dialog and upate with error information
-            error_msg = "Published encountered the following errors:\n %s" % ("\n    - ".join(publish_errors))
-            QtGui.QMessageBox.critical(self._publish_ui, "Publish Failed", error_msg)
-        """
-         
+            try:
+                self._do_post_publish(progress.report)
+            except TankError, e:
+                publish_errors.append("Post-publish failed with the following error:\n\t%s" % e)
+            
         # show publish result:
         self._publish_ui.show_publish_result(not publish_errors, publish_errors)
 
@@ -218,9 +208,7 @@ class PublishHandler(object):
         each item and it's corresponding output
         """
         
-        #TODO - build list by looping through outputs to order by output by default
-        # this will make much more sense
-        
+        #TODO: build list by looping through outputs to order by output
         
         # create index from scene_item_type to output
         outputs_by_type = {}
@@ -234,7 +222,7 @@ class PublishHandler(object):
         for item in items:
             outputs = outputs_by_type.get(item.scene_item_type)
             if not outputs:
-                raise Exception("Item %s found with unrecognised scene item type %s" % (item.name, item.scene_item_type))
+                raise TankError("Item %s found with unrecognised scene item type %s" % (item.name, item.scene_item_type))
                 
             for output in outputs:
                 tasks.append(Task(item, output))
@@ -260,7 +248,7 @@ class PublishHandler(object):
             
             if item_type == primary_type:
                 if primary_item:
-                    raise Exception("Scan scene returned multiple items for the primary output type '%s' which is not allowed" 
+                    raise TankError("Scan scene returned multiple items for the primary output type '%s' which is not allowed" 
                                     % primary_type)
                 else:
                     primary_item = item
@@ -280,11 +268,27 @@ class PublishHandler(object):
         Do pre-publish pass on tasks using the pre-publish hook
         """
         
-        # get tasks in hook format (dictionaries rather than internal class instances):
-        hook_tasks = [task.as_dictionary() for task in tasks]
+        # split tasks into primary and secondary:
+        primary_task=None
+        secondary_tasks=[]
+        for ti, task in enumerate(tasks):
+            if task.output == self._primary_output:
+                if primary_task:
+                    raise TankError("Found multiple primary tasks to pre-publish!")
+                primary_task = task
+                secondary_tasks = tasks[:ti] + tasks[(ti+1):]
+        if not primary_task:
+            raise TankError("Couldn't find primary task to pre-publish!")
         
-        # do pre-publish using pre-publish hook:
-        pp_results = self._app.execute_hook("hook_pre_publish",  
+        # do pre-publish of primary task:
+        primary_task.pre_publish_errors = self._app.execute_hook("hook_primary_pre_publish",  
+                                                                task=primary_task.as_dictionary(), 
+                                                                work_template = self._work_template,
+                                                                progress_cb=progress_cb)
+
+        # do pre-publish of secondary tasks:
+        hook_tasks = [task.as_dictionary() for task in secondary_tasks]
+        pp_results = self._app.execute_hook("hook_secondary_pre_publish",  
                                             tasks=hook_tasks, 
                                             work_template = self._work_template,
                                             progress_cb=progress_cb)
@@ -300,9 +304,8 @@ class PublishHandler(object):
                 item_name = result["task"]["item"]["name"]
                 output_name = result["task"]["output"]["name"]
                 result_index[(item_name, output_name)] = result
-            except Exception, e:
-                # TODO: better handle badly formed results being returned from the hook!
-                pass
+            except:
+                raise TankError("Badly formed result returned from hook: %s" % result)
                 
         for task in tasks:
             result = result_index.get((task.item.name, task.output.name))
@@ -316,9 +319,17 @@ class PublishHandler(object):
         """
         Do publish of tasks using the publish hook
         """
-        
-        # get tasks in hook format (dictionaries rather than internal class instances):
-        hook_tasks = [task.as_dictionary() for task in tasks]
+        # split tasks into primary and secondary:
+        primary_task=None
+        secondary_tasks=[]
+        for ti, task in enumerate(tasks):
+            if task.output == self._primary_output:
+                if primary_task:
+                    raise TankError("Found multiple primary tasks to publish!")
+                primary_task = task
+                secondary_tasks = tasks[:ti] + tasks[(ti+1):]
+        if not primary_task:
+            raise TankError("Couldn't find primary task to publish!")
         
         # save the thumbnail to a temporary location:
         thumbnail_path = ""
@@ -328,23 +339,30 @@ class PublishHandler(object):
             tmp_file.close()
             thumbnail.save(thumbnail_path)
         
-        
-        # do publish using publish hook:            
         try:
-            p_results = self._app.execute_hook("hook_publish",  
+            # do publish of primary task:
+            primary_path = self._app.execute_hook("hook_primary_publish",  
+                                                  task=primary_task.as_dictionary(), 
+                                                  work_template = self._work_template,
+                                                  comment = comment,
+                                                  thumbnail_path = thumbnail_path,
+                                                  sg_task = sg_task,
+                                                  progress_cb=progress_cb)
+                
+            # do publish of secondary tasks:            
+            hook_tasks = [task.as_dictionary() for task in secondary_tasks]
+            p_results = self._app.execute_hook("hook_secondary_publish",  
                                                  tasks=hook_tasks, 
                                                  work_template = self._work_template,
                                                  comment = comment,
                                                  thumbnail_path = thumbnail_path,
                                                  sg_task = sg_task,
+                                                 primary_publish_path=primary_path,
                                                  progress_cb=progress_cb)
         finally:
             # delete temporary thumbnail file:
             if thumbnail_path:
                 os.remove(thumbnail_path)
-
-        # TODO: delete temporary thumbnail:
-        # ...
 
         # push any errors back to tasks:
         result_index = {}
@@ -357,9 +375,8 @@ class PublishHandler(object):
                 item_name = result["task"]["item"]["name"]
                 output_name = result["task"]["output"]["name"]
                 result_index[(item_name, output_name)] = result
-            except Exception, e:
-                # TODO: better handle badly formed results being returned from the hook!
-                pass
+            except:
+                raise TankError("Badly formed result returned from hook: %s" % result)
                 
         for task in tasks:
             result = result_index.get((task.item.name, task.output.name))
@@ -367,6 +384,16 @@ class PublishHandler(object):
                 task.publish_errors = result["errors"]
             else:
                 task.publish_errors = []
+                
+    def _do_post_publish(self, progress_cb):
+        """
+        Do post-publish using the post-publish hook
+        """
+        
+        # do post-publish using post-publish hook:
+        self._app.execute_hook( "hook_post_publish",  
+                                work_template = self._work_template,
+                                progress_cb=progress_cb)
                 
     def _get_shotgun_tasks(self):
         """

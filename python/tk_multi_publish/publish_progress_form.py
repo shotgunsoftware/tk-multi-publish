@@ -24,6 +24,9 @@ class PublishProgressForm(QtGui.QWidget):
         self._ui = Ui_PublishProgressForm() 
         self._ui.setupUi(self)
         
+        self._ui.progress_bar.setValue(0)
+        self._ui.details.setText("")
+        
     @property
     def title(self):
         return self._ui.title.toPlainText()
@@ -44,6 +47,14 @@ class PublishProgressForm(QtGui.QWidget):
     
     def _on_progress(self, amount, msg):
         self._ui.progress_bar.setValue(amount)
-        self._ui.details.setText(msg)
+        if msg != None:
+            self._ui.details.setText(msg)
         
         QtCore.QCoreApplication.processEvents()
+        
+        
+        
+        
+        
+        
+        

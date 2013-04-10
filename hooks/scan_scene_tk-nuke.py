@@ -8,6 +8,7 @@ import nuke
 
 import tank
 from tank import Hook
+from tank import TankError
 
 class ScanSceneHook(Hook):
     """
@@ -53,7 +54,7 @@ class ScanSceneHook(Hook):
         # get current script:
         script_name = nuke.root().name()
         if script_name == "Root":
-            raise Exception("The current script has not been saved.  Please save as a valid work file before continuing")
+            raise TankError("The current script has not been saved.  Please save as a valid work file before continuing")
         
         script_file = script_name.replace("/", os.path.sep)
         script_name = os.path.basename(script_file)

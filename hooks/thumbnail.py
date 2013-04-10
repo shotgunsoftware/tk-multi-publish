@@ -14,7 +14,7 @@ class ThumbnailHook(Hook):
     def execute(self, **kwargs):
         """
         Main hook entry point
-        :return:        String
+        :returns:       String
                         Hook should return a file path pointing to the location of
                         a thumbnail file on disk that will be used for the publish.
                         If the hook returns None then the screenshot functionality

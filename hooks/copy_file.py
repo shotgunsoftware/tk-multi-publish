@@ -23,6 +23,8 @@ class CopyFile(Hook):
                         
         :target_path:   String
                         Target file path to copy to
+                        
+        :returns:       None
         """
         
         # create the folder if it doesn't exist

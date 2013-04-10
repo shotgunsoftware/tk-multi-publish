@@ -20,6 +20,6 @@ class ProgressReporter(QtCore.QObject):
         
 
     
-    def report(self, percent, msg):
+    def report(self, percent, msg=None):
         self.progress.emit(percent, msg)
         #print "(%d%%) - %s" % (percent, msg)
