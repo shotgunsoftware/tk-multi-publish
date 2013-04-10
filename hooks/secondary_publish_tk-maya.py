@@ -83,16 +83,13 @@ class PublishHook(Hook):
         results = []
         
         # publish all tasks:
-        num_tasks = len(tasks)
-        for ti, task in enumerate(tasks):
+        for task in tasks:
             item = task["item"]
             output = task["output"]
             errors = []
         
             # report progress:
-            progress = (100.0/num_tasks) * ti
-            msg = "Publishing %s" % item["name"]
-            progress_cb(progress, msg)
+            progress_cb(0, "Publishing", task)
         
             # publish item here, e.g.
             #if output["name"] == "foo":
@@ -105,6 +102,8 @@ class PublishHook(Hook):
             if len(errors) > 0:
                 # add result:
                 results.append({"task":task, "errors":errors})
+             
+            progress_cb(100)
              
         return results
 

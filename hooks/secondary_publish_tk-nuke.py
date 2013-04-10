@@ -87,14 +87,13 @@ class PublishHook(Hook):
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         
         # process tasks:
-        num_tasks = len(tasks)
-        for ti, task in enumerate(tasks):
+        for task in tasks:
             item = task["item"]
             output = task["output"]
             errors = []
             
             # report progress:
-            progress_cb((100.0/num_tasks) * (ti+1), "Publishing %s" % item["name"])
+            progress_cb(0.0, "Publishing", task)
         
             # depending on output type:
             if output["name"] == "render":
@@ -107,7 +106,7 @@ class PublishHook(Hook):
                     if not write_node:
                         raise TankError("Could not determined node for item '%s'!" % item["name"])
                     
-                    self._publish_write_node_render(write_node, write_node_app, primary_publish_path, sg_task, comment)
+                    self._publish_write_node_render(write_node, write_node_app, primary_publish_path, sg_task, comment, progress_cb)
                 except Exception, e:
                     errors.append("Publish failed - %s" % e)
             else:
@@ -119,12 +118,16 @@ class PublishHook(Hook):
                 # add result:
                 results.append({"task":task, "errors":errors})
 
+            progress_cb(100)
+
         return results
 
-    def _publish_write_node_render(self, write_node, write_node_app, published_script_path, sg_task, comment):
+    def _publish_write_node_render(self, write_node, write_node_app, published_script_path, sg_task, comment, progress_cb):
         """
         Publish render output for write node
         """
+ 
+        progress_cb(10, "Finding rendered files")
  
         # get info we need in order to do the publish:
         render_path = write_node_app.get_node_render_path(write_node)
@@ -134,7 +137,13 @@ class PublishHook(Hook):
         tank_type = write_node_app.get_node_tank_type(write_node)
         
         # publish (copy files):
-        for rf in render_files:
+        
+        progress_cb(25, "Copying files")
+        
+        for fi, rf in enumerate(render_files):
+            
+            progress_cb(25 + (50*(len(render_files)/(fi+1))))
+            
             # construct the publish path:
             fields = render_template.get_fields(rf)
             fields["TankType"] = tank_type
@@ -147,6 +156,8 @@ class PublishHook(Hook):
                 self.parent.copy_file(rf, target_path)
             except Exception, e:
                 raise TankError("Failed to copy file from %s to %s - %s" % (rf, target_path, e))
+            
+        progress_cb(80, "Registering Publish")
             
         # use the render path to work out the publish 'file' and name:
         render_path_fields = render_template.get_fields(render_path)

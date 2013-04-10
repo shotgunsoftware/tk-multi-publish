@@ -81,6 +81,9 @@ class PrimaryPublishHook(Hook):
         """
         import maya.cmds as cmds
         
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._maya_find_additional_scene_dependencies()
+        
         # get scene path
         scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         
@@ -98,10 +101,12 @@ class PrimaryPublishHook(Hook):
             raise TankError("The published file named '%s' already exists!" % publish_path)
         
         # save the scene:
+        progress_cb(10.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
         cmds.file(save=True, force=True)
         
         # copy the file:
+        progress_cb(50.0, "Copying the file")
         try:
             publish_folder = os.path.dirname(publish_path)
             self.parent.ensure_folder_exists(publish_folder)
@@ -116,6 +121,7 @@ class PrimaryPublishHook(Hook):
             publish_name = os.path.basename(script_path)
 
         # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
         self._register_publish(publish_path, 
                                publish_name, 
                                sg_task, 
@@ -123,7 +129,9 @@ class PrimaryPublishHook(Hook):
                                output["tank_type"],
                                comment,
                                thumbnail_path, 
-                               self._maya_find_additional_scene_dependencies())
+                               dependencies)
+        
+        progress_cb(100)
         
         return publish_path
         
@@ -139,6 +147,9 @@ class PrimaryPublishHook(Hook):
         Publish the main Nuke script
         """
         import nuke
+        
+        progress_cb(0.0, "Finding dependencies", task)
+        dependencies = self._nuke_find_script_dependencies()
         
         # get scene path
         script_path = nuke.root().name().replace("/", os.path.sep)
@@ -160,10 +171,12 @@ class PrimaryPublishHook(Hook):
             raise TankError("The published file named '%s' already exists!" % publish_path)
         
         # save the scene:
+        progress_cb(25.0, "Saving the script")
         self.parent.log_debug("Saving the Script...")
         nuke.scriptSave()
         
         # copy the file:
+        progress_cb(50.0, "Copying the file")
         try:
             publish_folder = os.path.dirname(publish_path)
             self.parent.ensure_folder_exists(publish_folder)
@@ -178,6 +191,7 @@ class PrimaryPublishHook(Hook):
             publish_name = os.path.basename(script_path)
 
         # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
         self._register_publish(publish_path, 
                                publish_name, 
                                sg_task, 
@@ -185,7 +199,9 @@ class PrimaryPublishHook(Hook):
                                output["tank_type"],
                                comment,
                                thumbnail_path, 
-                               self._nuke_find_script_dependencies())
+                               dependencies)
+        
+        progress_cb(100)
         
         return publish_path
         

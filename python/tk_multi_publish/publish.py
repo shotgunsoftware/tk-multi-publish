@@ -12,7 +12,7 @@ import tank
 from tank import TankError
 from tank.platform.qt import QtCore, QtGui
 
-from .progress import ProgressReporter
+from .progress import TaskProgressReporter
 from .publish_form import PublishForm
 
 from .output import PublishOutput
@@ -106,12 +106,12 @@ class PublishHandler(object):
         comment = self._publish_ui.comment
         
         # create progress reporter and connect to UI:
-        progress = ProgressReporter()
+        progress = TaskProgressReporter(selected_tasks)
         self._publish_ui.set_progress_reporter(progress)
 
         # show pre-publish progress:
         self._publish_ui.show_publish_progress("Doing Pre-Publish...")
-        progress.report(0, "")
+        progress.reset()
         
         # make dialog modal whilst we're doing work:
         """
@@ -162,18 +162,18 @@ class PublishHandler(object):
         for task in selected_tasks:
             num_errors += len(task.pre_publish_errors)
         if num_errors > 0:
+            self._publish_ui.show_publish_details()
+            
             # TODO: replace with Tank dialog
             res = QtGui.QMessageBox.warning(self._publish_ui, "Pre-publish Errors", 
                                              "Pre-publish returned %d errors\n\nWould you like to publish anyway?" % num_errors,
                                              QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if res != QtGui.QMessageBox.Yes:
-                #self._publish_ui.update_tasks() 
-                self._publish_ui.show_publish_details()
                 return
                 
         # show publish progress:
         self._publish_ui.show_publish_progress("Publishing...")
-        progress.report(0, "")
+        progress.reset()
                 
         # do the publish
         publish_errors = []
@@ -194,6 +194,9 @@ class PublishHandler(object):
             # inform that post-publish didn't run
             publish_errors.append("Post-publish was not run due to previous errors!")
         else:
+            self._publish_ui.show_publish_progress("Doing Post-Publish...")
+            progress.reset(1)
+            
             try:
                 self._do_post_publish(progress.report)
             except TankError, e:

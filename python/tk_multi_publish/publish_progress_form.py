@@ -3,6 +3,8 @@ Copyright (c) 2013 Shotgun Software, Inc
 ----------------------------------------------------
 """
 
+import time
+
 import tank
 from tank.platform.qt import QtCore, QtGui
 
@@ -34,6 +36,7 @@ class PublishProgressForm(QtGui.QWidget):
     def title(self, value):
         self._ui.title.setText(value)
         QtCore.QCoreApplication.processEvents()
+        time.sleep(0.1)
         
     def set_reporter(self, reporter):
         """

@@ -72,16 +72,13 @@ class PrePublishHook(Hook):
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         
         # validate tasks:
-        num_tasks = len(tasks)
-        for ti, task in enumerate(tasks):
+        for task in tasks:
             item = task["item"]
             output = task["output"]
             errors = []
         
             # report progress:
-            progress = (100.0/num_tasks) * ti
-            msg = "Validating %s for output %s" % (item["name"], output["name"])
-            progress_cb(progress, msg)
+            progress_cb(0.0, "Validating", task)
         
             # depending on output type, do some specific validation:
             if output["name"] == "render":
@@ -96,7 +93,7 @@ class PrePublishHook(Hook):
                         errors.append("Could not find nuke node for item '%s'!" % item["name"])
                     else:
                         # do pre-publish:              
-                        errors = self._nuke_pre_publish_write_node_render(write_node, write_node_app)
+                        errors = self._nuke_pre_publish_write_node_render(write_node, write_node_app, progress_cb)
             else:
                 # don't know how to publish other output types!
                 errors.append("Don't know how to publish this item!")      
@@ -106,14 +103,18 @@ class PrePublishHook(Hook):
                 # add result:
                 results.append({"task":task, "errors":errors})
             
+            progress_cb(100)
+            
         return results
         
-    def _nuke_pre_publish_write_node_render(self, write_node, write_node_app):
+    def _nuke_pre_publish_write_node_render(self, write_node, write_node_app, progress_cb):
         """
         Pre-publish render output for write node
         """
         errors = []
         try:
+            progress_cb(10.0, "Finding rendered files")
+            
             # get list of render files:
             render_files = write_node_app.get_node_render_files(write_node)
             if len(render_files) == 0:
@@ -127,10 +128,15 @@ class PrePublishHook(Hook):
                 render_template = write_node_app.get_node_render_template(write_node)
                 publish_template = write_node_app.get_node_publish_template(write_node)                        
                 tank_type = write_node_app.get_node_tank_type(write_node)
+        
+                progress_cb(25.0, "Checking for existing files")
                 
                 # check files:
                 existing_files = []
-                for rf in render_files:
+                for fi, rf in enumerate(render_files):
+                    
+                    progress_cb(25 + (75*(len(render_files)/(fi+1))))
+                    
                     # construct the publish path:
                     fields = render_template.get_fields(rf)
                     fields["TankType"] = tank_type

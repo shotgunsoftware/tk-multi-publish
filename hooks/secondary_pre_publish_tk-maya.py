@@ -69,16 +69,13 @@ class PrePublishHook(Hook):
         results = []
         
         # validate tasks:
-        num_tasks = len(tasks)
-        for ti, task in enumerate(tasks):
+        for task in tasks:
             item = task["item"]
             output = task["output"]
             errors = []
         
             # report progress:
-            progress = (100.0/num_tasks) * ti
-            msg = "Validating %s for output %s" % (item["name"], output["name"])
-            progress_cb(progress, msg)
+            progress_cb(0, "Validating", task)
         
             # pre-publish item here, e.g.
             #if output["name"] == "foo":
@@ -91,6 +88,8 @@ class PrePublishHook(Hook):
             if len(errors) > 0:
                 # add result:
                 results.append({"task":task, "errors":errors})
+                
+            progress_cb(100)
             
         return results
 

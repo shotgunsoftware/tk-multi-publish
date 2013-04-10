@@ -34,22 +34,25 @@ class PostPublishHook(Hook):
         
         # depending on engine:
         if engine_name == "tk-maya":
-            self._do_maya_post_publish(work_template)
+            self._do_maya_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
-            self._do_nuke_post_publish(work_template)
+            self._do_nuke_post_publish(work_template, progress_cb)
         else:
             raise TankError("Unable to perform post publish for unhandled engine %s" % engine_name)
         
-    def _do_maya_post_publish(self, work_template):
+    def _do_maya_post_publish(self, work_template, progress_cb):
         """
         Do any Maya post-publish work
         """        
         import maya.cmds as cmds
         
+        progress_cb(0, "Versioning up the scene file")
+        
         # get the current scene path:
         scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         
         # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
         fields = work_template.get_fields(scene_path)
         next_version = self._get_next_work_file_version(work_template, fields)
         fields["version"] = next_version 
@@ -59,20 +62,26 @@ class PostPublishHook(Hook):
         self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
         
         # rename and save the file
+        progress_cb(50, "Saving the scene file")
         cmds.file(rename=new_scene_path)
         cmds.file(save=True)
+        
+        progress_cb(100)
 
-    def _do_nuke_post_publish(self, work_template):
+    def _do_nuke_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
         """        
         import nuke
+        
+        progress_cb(0, "Versioning up the script")
         
         # get the current script path:
         original_path = nuke.root().name()
         script_path = os.path.abspath(original_path.replace("/", os.path.sep))
         
         # increment version and construct new name:
+        progress_cb(25, "Finding next version number")
         fields = work_template.get_fields(script_path)
         next_version = self._get_next_work_file_version(work_template, fields)
         fields["version"] = next_version 
@@ -87,13 +96,16 @@ class PostPublishHook(Hook):
         # update write nodes:
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         if write_node_app:
-            self.parent.log_debug("Resetting render paths for all write nodes")
+            progress_cb(50, "Resetting render paths for write nodes")
             # reset render paths for all write nodes:
             for wn in write_node_app.get_write_nodes():
                  write_node_app.reset_node_render_path(wn)
                         
         # save the script:
+        progress_cb(75, "Saving the scene file")
         nuke.scriptSaveAs(new_path)
+        
+        progress_cb(100)
 
         
     def _get_next_work_file_version(self, work_template, fields):

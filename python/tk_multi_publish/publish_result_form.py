@@ -51,9 +51,24 @@ class PublishResultForm(QtGui.QWidget):
         self.close.emit()
         
     def _update_ui(self):
-        
         self._ui.status_icon.setPixmap(QtGui.QPixmap([":/res/failure.png", ":/res/success.png"][self._status]))
         self._ui.status_title.setText(["Failure!", "Success"][self._status])
-        self._ui.status_details.setText("\n\n".join(self._errors))
+        
+        details = ""
+        if self._status:
+            details = ("Your Publish has  successfully completed. Your "
+                      "work has been shared, your scene has been "
+                      "versioned up and your mates have been notified!")
+        else:
+            details = "\n\n".join(self._errors)
+        self._ui.status_details.setText(details)
+        
+        
+        
+        
+        
+        
+        
+        
         
         

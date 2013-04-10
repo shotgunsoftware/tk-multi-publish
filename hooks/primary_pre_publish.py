@@ -71,15 +71,18 @@ class PrimaryPrePublishHook(Hook):
         """
         import maya.cmds as cmds
         
+        progress_cb(0.0, "Validating current scene", task)
+        
         # get the current scene file:
         scene_file = cmds.file(query=True, sn=True)
         if scene_file:
             scene_file = os.path.abspath(scene_file)
             
-        # TODO: update progress
-            
         # validate it:
-        scene_errors = self._validate_work_file(scene_file, work_template, task["output"])  
+        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
         return scene_errors
         
     def _do_nuke_pre_publish(self, task, work_template, progress_cb):
@@ -88,18 +91,21 @@ class PrimaryPrePublishHook(Hook):
         """
         import nuke
         
+        progress_cb(0, "Validating current script", task)
+        
         # get the current script file path:
         script_file = nuke.root().name().replace("/", os.path.sep)
         if script_file:
             script_file = os.path.abspath(script_file)
-
-        # TODO: update progress
             
         # validate it
-        script_errors = self._validate_work_file(script_file, work_template, task["output"])
+        script_errors = self._validate_work_file(script_file, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+        
         return script_errors
         
-    def _validate_work_file(self, path, work_template, output):
+    def _validate_work_file(self, path, work_template, output, progress_cb):
         """
         Validate that the given path is a valid work file and that
         the published version of it doesn't already exist.
@@ -109,8 +115,12 @@ class PrimaryPrePublishHook(Hook):
         """
         errors = []
         
+        progress_cb(25, "Validating work file")
+        
         if not work_template.validate(path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % path)
+        
+        progress_cb(50, "Validating publish path")
         
         # find the publish path:
         fields = work_template.get_fields(path)
@@ -120,6 +130,8 @@ class PrimaryPrePublishHook(Hook):
         
         if os.path.exists(publish_path):
             raise TankError("A published file named '%s' already exists!" % publish_path)
+        
+        progress_cb(75, "Validating current version")
         
         # check the version number against existing versions:
         # TODO: this check is from the original maya publish - should
