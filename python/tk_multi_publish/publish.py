@@ -187,7 +187,7 @@ class PublishHandler(object):
         # check for any other publish errors:
         for task in selected_tasks:
             for error in task.publish_errors:
-                publish_errors.append("%s, %s: %s" % (task.item.name, task.output.name, error))
+                publish_errors.append("%s, %s: %s" % (task.output.display_name, task.item.name, error))
         
         # if publish didn't fail then do post publish:
         if publish_failed:
