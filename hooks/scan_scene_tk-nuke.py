@@ -58,10 +58,7 @@ class ScanSceneHook(Hook):
         
         script_file = script_name.replace("/", os.path.sep)
         script_name = os.path.basename(script_file)
-        items.append({ 
-            "type": "work_file",
-            "name": script_name, 
-            "description": ""})
+        items.append({"type": "work_file", "name": script_name})
         
         # find tk-nuke-writenode app
         app = tank.platform.current_engine().apps.get("tk-nuke-writenode")

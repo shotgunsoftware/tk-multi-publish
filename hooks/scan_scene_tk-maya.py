@@ -61,10 +61,7 @@ class ScanSceneHook(Hook):
         name = os.path.basename(scene_path)
 
         # create the primary item - this will match the primary output 'scene_item_type':            
-        items.append({ 
-            "type": "work_file", 
-            "name": name,
-            "description": ""})
+        items.append({"type": "work_file", "name": name})
         
         # (AD) - FOR DEBUG ONLY!
         """
