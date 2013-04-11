@@ -14,7 +14,7 @@ class CopyFile(Hook):
     Hook called when a file needs to be copied
     """
     
-    def execute(self, source_path, target_path, **kwargs):
+    def execute(self, source_path, target_path, task, **kwargs):
         """
         Main hook entry point
         
@@ -23,6 +23,10 @@ class CopyFile(Hook):
                         
         :target_path:   String
                         Target file path to copy to
+                        
+        :task:          Dictionary
+                        The publish task that this file is being 
+                        copied for 
                         
         :returns:       None
         """

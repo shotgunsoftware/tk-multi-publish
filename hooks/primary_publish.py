@@ -111,7 +111,7 @@ class PrimaryPublishHook(Hook):
             publish_folder = os.path.dirname(publish_path)
             self.parent.ensure_folder_exists(publish_folder)
             self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
-            self.parent.copy_file(scene_path, publish_path)
+            self.parent.copy_file(scene_path, publish_path, task)
         except Exception, e:
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
@@ -181,7 +181,7 @@ class PrimaryPublishHook(Hook):
             publish_folder = os.path.dirname(publish_path)
             self.parent.ensure_folder_exists(publish_folder)
             self.parent.log_debug("Copying %s --> %s..." % (script_path, publish_path))
-            self.parent.copy_file(script_path, publish_path)
+            self.parent.copy_file(script_path, publish_path, task)
         except Exception, e:
             raise TankError("Failed to copy file from %s to %s - %s" % (script_path, publish_path, e))
 

@@ -27,13 +27,13 @@ configuration:
 
     hook_copy_file:
         type: hook
-        parameters: [source_path, target_path]
+        parameters: [source_path, target_path, task]
         default_value: copy_file
         description: Specify a hook to copy the file 'source_path' to 'target_path'.
                      This hook is used in the 'copy_file' utility function and can
                      be accessed from other hooks by calling
                      
-                        self.parent.copy_file(source_path, target_path)
+                        self.parent.copy_file(source_path, target_path, task)
                      
                      from within the hook.
 

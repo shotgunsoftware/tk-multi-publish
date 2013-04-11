@@ -28,7 +28,7 @@ class MultiPublish(tank.platform.Application):
     def destroy_app(self):
         self.log_debug("Destroying tk-multi-publish")
         
-    def copy_file(self, source_path, target_path):
+    def copy_file(self, source_path, target_path, task):
         """
         Utility method to copy a file from source_path to
         target_path.  Uses the copy file hook specified in 
@@ -36,4 +36,5 @@ class MultiPublish(tank.platform.Application):
         """
         self.execute_hook("hook_copy_file", 
                           source_path=source_path, 
-                          target_path=target_path)
+                          target_path=target_path,
+                          task=task)

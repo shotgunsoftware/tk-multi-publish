@@ -106,7 +106,7 @@ class PublishHook(Hook):
                     if not write_node:
                         raise TankError("Could not determined node for item '%s'!" % item["name"])
                     
-                    self._publish_write_node_render(write_node, write_node_app, primary_publish_path, sg_task, comment, progress_cb)
+                    self._publish_write_node_render(task, write_node, write_node_app, primary_publish_path, sg_task, comment, progress_cb)
                 except Exception, e:
                     errors.append("Publish failed - %s" % e)
             else:
@@ -122,7 +122,7 @@ class PublishHook(Hook):
 
         return results
 
-    def _publish_write_node_render(self, write_node, write_node_app, published_script_path, sg_task, comment, progress_cb):
+    def _publish_write_node_render(self, task, write_node, write_node_app, published_script_path, sg_task, comment, progress_cb):
         """
         Publish render output for write node
         """
@@ -153,7 +153,7 @@ class PublishHook(Hook):
             try:
                 target_folder = os.path.dirname(target_path)
                 self.parent.ensure_folder_exists(target_folder)
-                self.parent.copy_file(rf, target_path)
+                self.parent.copy_file(rf, target_path, task)
             except Exception, e:
                 raise TankError("Failed to copy file from %s to %s - %s" % (rf, target_path, e))
             
