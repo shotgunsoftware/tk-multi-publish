@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_form.ui'
 #
-# Created: Wed Apr 10 16:15:05 2013
+# Created: Tue Apr 16 22:23:17 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,7 +31,6 @@ class Ui_PublishForm(object):
         self.horizontalLayout_2.addWidget(self.primary_icon_label)
         self.primary_details_label = QtGui.QLabel(PublishForm)
         self.primary_details_label.setStyleSheet("#primary_details_label {\n"
-"font-size: 16pt;\n"
 "}")
         self.primary_details_label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.primary_details_label.setMargin(1)
@@ -65,7 +64,7 @@ class Ui_PublishForm(object):
 
     def retranslateUi(self, PublishForm):
         PublishForm.setWindowTitle(QtGui.QApplication.translate("PublishForm", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.primary_details_label.setText(QtGui.QApplication.translate("PublishForm", "<b>Output Name</b><br>Description...<br>the third line...", None, QtGui.QApplication.UnicodeUTF8))
+        self.primary_details_label.setText(QtGui.QApplication.translate("PublishForm", "<span style=\'font-size: 16px\'}><b>Output Name</b></span><span style=\'font-size: 12px\'}><br>Description...<br>the third line...</span>", None, QtGui.QApplication.UnicodeUTF8))
 
 from ..publish_progress_form import PublishProgressForm
 from ..publish_details_form import PublishDetailsForm

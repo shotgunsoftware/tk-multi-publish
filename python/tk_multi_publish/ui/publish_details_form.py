@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Tue Apr 16 17:39:21 2013
+# Created: Tue Apr 16 22:23:17 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,8 +23,9 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.items_title_label = QtGui.QLabel(PublishDetailsForm)
         self.items_title_label.setStyleSheet("#items_title_label {\n"
-"font-size: 14pt\n"
+"font-size: 14px\n"
 "}")
+        self.items_title_label.setIndent(4)
         self.items_title_label.setObjectName("items_title_label")
         self.verticalLayout_7.addWidget(self.items_title_label)
         self.publishes_stacked_widget = QtGui.QStackedWidget(PublishDetailsForm)
@@ -97,8 +98,9 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.info_title_label = QtGui.QLabel(PublishDetailsForm)
         self.info_title_label.setStyleSheet("#info_title_label {\n"
-"font-size: 14pt\n"
+"font-size: 14px\n"
 "}")
+        self.info_title_label.setIndent(4)
         self.info_title_label.setObjectName("info_title_label")
         self.verticalLayout_5.addWidget(self.info_title_label)
         self.info_frame = QtGui.QFrame(PublishDetailsForm)
@@ -115,7 +117,7 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.label_6 = QtGui.QLabel(self.info_frame)
         self.label_6.setStyleSheet("QLabel {\n"
-"font-size: 12pt;\n"
+"font-size: 12px;\n"
 "}")
         self.label_6.setObjectName("label_6")
         self.verticalLayout_6.addWidget(self.label_6)
@@ -147,15 +149,13 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout_6.addItem(spacerItem4)
         self.label_7 = QtGui.QLabel(self.info_frame)
         self.label_7.setStyleSheet("QLabel {\n"
-"font-size: 12pt;\n"
+"font-size: 12px;\n"
 "}")
         self.label_7.setObjectName("label_7")
         self.verticalLayout_6.addWidget(self.label_7)
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
         self.horizontalLayout_6.setSpacing(0)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        spacerItem5 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem5)
         self.thumbnail_frame = QtGui.QFrame(self.info_frame)
         self.thumbnail_frame.setStyleSheet("#thumbnail_frame {\n"
 "border-style: solid;\n"
@@ -177,14 +177,14 @@ class Ui_PublishDetailsForm(object):
         self.thumbnail_widget.setObjectName("thumbnail_widget")
         self.horizontalLayout_3.addWidget(self.thumbnail_widget)
         self.horizontalLayout_6.addWidget(self.thumbnail_frame)
-        spacerItem6 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem6)
+        spacerItem5 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem5)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
-        spacerItem7 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        self.verticalLayout_6.addItem(spacerItem7)
+        spacerItem6 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        self.verticalLayout_6.addItem(spacerItem6)
         self.label_8 = QtGui.QLabel(self.info_frame)
         self.label_8.setStyleSheet("QLabel {\n"
-"font-size: 12pt;\n"
+"font-size: 12px;\n"
 "}")
         self.label_8.setObjectName("label_8")
         self.verticalLayout_6.addWidget(self.label_8)
@@ -200,8 +200,8 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem8)
+        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem7)
         self.cancel_btn = QtGui.QPushButton(PublishDetailsForm)
         self.cancel_btn.setMinimumSize(QtCore.QSize(80, 0))
         self.cancel_btn.setObjectName("cancel_btn")
@@ -215,7 +215,7 @@ class Ui_PublishDetailsForm(object):
 
         self.retranslateUi(PublishDetailsForm)
         self.publishes_stacked_widget.setCurrentIndex(1)
-        self.sg_task_stacked_widget.setCurrentIndex(0)
+        self.sg_task_stacked_widget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(PublishDetailsForm)
 
     def retranslateUi(self, PublishDetailsForm):

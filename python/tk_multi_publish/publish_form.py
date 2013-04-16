@@ -163,10 +163,13 @@ class PublishForm(QtGui.QWidget):
                 self._ui.primary_icon_label.setPixmap(icon)
                     
         lines = []
-        lines.append("<b>%s - %s</b>" % (task.output.display_name, task.item.name))
-        lines.append("%s" % task.output.description)
-        lines.append("%s" % task.item.description)
-        details_txt = "<br>".join(lines)
+        
+        lines.append("<span style='font-size: 16px'}><b>%s - %s</b></span><span style='font-size: 12px'}>" % (task.output.display_name, task.item.name))
+        if task.output.description:
+            lines.append("%s" % task.output.description)
+        if task.item.description:
+            lines.append("%s" % task.item.description)
+        details_txt = "%s</span>" % "<br>".join(lines) 
         self._ui.primary_details_label.setText(details_txt)
         
     def _on_publish(self):

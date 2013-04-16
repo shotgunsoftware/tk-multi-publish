@@ -60,11 +60,10 @@
       <widget class="QLabel" name="primary_details_label">
        <property name="styleSheet">
         <string notr="true">#primary_details_label {
-font-size: 16pt;
 }</string>
        </property>
        <property name="text">
-        <string>&lt;b&gt;Output Name&lt;/b&gt;&lt;br&gt;Description...&lt;br&gt;the third line...</string>
+        <string>&lt;span style='font-size: 16px'}&gt;&lt;b&gt;Output Name&lt;/b&gt;&lt;/span&gt;&lt;span style='font-size: 12px'}&gt;&lt;br&gt;Description...&lt;br&gt;the third line...&lt;/span&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

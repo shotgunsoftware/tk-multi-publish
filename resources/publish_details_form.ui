@@ -28,11 +28,14 @@
         <widget class="QLabel" name="items_title_label">
          <property name="styleSheet">
           <string notr="true">#items_title_label {
-font-size: 14pt
+font-size: 14px
 }</string>
          </property>
          <property name="text">
           <string>Choose Additional Items to Publish:</string>
+         </property>
+         <property name="indent">
+          <number>4</number>
          </property>
         </widget>
        </item>
@@ -203,11 +206,14 @@ border-color: rgb(32,32,32);
         <widget class="QLabel" name="info_title_label">
          <property name="styleSheet">
           <string notr="true">#info_title_label {
-font-size: 14pt
+font-size: 14px
 }</string>
          </property>
          <property name="text">
           <string>Add Information about your Publish:</string>
+         </property>
+         <property name="indent">
+          <number>4</number>
          </property>
         </widget>
        </item>
@@ -232,7 +238,7 @@ border-color: rgb(32,32,32);
            <widget class="QLabel" name="label_6">
             <property name="styleSheet">
              <string notr="true">QLabel {
-font-size: 12pt;
+font-size: 12px;
 }</string>
             </property>
             <property name="text">
@@ -243,7 +249,7 @@ font-size: 12pt;
           <item>
            <widget class="QStackedWidget" name="sg_task_stacked_widget">
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="sg_task_menu_page">
              <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -300,7 +306,7 @@ font-size: 12pt;
            <widget class="QLabel" name="label_7">
             <property name="styleSheet">
              <string notr="true">QLabel {
-font-size: 12pt;
+font-size: 12px;
 }</string>
             </property>
             <property name="text">
@@ -313,19 +319,6 @@ font-size: 12pt;
             <property name="spacing">
              <number>0</number>
             </property>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>0</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item>
              <widget class="QFrame" name="thumbnail_frame">
               <property name="styleSheet">
@@ -404,7 +397,7 @@ background: rgb(117,117,117);
            <widget class="QLabel" name="label_8">
             <property name="styleSheet">
              <string notr="true">QLabel {
-font-size: 12pt;
+font-size: 12px;
 }</string>
             </property>
             <property name="text">
