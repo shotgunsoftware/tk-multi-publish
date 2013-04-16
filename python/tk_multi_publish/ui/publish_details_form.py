@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Wed Apr 10 16:15:05 2013
+# Created: Tue Apr 16 17:39:21 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_PublishDetailsForm(object):
     def setupUi(self, PublishDetailsForm):
         PublishDetailsForm.setObjectName("PublishDetailsForm")
-        PublishDetailsForm.resize(706, 562)
+        PublishDetailsForm.resize(771, 592)
         self.verticalLayout = QtGui.QVBoxLayout(PublishDetailsForm)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -46,7 +46,7 @@ class Ui_PublishDetailsForm(object):
         self.task_scroll.setWidgetResizable(True)
         self.task_scroll.setObjectName("task_scroll")
         self.contents = QtGui.QWidget()
-        self.contents.setGeometry(QtCore.QRect(0, 0, 241, 426))
+        self.contents.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.contents.setObjectName("contents")
         self.task_scroll.setWidget(self.contents)
         self.horizontalLayout_7.addWidget(self.task_scroll)
@@ -158,15 +158,17 @@ class Ui_PublishDetailsForm(object):
         self.horizontalLayout_6.addItem(spacerItem5)
         self.thumbnail_frame = QtGui.QFrame(self.info_frame)
         self.thumbnail_frame.setStyleSheet("#thumbnail_frame {\n"
-"border-style: Solid;\n"
+"border-style: solid;\n"
+"border-color: rgb(32,32,32);\n"
+"border-width: 1px;\n"
 "border-radius: 3px;\n"
-"background: rgb(32,32,32);\n"
+"background: rgb(117,117,117);\n"
 "}")
         self.thumbnail_frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.thumbnail_frame.setFrameShadow(QtGui.QFrame.Raised)
         self.thumbnail_frame.setObjectName("thumbnail_frame")
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.thumbnail_frame)
-        self.horizontalLayout_3.setContentsMargins(2, 2, 2, 2)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.thumbnail_widget = ThumbnailWidget(self.thumbnail_frame)
         self.thumbnail_widget.setMinimumSize(QtCore.QSize(200, 130))
