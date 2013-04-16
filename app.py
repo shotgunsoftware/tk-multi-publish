@@ -23,7 +23,13 @@ class MultiPublish(tank.platform.Application):
         
         # register commands:
         display_name = self.get_setting("display_name")
-        self.engine.register_command("%s..." % display_name, self._publish_handler.show_publish_dlg)
+        
+        # make a shell-engine friendly command name
+        command_name = display_name.lower().replace(" ", "_")
+        
+        self.engine.register_command(command_name, 
+                                     self._publish_handler.show_publish_dlg, 
+                                     {"title": "%s..." % display_name})
         
     def destroy_app(self):
         self.log_debug("Destroying tk-multi-publish")
