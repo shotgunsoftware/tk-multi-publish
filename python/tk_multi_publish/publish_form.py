@@ -40,7 +40,8 @@ class PublishForm(QtGui.QWidget):
         # always start with the details page:
         self.show_publish_details()
         
-        #self._update_ui()
+        # initialize:
+        self._initialize()
         
     @property
     def selected_tasks(self):
@@ -55,19 +56,6 @@ class PublishForm(QtGui.QWidget):
         The shotgun task that the publish should be linked to
         """
         return self._ui.publish_details.shotgun_task
-    @shotgun_task.setter
-    def shotgun_task(self, value):
-        self._ui.publish_details.shotgun_task = value
-        
-    @property
-    def can_change_shotgun_task(self):
-        """
-        Control if the shotgun task can be changed or not
-        """
-        return self._ui.publish_details.can_change_shotgun_task
-    @can_change_shotgun_task.setter
-    def can_change_shotgun_task(self, value):
-        self._ui.publish_details.can_change_shotgun_task = value
         
     @property
     def thumbnail(self):
@@ -75,9 +63,6 @@ class PublishForm(QtGui.QWidget):
         The thumbnail to use for the publish
         """
         return self._ui.publish_details.thumbnail
-    @thumbnail.setter
-    def thumbnail(self, value):
-        self._ui.publish_details.thumbnail = value
          
     @property
     def comment(self):
@@ -85,9 +70,6 @@ class PublishForm(QtGui.QWidget):
         The comment to use for the publish
         """
         return self._ui.publish_details.comment
-    @comment.setter
-    def comment(self, value):
-        self._ui.publish_details.comment = value
     
     def show_publish_details(self):
         self._ui.pages.setCurrentWidget(self._ui.publish_details)
@@ -111,10 +93,16 @@ class PublishForm(QtGui.QWidget):
         self._ui.publish_result.status = success
         self._ui.publish_result.errors = errors
         
-    def initialize(self, tasks, sg_tasks):
+    def _initialize(self):
         """
         Initialize UI with information provided
         """
+        
+        # pull initial data from handler:
+        tasks = self._handler.get_publish_tasks()
+        sg_tasks = self._handler.get_shotgun_tasks()
+        thumbnail = self._handler.get_initial_thumbnail()
+        sg_task = self._app.context.task
         
         # split tasks into primary and secondary:
         primary_task = None
@@ -133,8 +121,14 @@ class PublishForm(QtGui.QWidget):
 
         # initialize publish details form:
         self._ui.publish_details.initialize(secondary_tasks, sg_tasks)
-
         
+        # set the initial thumbnail, comment and shotgun task
+        self._ui.publish_details.comment = ""
+        self._ui.publish_details.thumbnail = thumbnail
+        self._ui.publish_details.shotgun_task = sg_task
+        if sg_task:
+            self._ui.publish_details.can_change_shotgun_task = False
+         
     def _get_selected_tasks(self):
         """
         Get a list of the selected tasks that 

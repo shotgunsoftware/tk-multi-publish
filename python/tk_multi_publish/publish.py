@@ -48,7 +48,17 @@ class PublishHandler(object):
         """
         Displays the publish dialog
         """
-
+        
+        # create new multi-publish dialog instance
+        from .publish_form import PublishForm
+        display_name = self._app.get_setting("display_name")
+        self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
+        self._publish_ui.publish.connect(self._on_publish)
+    
+    def get_publish_tasks(self):
+        """
+        Get the list of tasks that can be published
+        """
         # scan scene for items
         items = []
         try:
@@ -63,29 +73,30 @@ class PublishHandler(object):
         # build task list:            
         tasks = self._build_task_list(items)
         
-        # create new multi-publish dialog instance
-        from .publish_form import PublishForm
-        display_name = self._app.get_setting("display_name")
-        self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
-        self._publish_ui.publish.connect(self._on_publish)
-        
-        # get list of shotgun tasks for the current context:
-        sg_tasks = self._get_shotgun_tasks()
-        
-        # initialize UI:
-        self._publish_ui.initialize(tasks, sg_tasks)
-        
-        # thumbnail:
-        thumbnail = QtGui.QPixmap(self._app.execute_hook("hook_thumbnail"))
-        self._publish_ui.thumbnail = thumbnail
-        
-        if self._app.context.task:
-            self._publish_ui.shotgun_task = self._app.context.task
-            # if current task successfully set to the context task
-            # then disable task selection:
-            current_task = self._publish_ui.shotgun_task
-            self._publish_ui.can_change_shotgun_task = (current_task and current_task["id"] != self._app.context.task["id"])
+        return tasks
     
+    def get_shotgun_tasks(self):
+        """
+        Pull a list of tasks from shotgun based on the current context
+        """
+
+        filters = [["entity", "is", self._app.context.entity]]
+        if self._app.context.step:
+            filters += [["step", "is", self._app.context.step]]
+        order = [{"field_name":"step", "direction":"asc"}, {"field_name":"content", "direction":"asc"}]
+        fields = ["step", "content"]
+        
+        sg_tasks = self._app.shotgun.find("Task", filters=filters, fields=fields, order=order)
+
+        return sg_tasks
+
+    def get_initial_thumbnail(self):
+        """
+        Get the initial thumbnail to use for the publish
+        """
+        return QtGui.QPixmap(self._app.execute_hook("hook_thumbnail"))
+    
+            
     def _on_publish(self):
         """
         Slot called when publish signal is emitted from the UI
@@ -397,62 +408,6 @@ class PublishHandler(object):
         self._app.execute_hook( "hook_post_publish",  
                                 work_template = self._work_template,
                                 progress_cb=progress_cb)
-                
-    def _get_shotgun_tasks(self):
-        """
-        Pull a list of tasks from shotgun based on the current context
-        """
-
-        filters = [["entity", "is", self._app.context.entity]]
-        if self._app.context.step:
-            filters += [["step", "is", self._app.context.step]]
-        order = [{"field_name":"step", "direction":"asc"}, {"field_name":"content", "direction":"asc"}]
-        fields = ["step", "content"]
-        
-        sg_tasks = self._app.shotgun.find("Task", filters=filters, fields=fields, order=order)
-
-        return sg_tasks
-             
-                
-    """
-    # (AD) - old code but may be needed
-    def __show_publish_dlg_ORIG(self):
-        # create dialog and hook up signals:
-        #
-        # first try to get the current window - it seems that
-        # keeping a handle isn't reliable as the underlying c++
-        # QWidget can get deleted even though the python object
-        # is still valid
-        # (AD) - need to check if this is a Maya specific problem
-        # and if it is then try to move to engine rather than have
-        # the handling done here!
-        win = None
-        if self._publish_dlg:
-            try:
-                win = self._publish_dlg.window()
-            except Exception, e:
-                # supress exception!
-                win = None
-                self._publish_dlg = None
-        
-        if win:
-            if not win.isVisible():
-                # window was hidden/closed so clear, show and then reload:
-                self._clear_ui()
-                win.show()
-                self._initialize_ui()
-        else:
-            # create new multi-publish dialog instance
-            from .publish_ui import PublishUI
-            display_name = self._app.get_setting("display_name")
-            self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishUI, self._app, self)
-            self._publish_ui.publish.connect(self._on_publish)
-            #self._publish_ui.closed.connect(self.__ui_on_closed)
-            self._initialize_ui()
-
-        # make sure it is active:
-        self._publish_ui.activateWindow()
-    """
-
+    
 
     

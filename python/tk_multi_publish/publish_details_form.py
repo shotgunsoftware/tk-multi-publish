@@ -120,7 +120,7 @@ class PublishDetailsForm(QtGui.QWidget):
         
         # add tasks:
         for task in sg_tasks:
-            label = "%s | %s" % (task["step"]["name"], task["content"])
+            label = "%s, %s" % (task["step"]["name"], task["content"])
             self._ui.sg_task_combo.addItem(label, task)
 
         # reselect selected task if it is still in list:
@@ -131,6 +131,8 @@ class PublishDetailsForm(QtGui.QWidget):
         Select the specified task in the shotgun task
         combo box
         """
+        
+        # update the selection combo:
         found_index = 0
         for ii in range(0, self._ui.sg_task_combo.count()):
             item_task = self._ui.sg_task_combo.itemData(ii)
@@ -144,8 +146,13 @@ class PublishDetailsForm(QtGui.QWidget):
             if found:
                 found_index = ii
                 break
-            
         self._ui.sg_task_combo.setCurrentIndex(found_index)
+        
+        # also update the static label:
+        label = "None!"
+        if found_index > 0:
+            label = self._ui.sg_task_combo.itemText(found_index)
+        self._ui.sg_task_label.setText(label)
             
     def _populate_task_list(self):
         """

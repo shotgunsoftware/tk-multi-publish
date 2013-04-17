@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Tue Apr 16 22:23:17 2013
+# Created: Wed Apr 17 08:57:49 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -139,10 +139,10 @@ class Ui_PublishDetailsForm(object):
         self.horizontalLayout_5.setSpacing(0)
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.label = QtGui.QLabel(self.sg_task_label_page)
-        self.label.setIndent(12)
-        self.label.setObjectName("label")
-        self.horizontalLayout_5.addWidget(self.label)
+        self.sg_task_label = QtGui.QLabel(self.sg_task_label_page)
+        self.sg_task_label.setIndent(12)
+        self.sg_task_label.setObjectName("sg_task_label")
+        self.horizontalLayout_5.addWidget(self.sg_task_label)
         self.sg_task_stacked_widget.addWidget(self.sg_task_label_page)
         self.verticalLayout_6.addWidget(self.sg_task_stacked_widget)
         spacerItem4 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
@@ -224,7 +224,7 @@ class Ui_PublishDetailsForm(object):
         self.label_3.setText(QtGui.QApplication.translate("PublishDetailsForm", "<i>This publisher does not have any optional items to choose from.<br><br>Only your current work file will be published.</i>", None, QtGui.QApplication.UnicodeUTF8))
         self.info_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add Information about your Publish:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("PublishDetailsForm", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Anm, Animation", None, QtGui.QApplication.UnicodeUTF8))
+        self.sg_task_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Anm, Animation", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add a Thumbnail?", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("PublishDetailsForm", "Any Comments?", None, QtGui.QApplication.UnicodeUTF8))
         self.cancel_btn.setText(QtGui.QApplication.translate("PublishDetailsForm", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
