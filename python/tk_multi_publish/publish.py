@@ -159,12 +159,8 @@ class PublishHandler(object):
         try:
             self._do_pre_publish(primary_task, secondary_tasks, progress.report)
         except TankError, e:
-            # an exception means that we can't perform the publish so show
-            # dialog and stop processing
-            
-            # TODO - show tank dialog!
             QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
-                                          "Publish has been stopped for the following reason:\n\n%s\n\nUnable to continue!" % e)
+                                          "Pre-Publish Failed!\n\n%s" % e)
             publish_form.show_publish_details()
             return
         except Exception, e:
