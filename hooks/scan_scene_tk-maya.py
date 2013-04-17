@@ -55,7 +55,7 @@ class ScanSceneHook(Hook):
         # get the main scene:
         scene_name = cmds.file(query=True, sn=True)
         if not scene_name:
-            raise TankError("The current scene has not been saved.  Please save as a valid work file before continuing")
+            raise TankError("Please Save your file before Publishing")
         
         scene_path = os.path.abspath(scene_name)
         name = os.path.basename(scene_path)
