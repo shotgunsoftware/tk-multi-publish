@@ -29,7 +29,6 @@ class PublishHandler(object):
         Construction
         """
         self._app = app
-        self._publish_ui = None
 
         self._work_template = self._app.get_template("template_work")
 
@@ -49,26 +48,25 @@ class PublishHandler(object):
         Displays the publish dialog
         """
         
-        # create new multi-publish dialog instance
-        from .publish_form import PublishForm
-        display_name = self._app.get_setting("display_name")
-        self._publish_ui = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
-        self._publish_ui.publish.connect(self._on_publish)
+        try:
+            # create new multi-publish dialog instance
+            from .publish_form import PublishForm
+            display_name = self._app.get_setting("display_name")
+            form = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
+            form.publish.connect(lambda f = form: self._on_publish(f))
+        except TankError, e:
+            QtGui.QMessageBox.critical(None, "Unable to publish!", 
+                                          "Unable to publish:\n\n\t%s\n\n" % e)
+            return
+        except Exception, e:
+            self._app.log_exception("Unable to publish")
     
     def get_publish_tasks(self):
         """
         Get the list of tasks that can be published
         """
         # scan scene for items
-        items = []
-        try:
-            # build list of publish tasks:
-            items = self._scan_scene()
-        except TankError, e:
-            # TODO: replace with tank dialog!
-            QtGui.QMessageBox.critical(self._publish_ui, "Unable to publish!", 
-                                          "Unable to publish:\n\n\t%s\n\n" % e)
-            return
+        items = self._scan_scene()
 
         # build task list:            
         tasks = self._build_task_list(items)
@@ -97,31 +95,31 @@ class PublishHandler(object):
         return QtGui.QPixmap(self._app.execute_hook("hook_thumbnail"))
     
             
-    def _on_publish(self):
+    def _on_publish(self, publish_form):
         """
         Slot called when publish signal is emitted from the UI
         """
         
         # get list of tasks from UI:
-        selected_tasks = self._publish_ui.selected_tasks
+        selected_tasks = publish_form.selected_tasks
 
         # stop if can't actually do the publish!
         if not selected_tasks:
             # TODO - replace with tank dialog
-            QtGui.QMessageBox.information(self._publish_ui, "Publish", "Nothing selected to publish - unable to continue!")
+            QtGui.QMessageBox.information(publish_form, "Publish", "Nothing selected to publish - unable to continue!")
             return
             
         # pull rest of info from UI
-        sg_task = self._publish_ui.shotgun_task
-        thumbnail = self._publish_ui.thumbnail
-        comment = self._publish_ui.comment
+        sg_task = publish_form.shotgun_task
+        thumbnail = publish_form.thumbnail
+        comment = publish_form.comment
         
         # create progress reporter and connect to UI:
         progress = TaskProgressReporter(selected_tasks)
-        self._publish_ui.set_progress_reporter(progress)
+        publish_form.set_progress_reporter(progress)
 
         # show pre-publish progress:
-        self._publish_ui.show_publish_progress("Doing Pre-Publish...")
+        publish_form.show_publish_progress("Doing Pre-Publish...")
         progress.reset()
         
         # make dialog modal whilst we're doing work:
@@ -130,11 +128,11 @@ class PublishHandler(object):
         completely mess up the window parenting in Maya so may need to have another
         way to do this or (more likely) move it to a separate dialog!
         
-        geom = self._publish_ui.window().geometry() 
-        self._publish_ui.window().setWindowModality(QtCore.Qt.ApplicationModal)
-        self._publish_ui.window().hide()
-        self._publish_ui.window().show()
-        self._publish_ui.window().setGeometry(geom)
+        geom = publish_form.window().geometry() 
+        publish_form.window().setWindowModality(QtCore.Qt.ApplicationModal)
+        publish_form.window().hide()
+        publish_form.window().show()
+        publish_form.window().setGeometry(geom)
         """
         
         """
@@ -153,17 +151,17 @@ class PublishHandler(object):
             # dialog and stop processing
             
             # TODO - show tank dialog!
-            QtGui.QMessageBox.information(self._publish_ui, "Pre-publish Failed", 
+            QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
                                           "Publish has been stopped for the following reason:\n\n%s\n\nUnable to continue!" % e)
-            self._publish_ui.show_publish_details()
+            publish_form.show_publish_details()
             return
         finally:
             """
             # restore window to be modeless
-            self._publish_ui.window().setWindowModality(QtCore.Qt.NonModal)
-            self._publish_ui.window().hide()
-            self._publish_ui.window().show()  
-            self._publish_ui.window().setGeometry(geom)
+            publish_form.window().setWindowModality(QtCore.Qt.NonModal)
+            publish_form.window().hide()
+            publish_form.window().show()  
+            publish_form.window().setGeometry(geom)
             QtGui.QApplication.processEvents()
             """
             pass
@@ -173,17 +171,17 @@ class PublishHandler(object):
         for task in selected_tasks:
             num_errors += len(task.pre_publish_errors)
         if num_errors > 0:
-            self._publish_ui.show_publish_details()
+            publish_form.show_publish_details()
             
             # TODO: replace with Tank dialog
-            res = QtGui.QMessageBox.warning(self._publish_ui, "Pre-publish Errors", 
+            res = QtGui.QMessageBox.warning(publish_form, "Pre-publish Errors", 
                                              "Pre-publish returned %d errors\n\nWould you like to publish anyway?" % num_errors,
                                              QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if res != QtGui.QMessageBox.Yes:
                 return
                 
         # show publish progress:
-        self._publish_ui.show_publish_progress("Publishing...")
+        publish_form.show_publish_progress("Publishing...")
         progress.reset()
                 
         # do the publish
@@ -205,7 +203,7 @@ class PublishHandler(object):
             # inform that post-publish didn't run
             publish_errors.append("Post-publish was not run due to previous errors!")
         else:
-            self._publish_ui.show_publish_progress("Doing Post-Publish...")
+            publish_form.show_publish_progress("Doing Post-Publish...")
             progress.reset(1)
             
             try:
@@ -214,7 +212,7 @@ class PublishHandler(object):
                 publish_errors.append("Post-publish failed with the following error:\n\t%s" % e)
             
         # show publish result:
-        self._publish_ui.show_publish_result(not publish_errors, publish_errors)
+        publish_form.show_publish_result(not publish_errors, publish_errors)
 
     def _build_task_list(self, items):
         """

@@ -177,7 +177,7 @@ class PublishForm(QtGui.QWidget):
         Slot called when the cancel or close signals in the dialog 
         are recieved
         """
-        self.window().close()
+        self.close()
         
         
         
