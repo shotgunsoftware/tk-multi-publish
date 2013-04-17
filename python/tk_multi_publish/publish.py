@@ -56,7 +56,7 @@ class PublishHandler(object):
             form.publish.connect(lambda f = form: self._on_publish(f))
         except TankError, e:
             QtGui.QMessageBox.critical(None, "Unable to publish!", 
-                                          "Unable to publish:\n\n\t%s\n\n" % e)
+                                          "Unable to publish:\n\n%s" % e)
             return
         except Exception, e:
             self._app.log_exception("Unable to publish")
@@ -109,6 +109,18 @@ class PublishHandler(object):
             QtGui.QMessageBox.information(publish_form, "Publish", "Nothing selected to publish - unable to continue!")
             return
             
+        # split tasks into primary and secondary:
+        primary_task=None
+        secondary_tasks=[]
+        for ti, task in enumerate(selected_tasks):
+            if task.output == self._primary_output:
+                if primary_task:
+                    raise TankError("Found multiple primary tasks to publish!")
+                primary_task = task
+                secondary_tasks = selected_tasks[:ti] + selected_tasks[(ti+1):]
+        if not primary_task:
+            raise TankError("Couldn't find primary task to publish!")
+            
         # pull rest of info from UI
         sg_task = publish_form.shotgun_task
         thumbnail = publish_form.thumbnail
@@ -145,7 +157,7 @@ class PublishHandler(object):
                     
         # do pre-publish:
         try:
-            self._do_pre_publish(selected_tasks, progress.report)
+            self._do_pre_publish(primary_task, secondary_tasks, progress.report)
         except TankError, e:
             # an exception means that we can't perform the publish so show
             # dialog and stop processing
@@ -153,6 +165,10 @@ class PublishHandler(object):
             # TODO - show tank dialog!
             QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
                                           "Publish has been stopped for the following reason:\n\n%s\n\nUnable to continue!" % e)
+            publish_form.show_publish_details()
+            return
+        except Exception, e:
+            self._app.log_exception("Pre-publish Failed")
             publish_form.show_publish_details()
             return
         finally:
@@ -183,33 +199,58 @@ class PublishHandler(object):
         # show publish progress:
         publish_form.show_publish_progress("Publishing...")
         progress.reset()
+
+        # save the thumbnail to a temporary location:
+        thumbnail_path = ""
+        if thumbnail and not thumbnail.isNull():
+            tmp_file = tempfile.NamedTemporaryFile(suffix=".png", prefix="tanktmp", delete=False)
+            thumbnail_path = tmp_file.name
+            tmp_file.close()
+            thumbnail.save(thumbnail_path)
                 
         # do the publish
         publish_errors = []
-        publish_failed = False
-        try:
-            self._do_publish(selected_tasks, sg_task, thumbnail, comment, progress.report)
+        do_post_publish = False
+        try:            
+            # do primary publish:
+            primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
+            if not primary_path:
+                raise TankError("Primary publish didn't return a path!")
+            do_post_publish = True
+            
+            # do secondary publishes:
+            self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
+            
         except TankError, e:
             publish_errors.append("%s" % e)
-            publish_failed = True
+        except Exception, e:
+            self._app.log_exception("Publish Failed")
+            publish_errors.append("%s" % e)
+        finally:
+            # delete temporary thumbnail file:
+            if thumbnail_path:
+                os.remove(thumbnail_path)
         
         # check for any other publish errors:
-        for task in selected_tasks:
+        for task in secondary_tasks:
             for error in task.publish_errors:
                 publish_errors.append("%s, %s: %s" % (task.output.display_name, task.item.name, error))
         
         # if publish didn't fail then do post publish:
-        if publish_failed:
-            # inform that post-publish didn't run
-            publish_errors.append("Post-publish was not run due to previous errors!")
-        else:
+        if do_post_publish:
             publish_form.show_publish_progress("Doing Post-Publish...")
             progress.reset(1)
             
             try:
                 self._do_post_publish(progress.report)
             except TankError, e:
-                publish_errors.append("Post-publish failed with the following error:\n\t%s" % e)
+                publish_errors.append("Post-publish: %s" % e)
+            except Exception, e:
+                self._app.log_exception("Post-publish Failed")
+                publish_errors.append("Post-publish: %s" % e)
+        else:
+            # inform that post-publish didn't run
+            publish_errors.append("Post-publish was not run due to previous errors!")
             
         # show publish result:
         publish_form.show_publish_result(not publish_errors, publish_errors)
@@ -267,30 +308,10 @@ class PublishHandler(object):
                 
         return items
         
-    
-    def _debug_format_tasks_str(self, tasks):
-        tasks_str = "Tasks:"
-        for ti, task in enumerate(tasks):
-            tasks_str += "\n[%d]\tItem: %s" % (ti, task.item.name)
-            tasks_str += "\n   \tOutput: %s" % task.output.display_name
-        return tasks_str
-        
-    def _do_pre_publish(self, tasks, progress_cb):
+    def _do_pre_publish(self, primary_task, secondary_tasks, progress_cb):
         """
         Do pre-publish pass on tasks using the pre-publish hook
         """
-        
-        # split tasks into primary and secondary:
-        primary_task=None
-        secondary_tasks=[]
-        for ti, task in enumerate(tasks):
-            if task.output == self._primary_output:
-                if primary_task:
-                    raise TankError("Found multiple primary tasks to pre-publish!")
-                primary_task = task
-                secondary_tasks = tasks[:ti] + tasks[(ti+1):]
-        if not primary_task:
-            raise TankError("Couldn't find primary task to pre-publish!")
         
         # do pre-publish of primary task:
         primary_task.pre_publish_errors = self._app.execute_hook("hook_primary_pre_publish",  
@@ -319,63 +340,43 @@ class PublishHandler(object):
             except:
                 raise TankError("Badly formed result returned from hook: %s" % result)
                 
-        for task in tasks:
+        for task in secondary_tasks:
             result = result_index.get((task.item.name, task.output.name))
             if result:
                 task.pre_publish_errors = result["errors"]
             else:
                 task.pre_publish_errors = []
-        
-        
-    def _do_publish(self, tasks, sg_task, thumbnail, comment, progress_cb):
+    
+    
+    def _do_primary_publish(self, primary_task, sg_task, thumbnail_path, comment, progress_cb):
         """
-        Do publish of tasks using the publish hook
+        Do publish of primary task with the primary publish hook
         """
-        # split tasks into primary and secondary:
-        primary_task=None
-        secondary_tasks=[]
-        for ti, task in enumerate(tasks):
-            if task.output == self._primary_output:
-                if primary_task:
-                    raise TankError("Found multiple primary tasks to publish!")
-                primary_task = task
-                secondary_tasks = tasks[:ti] + tasks[(ti+1):]
-        if not primary_task:
-            raise TankError("Couldn't find primary task to publish!")
+        primary_path = self._app.execute_hook("hook_primary_publish",  
+                                              task=primary_task.as_dictionary(), 
+                                              work_template = self._work_template,
+                                              comment = comment,
+                                              thumbnail_path = thumbnail_path,
+                                              sg_task = sg_task,
+                                              progress_cb=progress_cb)
+        return primary_path
         
-        # save the thumbnail to a temporary location:
-        thumbnail_path = ""
-        if thumbnail and not thumbnail.isNull():
-            tmp_file = tempfile.NamedTemporaryFile(suffix=".png", prefix="tanktmp", delete=False)
-            thumbnail_path = tmp_file.name
-            tmp_file.close()
-            thumbnail.save(thumbnail_path)
         
-        try:
-            # do publish of primary task:
-            primary_path = self._app.execute_hook("hook_primary_publish",  
-                                                  task=primary_task.as_dictionary(), 
-                                                  work_template = self._work_template,
-                                                  comment = comment,
-                                                  thumbnail_path = thumbnail_path,
-                                                  sg_task = sg_task,
-                                                  progress_cb=progress_cb)
-                
-            # do publish of secondary tasks:            
-            hook_tasks = [task.as_dictionary() for task in secondary_tasks]
-            p_results = self._app.execute_hook("hook_secondary_publish",  
-                                                 tasks=hook_tasks, 
-                                                 work_template = self._work_template,
-                                                 comment = comment,
-                                                 thumbnail_path = thumbnail_path,
-                                                 sg_task = sg_task,
-                                                 primary_publish_path=primary_path,
-                                                 progress_cb=progress_cb)
-        finally:
-            # delete temporary thumbnail file:
-            if thumbnail_path:
-                os.remove(thumbnail_path)
-
+    def _do_secondary_publish(self, secondary_tasks, primary_publish_path, sg_task, thumbnail_path, comment, progress_cb):
+        """
+        Do publish of secondary tasks using the secondary publish hook
+        """
+        # do publish of secondary tasks:            
+        hook_tasks = [task.as_dictionary() for task in secondary_tasks]
+        p_results = self._app.execute_hook("hook_secondary_publish",  
+                                             tasks=hook_tasks, 
+                                             work_template = self._work_template,
+                                             comment = comment,
+                                             thumbnail_path = thumbnail_path,
+                                             sg_task = sg_task,
+                                             primary_publish_path=primary_publish_path,
+                                             progress_cb=progress_cb)
+        
         # push any errors back to tasks:
         result_index = {}
         for result in p_results:
@@ -390,7 +391,7 @@ class PublishHandler(object):
             except:
                 raise TankError("Badly formed result returned from hook: %s" % result)
                 
-        for task in tasks:
+        for task in secondary_tasks:
             result = result_index.get((task.item.name, task.output.name))
             if result:
                 task.publish_errors = result["errors"]
