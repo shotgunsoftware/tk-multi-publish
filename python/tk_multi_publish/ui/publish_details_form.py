@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-# Created: Wed Apr 17 08:57:49 2013
+# Created: Thu Apr 18 17:16:56 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -115,12 +115,12 @@ class Ui_PublishDetailsForm(object):
         self.info_frame.setObjectName("info_frame")
         self.verticalLayout_6 = QtGui.QVBoxLayout(self.info_frame)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.label_6 = QtGui.QLabel(self.info_frame)
-        self.label_6.setStyleSheet("QLabel {\n"
+        self.task_header_label = QtGui.QLabel(self.info_frame)
+        self.task_header_label.setStyleSheet("QLabel {\n"
 "font-size: 12px;\n"
 "}")
-        self.label_6.setObjectName("label_6")
-        self.verticalLayout_6.addWidget(self.label_6)
+        self.task_header_label.setObjectName("task_header_label")
+        self.verticalLayout_6.addWidget(self.task_header_label)
         self.sg_task_stacked_widget = QtGui.QStackedWidget(self.info_frame)
         self.sg_task_stacked_widget.setObjectName("sg_task_stacked_widget")
         self.sg_task_menu_page = QtGui.QWidget()
@@ -223,7 +223,7 @@ class Ui_PublishDetailsForm(object):
         self.items_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Choose Additional Items to Publish:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("PublishDetailsForm", "<i>This publisher does not have any optional items to choose from.<br><br>Only your current work file will be published.</i>", None, QtGui.QApplication.UnicodeUTF8))
         self.info_title_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add Information about your Publish:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("PublishDetailsForm", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
+        self.task_header_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "What Shotgun Task are you working on?", None, QtGui.QApplication.UnicodeUTF8))
         self.sg_task_label.setText(QtGui.QApplication.translate("PublishDetailsForm", "Anm, Animation", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("PublishDetailsForm", "Add a Thumbnail?", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("PublishDetailsForm", "Any Comments?", None, QtGui.QApplication.UnicodeUTF8))

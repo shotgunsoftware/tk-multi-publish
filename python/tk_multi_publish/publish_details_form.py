@@ -84,9 +84,18 @@ class PublishDetailsForm(QtGui.QWidget):
         return self._ui.sg_task_stacked_widget.currenWidget() == self._ui.sg_task_menu_page
     @can_change_shotgun_task.setter
     def can_change_shotgun_task(self, value):
-        page = [self._ui.sg_task_label_page, self._ui.sg_task_menu_page][value]
+        page = None
+        header_txt = ""
+        if value:
+            page = self._ui.sg_task_menu_page
+            header_txt = "What Shotgun Task are you working on?"
+        else:
+            page = self._ui.sg_task_label_page
+            header_txt = "The Publish will be associated with Shotgun Task:"
+
         self._ui.sg_task_stacked_widget.setCurrentWidget(page)
-        
+        self._ui.task_header_label.setText(header_txt)
+                    
     def initialize(self, tasks, sg_tasks):
         """
         Initialize UI
