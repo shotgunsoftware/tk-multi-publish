@@ -87,47 +87,40 @@ configuration:
                      this hook will be responsible for versioning up the scene to the latest 
                      version.
 
-
-    primary_output:
-        type: dict
-        items:
-            scene_item_type:
-                type: str
-                description: Type used to match up items returned from the scan scene
-                             hook with specific outputs
-            display_name:
-                type: str
-                description: The name this output will be given in the UI
-            description:
-                type: str
-                description: Description of this output used in the UI
-            icon:
-                type: config_path
-                description: Icon used for this output in the UI
-            tank_type:
-                type: tank_type
-                description: Tank Type that will be used when registering any published
-                             files published for this output.  
-                             If None then this must be determined within the publish hook.
-            publish_template:
-                type: template
-                required_fields: [version]
-                optional_fields: [name]
-                description: Template used to locate published files within the file system.
-                             If None then this must be determined within the publish hook.
-        description: Specify the primary output that is required and defines the base 
-                     scene export.
-                     The primary output is always named "primary" and a single item from
-                     the scan scene hook must be returned for this output
-                     
-        default_value: {
-            scene_item_type: work_file,
-            display_name: "Current Work File",
-            description: "Publish and version up the current work file",
-            icon: "",
-            tank_type: null,
-            publish_template: null
-            } 
+    primary_scene_item_type:
+        type: str
+        description: This is the type used to match up items returned from the scan 
+                     scene hook with with the primary output
+        default_value: work_file
+        
+    primary_display_name:
+        type: str
+        description: This is the name the primary output will be given in the UI
+        default_value: "Current Work File"
+        
+    primary_description:
+        type: str
+        description: This is the description of the primary output used in the UI
+        default_value: "Publish and version up the current work file"
+        
+    primary_icon:
+        type: config_path
+        description: This is the icon used for the primary output in the UI
+        default_value: ""
+        
+    primary_tank_type:
+        type: tank_type
+        description: This is the Tank Type that will be used when registering the primary
+                     publish. 
+                     If not set then this must be determined within the publish hook.
+        default_value: ""
+        
+    primary_publish_template:
+        type: template
+        required_fields: [version]
+        optional_fields: [name]
+        description: Template used to locate the primary published file within the file 
+                     system.  If None then this must be determined within the publish hook.
 
     secondary_outputs:
         type: list

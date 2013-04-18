@@ -33,7 +33,15 @@ class PublishHandler(object):
         self._work_template = self._app.get_template("template_work")
 
         # load outputs from configuration:
-        self._primary_output = PublishOutput(self._app, self._app.get_setting("primary_output"), name=PublishOutput.PRIMARY_NAME, selected=True, required=True)
+        primary_output_dict = {}
+        primary_output_dict["scene_item_type"] = self._app.get_setting("primary_scene_item_type")
+        primary_output_dict["display_name"] = self._app.get_setting("primary_display_name")
+        primary_output_dict["description"] = self._app.get_setting("primary_description")
+        primary_output_dict["icon"] = self._app.get_setting("primary_icon")
+        primary_output_dict["tank_type"] = self._app.get_setting("primary_tank_type")
+        primary_output_dict["publish_template"] = self._app.get_setting("primary_publish_template")
+        self._primary_output = PublishOutput(self._app, primary_output_dict, name=PublishOutput.PRIMARY_NAME, selected=True, required=True)
+        
         self._secondary_outputs = [PublishOutput(self._app, output) for output in self._app.get_setting("secondary_outputs")]
         
         # make sure that the scene_item_type used for the primary output is 
