@@ -23,7 +23,18 @@ class MultiPublish(tank.platform.Application):
         
         # register commands:
         display_name = self.get_setting("display_name")
-        self.engine.register_command("%s..." % display_name, self._publish_handler.show_publish_dlg)
+        
+        # "Publish Render" ---> publish_render
+        command_name = display_name.lower().replace(" ", "_")
+        if command_name.endswith("..."):
+            command_name = command_name[:-3]
+        params = {"short_name": command_name, 
+                  "title": "%s..." % display_name,
+                  "description": "Publishing of data into Tank"}
+        
+        self.engine.register_command("%s..." % display_name, 
+                                     self._publish_handler.show_publish_dlg, 
+                                     params)
         
     def destroy_app(self):
         self.log_debug("Destroying tk-multi-publish")
