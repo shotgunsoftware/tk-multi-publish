@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'group_header.ui'
 #
-# Created: Tue Apr 16 22:23:18 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
-from PySide import QtCore, QtGui
+from tank.platform.qt import QtCore, QtGui
 
 class Ui_GroupHeader(object):
     def setupUi(self, GroupHeader):

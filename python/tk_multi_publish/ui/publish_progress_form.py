@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'publish_progress_form.ui'
 #
-# Created: Tue Apr 16 22:23:17 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
-from PySide import QtCore, QtGui
+from tank.platform.qt import QtCore, QtGui
 
 class Ui_PublishProgressForm(object):
     def setupUi(self, PublishProgressForm):

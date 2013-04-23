@@ -1,22 +1,45 @@
 #!/usr/bin/env bash
 # 
-# Copyright (c) 2008 Shotgun Software, Inc
+# Copyright (c) 2013 Shotgun Software, Inc
 # ----------------------------------------------------
 
+# The path to output all built .py files to: 
+UI_PYTHON_PATH=../python/tk_multi_publish/ui
+
+
+# Helper functions to build UI files
+function build_qt {
+    echo " > Building " $2
+    
+    # compile ui to python
+    $1 $2 > $UI_PYTHON_PATH/$3.py
+    
+    # replace PySide imports with tank.platform.qt and remove line containing Created by date
+    sed -i "" -e "s/from PySide import/from tank.platform.qt import/g" -e "/# Created:/d" $UI_PYTHON_PATH/$3.py
+}
+
+function build_ui {
+    build_qt "pyside-uic --from-imports" "$1.ui" "$1"
+}  
+
+function build_res {
+    build_qt "pyside-rcc" "$1.qrc" "$1_rc"
+}
+
+
+# build UI's:
 echo "building user interfaces..."
-pyside-uic --from-imports publish_form.ui > ../python/tk_multi_publish/ui/publish_form.py
-pyside-uic --from-imports publish_details_form.ui > ../python/tk_multi_publish/ui/publish_details_form.py
-pyside-uic --from-imports publish_progress_form.ui > ../python/tk_multi_publish/ui/publish_progress_form.py
-pyside-uic --from-imports publish_result_form.ui > ../python/tk_multi_publish/ui/publish_result_form.py
+build_ui publish_form
+build_ui publish_details_form
+build_ui publish_progress_form
+build_ui publish_result_form
+build_ui output_item
+build_ui group_header
+build_ui item_list
+build_ui item
+build_ui error_list
+build_ui error_item
 
-pyside-uic --from-imports output_item.ui > ../python/tk_multi_publish/ui/output_item.py
-pyside-uic --from-imports group_header.ui > ../python/tk_multi_publish/ui/group_header.py
-
-pyside-uic --from-imports item_list.ui > ../python/tk_multi_publish/ui/item_list.py
-pyside-uic --from-imports item.ui > ../python/tk_multi_publish/ui/item.py
-
-pyside-uic --from-imports error_list.ui > ../python/tk_multi_publish/ui/error_list.py
-pyside-uic --from-imports error_item.ui > ../python/tk_multi_publish/ui/error_item.py
-
+# build resources
 echo "building resources..."
-pyside-rcc resources.qrc > ../python/tk_multi_publish/ui/resources_rc.py
+build_res resources
