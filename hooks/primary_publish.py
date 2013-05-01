@@ -72,6 +72,8 @@ class PrimaryPublishHook(Hook):
             return self._do_maya_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-3dsmax":
+            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
@@ -139,9 +141,76 @@ class PrimaryPublishHook(Hook):
         """
         Find additional dependencies from the scene
         """
-        # initial implementation does nothing!
+        # default implementation does nothing!
         return []
+        
+    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main 3ds Max scene
+        """
+        from Py3dsMax import mxs
+        
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._3dsmax_find_additional_scene_dependencies()
+        
+        # get scene path
+        scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
+        
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+        
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+        
+        # save the scene:
+        progress_cb(10.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        mxs.saveMaxFile(scene_path)
+        
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
+        # work out publish name:
+        publish_name = fields.get("name").capitalize()
+        if not publish_name:
+            publish_name = os.path.basename(script_path)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path, 
+                               publish_name, 
+                               sg_task, 
+                               fields["version"], 
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path, 
+                               dependencies)
+        
+        progress_cb(100)
+        
+        return publish_path
+
+    def _3dsmax_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the scene
+        """
+        # default implementation does nothing!
+        return []
+        
     def _do_nuke_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Nuke script
