@@ -62,9 +62,30 @@ class PrimaryPrePublishHook(Hook):
             return self._do_maya_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-hiero":
+            return self._do_hiero_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
+    def _do_hiero_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Hiero primary pre-publish validation
+        """
+        import hiero
+
+        progress_cb(0.0, "Validating current project", task)
+
+        # get the current pproject file
+        project = hiero.core.projects()[-1]
+        project_file = project.path()
+
+        # validate it:
+        scene_errors = self._validate_work_file(project_file, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
+        return scene_errors
+
     def _do_maya_pre_publish(self, task, work_template, progress_cb):
         """
         Do Maya primary pre-publish/scene validation

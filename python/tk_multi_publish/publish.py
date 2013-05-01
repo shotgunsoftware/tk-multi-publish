@@ -222,7 +222,8 @@ class PublishHandler(object):
             do_post_publish = True
             
             # do secondary publishes:
-            self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
+            if secondary_tasks:
+                self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
             
         except TankError, e:
             publish_errors.append("%s" % e)
@@ -323,8 +324,10 @@ class PublishHandler(object):
                                                                 progress_cb=progress_cb)
 
         # do pre-publish of secondary tasks:
-        hook_tasks = [task.as_dictionary() for task in secondary_tasks]
-        pp_results = self._app.execute_hook("hook_secondary_pre_publish",  
+        pp_results = {}
+        if secondary_tasks:
+            hook_tasks = [task.as_dictionary() for task in secondary_tasks]
+            pp_results = self._app.execute_hook("hook_secondary_pre_publish",  
                                             tasks=hook_tasks, 
                                             work_template = self._work_template,
                                             progress_cb=progress_cb)
