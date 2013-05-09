@@ -160,13 +160,15 @@ configuration:
                     type: tank_type
                     description: Tank Type that will be used when registering any published
                                  files published for this output.  
-                                 If None then this must be determined within the publish hook.
+                                 If set to '' then this must be determined within the publish hook.
                 publish_template:
                     type: template
                     required_fields: [version]
                     optional_fields: [name]
+                    allows_empty: True
                     description: Template used to locate published files within the file system.
-                                 If None then this must be determined within the publish hook.
+                                 If null then this must be determined within the publish hook.
+
         decription: Specify all other outputs that are supported.
                     All non-primary items returned from the scan scene hook must match
                     up with one of these secondary types
