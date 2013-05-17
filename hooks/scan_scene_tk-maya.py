@@ -62,25 +62,5 @@ class ScanSceneHook(Hook):
 
         # create the primary item - this will match the primary output 'scene_item_type':            
         items.append({"type": "work_file", "name": name})
-        
-        # (AD) - FOR DEBUG ONLY!
-        """
-        items.append({ 
-            "type": "light_rig", 
-            "name": "|secondary_lighting",
-            "selected":True,
-            "description": "blah blah blah"})
-        
-        items.append({ 
-            "type": "model", 
-            "name": "|car",
-            "required":True,
-            "description": "blah blah blah"})
-        items.append({ 
-            "type": "model", 
-            "name": "|boat",
-            "selected":False,
-            "required":False,
-            "description": "blah blah blah"})
-        """
+
         return items
