@@ -141,8 +141,50 @@ class PrimaryPublishHook(Hook):
         """
         Find additional dependencies from the scene
         """
-        # default implementation does nothing!
-        return []
+        import maya.cmds as cmds
+
+        # default implementation looks for references and 
+        # textures (file nodes) and returns any paths that
+        # match a template defined in the configuration
+        ref_paths = set()
+        
+        # first let's look at maya references     
+        ref_nodes = cmds.ls(references=True)
+        for ref_node in ref_nodes:
+            # get the path:
+            ref_path = cmds.referenceQuery(ref_node, filename=True)
+            # make it platform dependent
+            # (maya uses C:/style/paths)
+            ref_path = ref_path.replace("/", os.path.sep)
+            if ref_path:
+                ref_paths.add(ref_path)
+            
+        # now look at file texture nodes    
+        for file_node in cmds.ls(l=True, type="file"):
+            # ensure this is actually part of this scene and not referenced
+            if cmds.referenceQuery(file_node, isNodeReferenced=True):
+                # this is embedded in another reference, so don't include it in the
+                # breakdown
+                continue
+
+            # get path and make it platform dependent
+            # (maya uses C:/style/paths)
+            texture_path = cmds.getAttr("%s.fileTextureName" % file_node).replace("/", os.path.sep)
+            if texture_path:
+                ref_paths.add(texture_path)
+            
+        # now, for each reference found, build a list of the ones
+        # that resolve against a template:
+        dependency_paths = []
+        for ref_path in ref_paths:
+            # see if there is a template that is valid for this path:
+            for template in self.parent.tank.templates.values():
+                if template.validate(ref_path):
+                    dependency_paths.append(ref_path)
+                    break
+
+        return dependency_paths
+    
         
     def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
