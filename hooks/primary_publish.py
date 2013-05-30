@@ -356,7 +356,7 @@ class PrimaryPublishHook(Hook):
             "thumbnail_path": thumbnail_path,
             "task": sg_task,
             "dependency_paths": dependency_paths,
-            "tank_type":tank_type,
+            "published_file_type":tank_type,
         }
         
         # register publish;
