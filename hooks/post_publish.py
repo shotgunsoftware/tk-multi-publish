@@ -37,11 +37,41 @@ class PostPublishHook(Hook):
             self._do_maya_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-hiero":
+            self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             self._do_3dsmax_post_publish(work_template, progress_cb)
         else:
             raise TankError("Unable to perform post publish for unhandled engine %s" % engine_name)
+    
+    def _do_hiero_post_publish(self, work_template, progress_cb):
+        """
+        Do any Hiero post-publish work
+        """        
+        import hiero
         
+        progress_cb(0, "Versioning up the scene file")
+        
+        # get project path
+        project = hiero.core.projects()[-1]
+        project_path = project.path()
+        
+        # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(project_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version 
+        new_project_path = work_template.apply_fields(fields)
+        
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (project_path, new_project_path))
+        
+        # rename and save the file
+        progress_cb(50, "Saving the scene file")
+        project.saveAs(new_project_path)
+        
+        progress_cb(100)
+
     def _do_maya_post_publish(self, work_template, progress_cb):
         """
         Do any Maya post-publish work

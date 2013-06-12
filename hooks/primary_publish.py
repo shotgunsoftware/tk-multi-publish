@@ -72,11 +72,84 @@ class PrimaryPublishHook(Hook):
             return self._do_maya_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-hiero":
+            return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
+    def _do_hiero_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        """
+        """
+        Publish the main Maya scene
+        """
+        import hiero
+        
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._hiero_find_additional_scene_dependencies()
+        
+        # get project path
+        # TODO: Importante hacer el cambio en la forma de obtener el proyecto
+        project = hiero.core.projects()[-1]
+        project_path = project.path()
+        
+        if not work_template.validate(project_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % project_path)
+        
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(project_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+        
+        # save the project:
+        progress_cb(10.0, "Saving the project")
+        self.parent.log_debug("Saving the project...")
+        project.save()
+        
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (project_path, publish_path))
+            self.parent.copy_file(project_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (project_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = fields.get("name").capitalize()
+        if not publish_name:
+            publish_name = os.path.basename(project_path)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path, 
+                               publish_name, 
+                               sg_task, 
+                               fields["version"], 
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path, 
+                               dependencies)
+        
+        progress_cb(100)
+        
+        return publish_path
+
+    def _hiero_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the project
+        """
+        # initial implementation does nothing!
+        return []
+
     def _do_maya_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Maya scene
