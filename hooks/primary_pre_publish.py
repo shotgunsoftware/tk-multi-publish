@@ -64,6 +64,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-3dsmax":
+            return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
@@ -98,6 +100,24 @@ class PrimaryPrePublishHook(Hook):
         scene_file = cmds.file(query=True, sn=True)
         if scene_file:
             scene_file = os.path.abspath(scene_file)
+            
+        # validate it:
+        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
+        return scene_errors
+        
+    def _do_3dsmax_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do 3ds Max primary pre-publish/scene validation
+        """
+        from Py3dsMax import mxs
+        
+        progress_cb(0.0, "Validating current scene", task)
+        
+        # get the current scene file:
+        scene_file = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
             
         # validate it:
         scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)

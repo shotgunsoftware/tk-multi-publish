@@ -74,6 +74,8 @@ class PrimaryPublishHook(Hook):
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-3dsmax":
+            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
@@ -89,6 +91,7 @@ class PrimaryPublishHook(Hook):
         dependencies = self._hiero_find_additional_scene_dependencies()
         
         # get project path
+        # TODO: Importante hacer el cambio en la forma de obtener el proyecto
         project = hiero.core.projects()[-1]
         project_path = project.path()
         
@@ -211,9 +214,118 @@ class PrimaryPublishHook(Hook):
         """
         Find additional dependencies from the scene
         """
-        # initial implementation does nothing!
-        return []
+        import maya.cmds as cmds
 
+        # default implementation looks for references and 
+        # textures (file nodes) and returns any paths that
+        # match a template defined in the configuration
+        ref_paths = set()
+        
+        # first let's look at maya references     
+        ref_nodes = cmds.ls(references=True)
+        for ref_node in ref_nodes:
+            # get the path:
+            ref_path = cmds.referenceQuery(ref_node, filename=True)
+            # make it platform dependent
+            # (maya uses C:/style/paths)
+            ref_path = ref_path.replace("/", os.path.sep)
+            if ref_path:
+                ref_paths.add(ref_path)
+            
+        # now look at file texture nodes    
+        for file_node in cmds.ls(l=True, type="file"):
+            # ensure this is actually part of this scene and not referenced
+            if cmds.referenceQuery(file_node, isNodeReferenced=True):
+                # this is embedded in another reference, so don't include it in the
+                # breakdown
+                continue
+
+            # get path and make it platform dependent
+            # (maya uses C:/style/paths)
+            texture_path = cmds.getAttr("%s.fileTextureName" % file_node).replace("/", os.path.sep)
+            if texture_path:
+                ref_paths.add(texture_path)
+            
+        # now, for each reference found, build a list of the ones
+        # that resolve against a template:
+        dependency_paths = []
+        for ref_path in ref_paths:
+            # see if there is a template that is valid for this path:
+            for template in self.parent.tank.templates.values():
+                if template.validate(ref_path):
+                    dependency_paths.append(ref_path)
+                    break
+
+        return dependency_paths
+    
+        
+    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main 3ds Max scene
+        """
+        from Py3dsMax import mxs
+        
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._3dsmax_find_additional_scene_dependencies()
+        
+        # get scene path
+        scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
+        
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+        
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+        
+        # save the scene:
+        progress_cb(10.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        mxs.saveMaxFile(scene_path)
+        
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = fields.get("name").capitalize()
+        if not publish_name:
+            publish_name = os.path.basename(script_path)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path, 
+                               publish_name, 
+                               sg_task, 
+                               fields["version"], 
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path, 
+                               dependencies)
+        
+        progress_cb(100)
+        
+        return publish_path
+
+    def _3dsmax_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the scene
+        """
+        # default implementation does nothing!
+        return []
+        
     def _do_nuke_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Nuke script
@@ -317,7 +429,7 @@ class PrimaryPublishHook(Hook):
             "thumbnail_path": thumbnail_path,
             "task": sg_task,
             "dependency_paths": dependency_paths,
-            "tank_type":tank_type,
+            "published_file_type":tank_type,
         }
         
         # register publish;

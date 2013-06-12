@@ -47,6 +47,7 @@ class Ui_PublishResultForm(object):
         self.status_details = QtGui.QLabel(PublishResultForm)
         self.status_details.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.status_details.setWordWrap(True)
+        self.status_details.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.status_details.setObjectName("status_details")
         self.verticalLayout_3.addWidget(self.status_details)
         self.verticalLayout_3.setStretch(1, 1)

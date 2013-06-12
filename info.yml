@@ -81,7 +81,7 @@ configuration:
 
     hook_post_publish:
         type: hook
-        parmaters: [work_template, progress_cb]
+        parameters: [work_template, progress_cb]
         default_value: post_publish
         description: Specify the hook that will be used to do any post-publish work.  Typically, 
                      this hook will be responsible for versioning up the scene to the latest 
@@ -160,13 +160,15 @@ configuration:
                     type: tank_type
                     description: Tank Type that will be used when registering any published
                                  files published for this output.  
-                                 If None then this must be determined within the publish hook.
+                                 If set to '' then this must be determined within the publish hook.
                 publish_template:
                     type: template
                     required_fields: [version]
                     optional_fields: [name]
+                    allows_empty: True
                     description: Template used to locate published files within the file system.
-                                 If None then this must be determined within the publish hook.
+                                 If null then this must be determined within the publish hook.
+
         decription: Specify all other outputs that are supported.
                     All non-primary items returned from the scan scene hook must match
                     up with one of these secondary types
@@ -184,7 +186,7 @@ description: "Provides UI and functionality to publish files to Shotgun."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.12.21"
+requires_core_version: "v0.13.22"
 requires_engine_version: 
 
 # this app works in all engines - it does not contain 
@@ -193,5 +195,5 @@ supported_engines:
 
 # the frameworks required to run this app
 frameworks:
-    - {"name": "tk-framework-widget", "version": "v0.1.12"}
+    - {"name": "tk-framework-widget", "version": "v0.1.13"}
     
