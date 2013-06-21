@@ -110,8 +110,8 @@ configuration:
         
     primary_tank_type:
         type: tank_type
-        description: This is the Tank Type that will be used when registering the primary
-                     publish. 
+        description: This is the type that will be used when registering the primary
+                     published file with Shotgun. 
                      If not set then this must be determined within the publish hook.
         default_value: ""
         
@@ -158,8 +158,8 @@ configuration:
                                  the UI.
                 tank_type:
                     type: tank_type
-                    description: Tank Type that will be used when registering any published
-                                 files published for this output.  
+                    description: The type that will be used when registering any published
+                                 files for this output with Shotgun.  
                                  If set to '' then this must be determined within the publish hook.
                 publish_template:
                     type: template

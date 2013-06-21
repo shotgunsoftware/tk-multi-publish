@@ -129,7 +129,7 @@ class PublishHook(Hook):
  
         if write_node_app.is_node_render_path_locked(write_node):
             # this is a fatal error as publishing would result in inconsistent paths for the rendered files!
-            raise TankError("The render path is currently locked and does not match match the current Tank work area.")
+            raise TankError("The render path is currently locked and does not match match the current Work Area.")
  
         progress_cb(10, "Finding rendered files")
  
