@@ -44,12 +44,25 @@ class PublishHandler(object):
         
         self._secondary_outputs = [PublishOutput(self._app, output) for output in self._app.get_setting("secondary_outputs")]
         
-        # make sure that the scene_item_type used for the primary output is 
-        # not used for any of the secondary outputs
-        for item_type in [output.scene_item_type for output in self._secondary_outputs]:
-            if item_type == self._primary_output.scene_item_type:
-                raise Exception("Secondary output is defined with the same scene_item_type (%s) as the primary output - this is not allowed"
-                                % self._primary_output.scene_item_type)  
+        # validate the secondary outputs:
+        unique_names = []
+        for output in self._secondary_outputs:
+            # secondary output name can't be primary 
+            if output.name == PublishOutput.PRIMARY_NAME:
+                raise TankError("Secondary output name cannot be '%s'" % PublishOutput.PRIMARY_NAME)
+            
+            # output names must be unique:
+            if output.name in unique_names:
+                raise TankError("Multiple secondary outputs found with the name '%s'" % output.name)
+            unique_names.append(output.name)
+            
+            # secondary output scene item type can't be the same as the primary scene 
+            # item type (the interface doesn't allow it!)
+            # TODO: This may be a redundant requirement but need to confirm
+            # before removing
+            if output.scene_item_type == self._primary_output.scene_item_type:
+                raise TankError("Secondary output is defined with the same scene_item_type (%s) as the primary output - this is not allowed"
+                                % self._primary_output.scene_item_type)
         
     def show_publish_dlg(self):
         """
