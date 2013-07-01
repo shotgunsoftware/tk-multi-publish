@@ -77,7 +77,7 @@ class PublishHandler(object):
             form.publish.connect(lambda f = form: self._on_publish(f))
         except TankError, e:
             QtGui.QMessageBox.information(None, "Unable To Publish!", "%s" % e)
-            return
+            self._app.log_exception("Unable to publish")
         except Exception, e:
             self._app.log_exception("Unable to publish")
     
@@ -179,6 +179,7 @@ class PublishHandler(object):
         try:
             self._do_pre_publish(primary_task, secondary_tasks, progress.report)
         except TankError, e:
+            self._app.log_exception("Pre-publish Failed")
             QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
                                           "Pre-Publish Failed!\n\n%s" % e)
             publish_form.show_publish_details()
@@ -238,6 +239,7 @@ class PublishHandler(object):
             self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
             
         except TankError, e:
+            self._app.log_exception("Publish Failed")
             publish_errors.append("%s" % e)
         except Exception, e:
             self._app.log_exception("Publish Failed")
@@ -260,6 +262,7 @@ class PublishHandler(object):
             try:
                 self._do_post_publish(progress.report)
             except TankError, e:
+                self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
             except Exception, e:
                 self._app.log_exception("Post-publish Failed")
