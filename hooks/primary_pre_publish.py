@@ -62,6 +62,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_maya_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-houdini":
+            return self._do_houdini_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
@@ -104,7 +106,27 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
         
         return script_errors
-        
+
+    def _do_houdini_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Hiero primary pre-publish/scene validation
+        """
+        import hou
+
+        progress_cb(0, "Validating current script", task)
+
+        # get the current script file path:
+        script_file = hou.hipFile.name()
+        if script_file:
+            script_file = os.path.abspath(script_file)
+
+        # validate it
+        script_errors = self._validate_work_file(script_file, work_template, task["output"], progress_cb)
+
+        progress_cb(100)
+
+        return script_errors
+
     def _validate_work_file(self, path, work_template, output, progress_cb):
         """
         Validate that the given path is a valid work file and that
