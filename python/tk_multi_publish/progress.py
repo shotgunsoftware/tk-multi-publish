@@ -9,7 +9,7 @@ class ProgressReporter(QtCore.QObject):
     """
     Simple progress interface
     """
-    progress = QtCore.Signal(float, str)
+    progress = QtCore.Signal(float, object)
     
     def __init__(self, stage_count=1):
         """

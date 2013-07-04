@@ -14,7 +14,7 @@
 	<key>BackgroundGraphic</key>
 	<dict>
 		<key>Bounds</key>
-		<string>{{0, 0}, {559.27555274963379, 782.8897705078125}}</string>
+		<string>{{0, 0}, {559.28997802734375, 782.8900146484375}}</string>
 		<key>Class</key>
 		<string>SolidGraphic</string>
 		<key>ID</key>
@@ -51,6 +51,73 @@
 	<integer>8</integer>
 	<key>GraphicsList</key>
 	<array>
+		<dict>
+			<key>Class</key>
+			<string>Group</string>
+			<key>Graphics</key>
+			<array>
+				<dict>
+					<key>Bounds</key>
+					<string>{{402.34344482421875, 34.5}, {57.313095004901008, 75}}</string>
+					<key>Class</key>
+					<string>ShapedGraphic</string>
+					<key>ID</key>
+					<integer>57597</integer>
+					<key>ImageID</key>
+					<integer>11</integer>
+					<key>Shape</key>
+					<string>Rectangle</string>
+					<key>Style</key>
+					<dict>
+						<key>fill</key>
+						<dict>
+							<key>Draws</key>
+							<string>NO</string>
+						</dict>
+						<key>shadow</key>
+						<dict>
+							<key>Draws</key>
+							<string>NO</string>
+						</dict>
+						<key>stroke</key>
+						<dict>
+							<key>Draws</key>
+							<string>NO</string>
+						</dict>
+					</dict>
+				</dict>
+				<dict>
+					<key>Bounds</key>
+					<string>{{391, 32}, {80, 80}}</string>
+					<key>Class</key>
+					<string>ShapedGraphic</string>
+					<key>ID</key>
+					<integer>57598</integer>
+					<key>Shape</key>
+					<string>Rectangle</string>
+					<key>Style</key>
+					<dict>
+						<key>fill</key>
+						<dict>
+							<key>Draws</key>
+							<string>NO</string>
+						</dict>
+						<key>shadow</key>
+						<dict>
+							<key>Draws</key>
+							<string>NO</string>
+						</dict>
+						<key>stroke</key>
+						<dict>
+							<key>Draws</key>
+							<string>NO</string>
+						</dict>
+					</dict>
+				</dict>
+			</array>
+			<key>ID</key>
+			<integer>57596</integer>
+		</dict>
 		<dict>
 			<key>Bounds</key>
 			<string>{{384, 128.49999736281325}, {87, 75}}</string>
@@ -419,10 +486,7 @@
 		</dict>
 	</array>
 	<key>GridInfo</key>
-	<dict>
-		<key>ShowsGrid</key>
-		<string>YES</string>
-	</dict>
+	<dict/>
 	<key>GuidesLocked</key>
 	<string>NO</string>
 	<key>GuidesVisible</key>
@@ -430,9 +494,10 @@
 	<key>HPages</key>
 	<integer>1</integer>
 	<key>ImageCounter</key>
-	<integer>10</integer>
+	<integer>12</integer>
 	<key>ImageLinkBack</key>
 	<array>
+		<dict/>
 		<dict/>
 		<dict/>
 		<dict/>
@@ -443,6 +508,7 @@
 	</array>
 	<key>ImageList</key>
 	<array>
+		<string>image11.tiff</string>
 		<string>image9.tiff</string>
 		<string>image8.png</string>
 		<string>image7.png</string>
@@ -488,7 +554,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2013-04-04 11:36:42 +0000</string>
+	<string>2013-05-01 15:47:15 +0000</string>
 	<key>Modifier</key>
 	<string>Alan Dann</string>
 	<key>NotesVisible</key>
@@ -519,7 +585,7 @@
 		<key>NSPaperSize</key>
 		<array>
 			<string>size</string>
-			<string>{595.27555274963379, 841.8897705078125}</string>
+			<string>{595.28997802734375, 841.8900146484375}</string>
 		</array>
 		<key>NSPrintReverseOrientation</key>
 		<array>
@@ -591,7 +657,7 @@
 			<array>
 				<string>Canvas 1</string>
 				<real>1</real>
-				<real>0.5</real>
+				<real>2</real>
 			</array>
 		</array>
 	</dict>

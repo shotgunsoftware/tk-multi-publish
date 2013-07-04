@@ -113,6 +113,12 @@ class PrePublishHook(Hook):
         """
         errors = []
         try:
+            # check to see if the write node path is currently locked:
+            if write_node_app.is_node_render_path_locked(write_node):
+                # renders for the write node can't be published - trying to publish 
+                # will result in an error in the publish hook!
+                errors.append("The render path is currently locked and does not match match the current Work Area.")
+            
             progress_cb(10.0, "Finding rendered files")
             
             # get list of render files:

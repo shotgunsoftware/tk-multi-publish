@@ -44,12 +44,25 @@ class PublishHandler(object):
         
         self._secondary_outputs = [PublishOutput(self._app, output) for output in self._app.get_setting("secondary_outputs")]
         
-        # make sure that the scene_item_type used for the primary output is 
-        # not used for any of the secondary outputs
-        for item_type in [output.scene_item_type for output in self._secondary_outputs]:
-            if item_type == self._primary_output.scene_item_type:
-                raise Exception("Secondary output is defined with the same scene_item_type (%s) as the primary output - this is not allowed"
-                                % self._primary_output.scene_item_type)  
+        # validate the secondary outputs:
+        unique_names = []
+        for output in self._secondary_outputs:
+            # secondary output name can't be primary 
+            if output.name == PublishOutput.PRIMARY_NAME:
+                raise TankError("Secondary output name cannot be '%s'" % PublishOutput.PRIMARY_NAME)
+            
+            # output names must be unique:
+            if output.name in unique_names:
+                raise TankError("Multiple secondary outputs found with the name '%s'" % output.name)
+            unique_names.append(output.name)
+            
+            # secondary output scene item type can't be the same as the primary scene 
+            # item type (the interface doesn't allow it!)
+            # TODO: This may be a redundant requirement but need to confirm
+            # before removing
+            if output.scene_item_type == self._primary_output.scene_item_type:
+                raise TankError("Secondary output is defined with the same scene_item_type (%s) as the primary output - this is not allowed"
+                                % self._primary_output.scene_item_type)
         
     def show_publish_dlg(self):
         """
@@ -64,7 +77,7 @@ class PublishHandler(object):
             form.publish.connect(lambda f = form: self._on_publish(f))
         except TankError, e:
             QtGui.QMessageBox.information(None, "Unable To Publish!", "%s" % e)
-            return
+            self._app.log_exception("Unable to publish")
         except Exception, e:
             self._app.log_exception("Unable to publish")
     
@@ -166,6 +179,7 @@ class PublishHandler(object):
         try:
             self._do_pre_publish(primary_task, secondary_tasks, progress.report)
         except TankError, e:
+            self._app.log_exception("Pre-publish Failed")
             QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
                                           "Pre-Publish Failed!\n\n%s" % e)
             publish_form.show_publish_details()
@@ -225,6 +239,7 @@ class PublishHandler(object):
             self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
             
         except TankError, e:
+            self._app.log_exception("Publish Failed")
             publish_errors.append("%s" % e)
         except Exception, e:
             self._app.log_exception("Publish Failed")
@@ -247,6 +262,7 @@ class PublishHandler(object):
             try:
                 self._do_post_publish(progress.report)
             except TankError, e:
+                self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
             except Exception, e:
                 self._app.log_exception("Post-publish Failed")

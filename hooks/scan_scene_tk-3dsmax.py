@@ -5,7 +5,7 @@ Copyright (c) 2013 Shotgun Software, Inc
 """
 
 import os
-import maya.cmds as cmds
+from Py3dsMax import mxs
 
 import tank
 from tank import Hook
@@ -53,14 +53,10 @@ class ScanSceneHook(Hook):
         items = []
         
         # get the main scene:
-        scene_name = cmds.file(query=True, sn=True)
-        if not scene_name:
+        if not mxs.maxFileName:
             raise TankError("Please Save your file before Publishing")
         
-        scene_path = os.path.abspath(scene_name)
-        name = os.path.basename(scene_path)
-
-        # create the primary item - this will match the primary output 'scene_item_type':            
-        items.append({"type": "work_file", "name": name})
+        # create the primary item - 'type' should match the 'primary_scene_item_type':            
+        items.append({"type": "work_file", "name": mxs.maxFileName})
 
         return items

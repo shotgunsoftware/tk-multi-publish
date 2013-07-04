@@ -56,15 +56,15 @@ class PublishDetailsForm(QtGui.QWidget):
 
     @property
     def shotgun_task(self):
-        current_index = self._ui.sg_task_combo.currentIndex()
-        return self._ui.sg_task_combo.itemData(current_index) if current_index >= 0 else None
+        return self._get_sg_task_combo_task(self._ui.sg_task_combo.currentIndex())
+        
     @shotgun_task.setter
     def shotgun_task(self, value):
         self._set_current_shotgun_task(value)
         
     @property
     def comment(self):
-        return self._ui.comments_edit.toPlainText().strip()
+        return str(self._ui.comments_edit.toPlainText()).strip()
     @comment.setter
     def comment(self, value):
         self._ui.comments_edit.setPlainText(value)
@@ -112,13 +112,27 @@ class PublishDetailsForm(QtGui.QWidget):
         # populate outputs list:
         self._populate_task_list()
         
+    def _get_sg_task_combo_task(self, index):
+        """
+        Get the shotgun task for the currently selected item in the task combo
+        """
+        task = self._ui.sg_task_combo.itemData(index) if index >= 0 else None
+        if task:
+            if hasattr(QtCore, "QVariant") and isinstance(task, QtCore.QVariant):
+                task = task.toPyObject()
+                
+            # task is also a tuple ({}, ) to avoid PyQt QString conversion fun!
+            if task:
+                task = task[0]
+            
+        return task
+        
     def _populate_shotgun_tasks(self, sg_tasks, allow_no_task = True):
         """
         Populate the shotgun task combo box with the provided
         list of shotgun tasks
         """
-        current_index = self._ui.sg_task_combo.currentIndex()
-        current_task = (self._ui.sg_task_combo.itemData(current_index) if current_index >= 0 else None)
+        current_task = self._get_sg_task_combo_task(self._ui.sg_task_combo.currentIndex())
         self._ui.sg_task_combo.clear()
         
         # add 'no task' task:
@@ -130,7 +144,7 @@ class PublishDetailsForm(QtGui.QWidget):
         # add tasks:
         for task in sg_tasks:
             label = "%s, %s" % (task["step"]["name"], task["content"])
-            self._ui.sg_task_combo.addItem(label, task)
+            self._ui.sg_task_combo.addItem(label, (task, ))
 
         # reselect selected task if it is still in list:
         self._set_current_shotgun_task(current_task)
@@ -144,7 +158,7 @@ class PublishDetailsForm(QtGui.QWidget):
         # update the selection combo:
         found_index = 0
         for ii in range(0, self._ui.sg_task_combo.count()):
-            item_task = self._ui.sg_task_combo.itemData(ii)
+            item_task = self._get_sg_task_combo_task(ii)
             
             found = False
             if not task:

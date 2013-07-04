@@ -127,6 +127,10 @@ class PublishHook(Hook):
         Publish render output for write node
         """
  
+        if write_node_app.is_node_render_path_locked(write_node):
+            # this is a fatal error as publishing would result in inconsistent paths for the rendered files!
+            raise TankError("The render path is currently locked and does not match match the current Work Area.")
+ 
         progress_cb(10, "Finding rendered files")
  
         # get info we need in order to do the publish:
@@ -210,7 +214,7 @@ class PublishHook(Hook):
             "thumbnail_path": thumbnail_path,
             "task": sg_task,
             "dependency_paths": dependency_paths,
-            "tank_type":tank_type,
+            "published_file_type":tank_type,
         }
         
         # register publish;
