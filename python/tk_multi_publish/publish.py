@@ -97,10 +97,18 @@ class PublishHandler(object):
         """
         Pull a list of tasks from shotgun based on the current context
         """
-
-        filters = [["entity", "is", self._app.context.entity]]
+        filters = []
+        if self._app.context.entity is None:
+            # looks like we have a project only context!
+            # in this case, show tasks associated with the project
+            filters.append( ["entity", "is", self._app.context.project] )
+        else:
+            # std entity based context
+            filters.append( ["entity", "is", self._app.context.entity] )
+        
         if self._app.context.step:
-            filters += [["step", "is", self._app.context.step]]
+            filters.append( ["step", "is", self._app.context.step] )
+        
         order = [{"field_name":"step", "direction":"asc"}, {"field_name":"content", "direction":"asc"}]
         fields = ["step", "content"]
         
@@ -207,10 +215,13 @@ class PublishHandler(object):
             publish_form.show_publish_details()
             
             # TODO: replace with Tank dialog
-            res = QtGui.QMessageBox.warning(publish_form, "Pre-publish Errors", 
-                                             "Pre-publish returned %d errors\n\nWould you like to publish anyway?" % num_errors,
+            res = QtGui.QMessageBox.warning(publish_form, 
+                                            "Pre-publish Messages", 
+                                            ("Pre-publish checks returned some messages for "
+                                            "your attention. \n\nWould you like to go back and review "
+                                            "these prior to publish?"),
                                              QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            if res != QtGui.QMessageBox.Yes:
+            if res == QtGui.QMessageBox.Yes:
                 return
                 
         # show publish progress:
