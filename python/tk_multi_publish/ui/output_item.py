@@ -40,6 +40,7 @@ class Ui_OutputItem(object):
         self.details_label = QtGui.QLabel(OutputItem)
         self.details_label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.details_label.setMargin(1)
+        self.details_label.setIndent(4)
         self.details_label.setObjectName("details_label")
         self.horizontalLayout.addWidget(self.details_label)
         self.horizontalLayout.setStretch(2, 1)
