@@ -64,6 +64,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-hiero":
+            return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-houdini":
             return self._do_houdini_pre_publish(task, work_template, progress_cb)
         else:
@@ -127,6 +129,39 @@ class PrimaryPrePublishHook(Hook):
         
         return script_errors
         
+    def _do_hiero_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Hiero primary pre-publish/scene validation
+        """
+        import hiero.core
+        
+        progress_cb(0.0, "Validating current Project", task)
+
+        # first find which the current project is. Hiero is a multi project 
+        # environment so we can ask the engine which project was clicked in order
+        # to launch this publish.        
+        selection = self.parent.engine.get_menu_selection()
+        
+        # these values should in theory already be validated, but just in case...
+        if len(selection) != 1:
+            raise TankError("Please select a single Project!")
+        if not isinstance(selection[0] , hiero.core.Bin):
+            raise TankError("Please select a Hiero Project!")
+        project = selection[0].project()
+        if project is None:
+            # apparently bins can be without projects (child bins I think)
+            raise TankError("Please select a Hiero Project!")
+
+        # get the current scene file:
+        scene_path = os.path.abspath(project.path().replace("/", os.path.sep))
+
+        # validate it:
+        project_errors = self._validate_work_file(scene_path, work_template, task["output"], progress_cb)
+
+        progress_cb(100)
+        
+        return project_errors
+        
     def _do_houdini_pre_publish(self, task, work_template, progress_cb):
         """
         Do Hiero primary pre-publish/scene validation
@@ -146,6 +181,7 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
 
         return script_errors
+
 
     def _validate_work_file(self, path, work_template, output, progress_cb):
         """

@@ -39,6 +39,8 @@ class PostPublishHook(Hook):
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             self._do_3dsmax_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-hiero":
+            self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-houdini":
             self._do_houdini_post_publish(work_template, progress_cb)
         else:
@@ -99,6 +101,49 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
         
+    def _do_hiero_post_publish(self, work_template, progress_cb):
+        """
+        Do any Hiero post-publish work
+        """        
+        import hiero.core
+        
+        progress_cb(0, "Versioning up the scene file")
+
+        # first find which the current project is. Hiero is a multi project 
+        # environment so we can ask the engine which project was clicked in order
+        # to launch this publish.        
+        selection = self.parent.engine.get_menu_selection()
+        
+        # these values should in theory already be validated, but just in case...
+        if len(selection) != 1:
+            raise TankError("Please select a single Project!")
+        if not isinstance(selection[0] , hiero.core.Bin):
+            raise Exception("Please select a Hiero Project!")
+        project = selection[0].project()
+        if project is None:
+            # apparently bins can be without projects (child bins I think)
+            raise TankError("Please select a Hiero Project!")
+
+        # get the current scene path:
+        scene_path = os.path.abspath(project.path().replace("/", os.path.sep))
+        
+        # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(scene_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version
+        new_scene_path = work_template.apply_fields(fields)
+
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
+
+        # rename and save the file
+        progress_cb(50, "Saving the scene file")
+        project.saveAs(new_scene_path.replace(os.path.sep, "/"))
+
+        progress_cb(100)
+
+
     def _do_nuke_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
@@ -134,7 +179,7 @@ class PostPublishHook(Hook):
                         
         # save the script:
         progress_cb(75, "Saving the scene file")
-        nuke.scriptSaveAs(new_path)
+        nuke.scriptSaveAs(new_path.replace(os.path.sep, "/"))
         
         progress_cb(100)
 

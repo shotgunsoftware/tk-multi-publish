@@ -74,6 +74,8 @@ class PrimaryPublishHook(Hook):
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-hiero":
+            return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-houdini":
             return self._do_houdini_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         else:
@@ -254,6 +256,94 @@ class PrimaryPublishHook(Hook):
         """
         # default implementation does nothing!
         return []
+
+
+    def _do_hiero_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the currently selected hiero project.
+        """
+        import hiero.core
+        
+        # first find which the current project is. Hiero is a multi project 
+        # environment so we can ask the engine which project was clicked in order
+        # to launch this publish.
+        
+        selection = self.parent.engine.get_menu_selection()
+        
+        # these values should in theory already be validated, but just in case...
+        if len(selection) != 1:
+            raise TankError("Please select a single Project!")
+        if not isinstance(selection[0] , hiero.core.Bin):
+            raise TankError("Please select a Hiero Project!")
+        project = selection[0].project()
+        if project is None:
+            # apparently bins can be without projects (child bins I think)
+            raise TankError("Please select a Hiero Project!")
+        
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._hiero_find_additional_scene_dependencies()
+        
+        # get scene path
+        scene_path = os.path.abspath(project.path().replace("/", os.path.sep))
+
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+
+        # save the scene:
+        progress_cb(10.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        project.save()
+
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = fields.get("name").capitalize()
+        if not publish_name:
+            publish_name = os.path.basename(scene_path)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path,
+                               publish_name,
+                               sg_task,
+                               fields["version"],
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path,
+                               dependencies)
+
+        progress_cb(100)
+
+        return publish_path
+
+        
+
+    def _hiero_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the scene
+        """
+        # default implementation does nothing!
+        return []
+
+
         
     def _do_nuke_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
@@ -409,7 +499,7 @@ class PrimaryPublishHook(Hook):
         # initial implementation does nothing!
         return []
 
-    def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths=None):
+    def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths):
         """
         Helper method to register publish using the 
         specified publish info.
@@ -427,6 +517,8 @@ class PrimaryPublishHook(Hook):
             "dependency_paths": dependency_paths,
             "published_file_type":tank_type,
         }
+        
+        self.parent.log_debug("Register publish in shotgun: %s" % str(args))
         
         # register publish;
         sg_data = tank.util.register_publish(**args)
