@@ -71,9 +71,9 @@ class ScanSceneHook(Hook):
                 name = app.get_node_name(write_node)
                 profile_name = app.get_node_profile_name(write_node)
                 
-                items.append({"name":name,
+                items.append({"name":"Shotgun Write Node: %s" % name,
                               "type":"write_node",
-                              "description":profile_name,
+                              "description":"Render Profile: %s" % profile_name,
                               "other_params":{"node":write_node}})
                  
         return items
