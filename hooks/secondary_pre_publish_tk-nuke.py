@@ -69,7 +69,7 @@ class PrePublishHook(Hook):
         results = []
         
         # we will need the write node app if we have any render outputs to validate
-        write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
+        write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
         
         # validate tasks:
         for task in tasks:

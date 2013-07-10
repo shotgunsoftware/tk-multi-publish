@@ -84,7 +84,13 @@ class PublishHook(Hook):
         results = []
             
         # we will need the write node app if we have any render outputs to validate
-        write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
+        write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
+
+        # If we have the tk-multi-reviewsubmission app we can create versions
+        review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
+        if not review_submission_app:
+            msg = "The Review Submission app can not be found. Shotgun Versions will not be automatically created."
+            self.parent.log_info(msg)
         
         # process tasks:
         for task in tasks:
@@ -106,7 +112,7 @@ class PublishHook(Hook):
                     if not write_node:
                         raise TankError("Could not determined node for item '%s'!" % item["name"])
                     
-                    self._publish_write_node_render(task, write_node, write_node_app, primary_publish_path, sg_task, comment, progress_cb)
+                    self._publish_write_node_render(task, write_node, write_node_app, review_submission_app, primary_publish_path, sg_task, comment, progress_cb)
                 except Exception, e:
                     errors.append("Publish failed - %s" % e)
             else:
@@ -122,7 +128,7 @@ class PublishHook(Hook):
 
         return results
 
-    def _publish_write_node_render(self, task, write_node, write_node_app, published_script_path, sg_task, comment, progress_cb):
+    def _publish_write_node_render(self, task, write_node, write_node_app, review_submission_app, published_script_path, sg_task, comment, progress_cb):
         """
         Publish render output for write node
         """
@@ -131,7 +137,7 @@ class PublishHook(Hook):
             # this is a fatal error as publishing would result in inconsistent paths for the rendered files!
             raise TankError("The render path is currently locked and does not match match the current Work Area.")
  
-        progress_cb(10, "Finding rendered files")
+        progress_cb(10, "Finding rendered files...")
  
         # get info we need in order to do the publish:
         render_path = write_node_app.get_node_render_path(write_node)
@@ -142,7 +148,7 @@ class PublishHook(Hook):
         
         # publish (copy files):
         
-        progress_cb(25, "Copying files")
+        progress_cb(25, "Copying files...")
         
         for fi, rf in enumerate(render_files):
             
@@ -161,7 +167,7 @@ class PublishHook(Hook):
             except Exception, e:
                 raise TankError("Failed to copy file from %s to %s - %s" % (rf, target_path, e))
             
-        progress_cb(80, "Registering Publish")
+        progress_cb(40, "Registering Publish in Shotgun...")
             
         # use the render path to work out the publish 'file' and name:
         render_path_fields = render_template.get_fields(render_path)
@@ -186,15 +192,28 @@ class PublishHook(Hook):
         # get/generate thumbnail:
         thumbnail_path = write_node_app.generate_node_thumbnail(write_node)
             
-        # finally, register the publish:
-        self._register_publish(publish_path, 
-                               publish_name, 
-                               sg_task, 
-                               publish_version, 
-                               tank_type,
-                               comment,
-                               thumbnail_path, 
-                               [published_script_path])
+        # register the publish:
+        sg_publish = self._register_publish(publish_path, 
+                                            publish_name, 
+                                            sg_task, 
+                                            publish_version, 
+                                            tank_type,
+                                            comment,
+                                            thumbnail_path, 
+                                            [published_script_path])
+
+        # Create the Shotgun Version
+        if review_submission_app:
+            progress_cb(50, "Creating Quicktime and submitting to Shotgun...")
+            review_submission_app.render_and_submit(
+                publish_template,
+                render_path_fields,
+                int(nuke.root()["first_frame"].value()),
+                int(nuke.root()["last_frame"].value()),
+                [sg_publish],
+                sg_task,
+                comment
+            )
         
         return publish_path        
 
