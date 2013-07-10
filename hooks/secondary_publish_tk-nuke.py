@@ -137,7 +137,7 @@ class PublishHook(Hook):
             # this is a fatal error as publishing would result in inconsistent paths for the rendered files!
             raise TankError("The render path is currently locked and does not match match the current Work Area.")
  
-        progress_cb(10, "Finding rendered files...")
+        progress_cb(10, "Finding renders")
  
         # get info we need in order to do the publish:
         render_path = write_node_app.get_node_render_path(write_node)
@@ -148,7 +148,7 @@ class PublishHook(Hook):
         
         # publish (copy files):
         
-        progress_cb(25, "Copying files...")
+        progress_cb(25, "Copying files")
         
         for fi, rf in enumerate(render_files):
             
@@ -167,7 +167,7 @@ class PublishHook(Hook):
             except Exception, e:
                 raise TankError("Failed to copy file from %s to %s - %s" % (rf, target_path, e))
             
-        progress_cb(40, "Registering Publish in Shotgun...")
+        progress_cb(40, "Publishing to Shotgun")
             
         # use the render path to work out the publish 'file' and name:
         render_path_fields = render_template.get_fields(render_path)
@@ -204,7 +204,7 @@ class PublishHook(Hook):
 
         # Create the Shotgun Version
         if review_submission_app:
-            progress_cb(50, "Creating Quicktime and submitting to Shotgun...")
+            progress_cb(50, "Sending to Screening Room")
             review_submission_app.render_and_submit(
                 publish_template,
                 render_path_fields,
