@@ -94,6 +94,13 @@ class PrePublishHook(Hook):
                     else:
                         # do pre-publish:              
                         errors = self._nuke_pre_publish_write_node_render(write_node, write_node_app, progress_cb)
+            
+            elif output["name"] == "quicktime":
+                # Make sure a 'Publish Renders' task is checked.
+                if not self._get_render_task_for_task(tasks, task):
+                    raise TankError("If you have the 'Send to Screening Room' box ticked, you "
+                                    "must also have the 'Publish Renders' box ticked!")
+            
             else:
                 # don't know how to publish other output types!
                 errors.append("Don't know how to publish this item!")      
@@ -107,6 +114,25 @@ class PrePublishHook(Hook):
             
         return results
         
+    def _get_render_task_for_task(self, tasks, ref):
+        """
+        Given a list of tasks, find the one render task who's Nuke node name is
+        the same as the Nuke node name in the reference task.
+        """
+        for task in tasks:
+            if task["output"]["name"] != "render":
+                continue
+
+            task_node = task["item"].get("other_params", dict()).get("node")
+            ref_node = ref["item"].get("other_params", dict()).get("node")
+            if not task_node or not ref_node:
+                continue
+
+            if task_node.name() == ref_node.name():
+                return task
+
+        return None
+
     def _nuke_pre_publish_write_node_render(self, write_node, write_node_app, progress_cb):
         """
         Pre-publish render output for write node

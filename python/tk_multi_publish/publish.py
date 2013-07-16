@@ -187,7 +187,6 @@ class PublishHandler(object):
         try:
             self._do_pre_publish(primary_task, secondary_tasks, progress.report)
         except TankError, e:
-            self._app.log_exception("Pre-publish Failed")
             QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
                                           "Pre-Publish Failed!\n\n%s" % e)
             publish_form.show_publish_details()

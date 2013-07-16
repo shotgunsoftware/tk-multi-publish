@@ -85,36 +85,79 @@ class PublishHook(Hook):
             
         # we will need the write node app if we have any render outputs to validate
         write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
-
+        if not write_node_app:
+            raise TankError("Unable to validate write node without tk-nuke-writenode app!")
+                
         # If we have the tk-multi-reviewsubmission app we can create versions
         review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
         if not review_submission_app:
             msg = "The Review Submission app can not be found. Shotgun Versions will not be automatically created."
-            self.parent.log_info(msg)
+            self.parent.log_warning(msg)
+
+        # Keep of track of what has been published in shotgun
+        # this is needed as input into the review creation code...
+        render_publishes = {}
         
         # process tasks:
         for task in tasks:
-            item = task["item"]
-            output = task["output"]
+            
+            # keep track of our errors for this task
             errors = []
+            
+            # the output name is 'render' or 'quicktime' in our std setup.
+            output_name = task["output"]["name"]
+            
+            # each publish task is connected to a nuke write node
+            # this value was populated via the scan scene hook
+            write_node = task["item"].get("other_params", dict()).get("node")
+            if not write_node:
+                raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
             
             # report progress:
             progress_cb(0.0, "Publishing", task)
         
             # depending on output type:
-            if output["name"] == "render":
+            if output_name == "render":
+
                 # publish write-node rendered sequence                
                 try:
-                    if not write_node_app:
-                        raise TankError("Unable to validate write node without tk-nuke-writenode app!")
+                    (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
+                                                                                   write_node, 
+                                                                                   write_node_app, 
+                                                                                   primary_publish_path, 
+                                                                                   sg_task, 
+                                                                                   comment, 
+                                                                                   progress_cb)
                     
-                    write_node = item.get("other_params", dict()).get("node")
-                    if not write_node:
-                        raise TankError("Could not determined node for item '%s'!" % item["name"])
-                    
-                    self._publish_write_node_render(task, write_node, write_node_app, review_submission_app, primary_publish_path, sg_task, comment, progress_cb)
+                    # keep track of our publish data so that we can pick it up later in review
+                    render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
                 except Exception, e:
                     errors.append("Publish failed - %s" % e)
+            
+            elif output_name == "quicktime":
+                # Submit published sequence to Screening Room
+                try:
+                    if review_submission_app:
+                        
+                        # pick up sg data from the render dict we are maintianing
+                        # note: we assume that the rendering tasks always happen
+                        # before the review tasks inside the publish... 
+                        (sg_publish, thumbnail_path) = render_publishes[ write_node.name() ]
+                        
+                        self._send_to_screening_room(
+                            write_node,
+                            write_node_app,
+                            review_submission_app,
+                            sg_publish,
+                            sg_task,
+                            comment,
+                            thumbnail_path,
+                            progress_cb
+                        )
+
+                except Exception, e:
+                    errors.append("Submit to Screening Room failed - %s" % e)
+            
             else:
                 # this should never happen!
                 errors.append("Don't know how to publish this item!")
@@ -128,7 +171,30 @@ class PublishHook(Hook):
 
         return results
 
-    def _publish_write_node_render(self, task, write_node, write_node_app, review_submission_app, published_script_path, sg_task, comment, progress_cb):
+
+    def _send_to_screening_room(self, write_node, write_node_app, review_submission_app, sg_publish, sg_task, comment, thumbnail_path, progress_cb):
+        """
+        Take a write node's published files and run them through the
+        review_submission app to get a movie and Shotgun Version.
+        """
+        render_path = write_node_app.get_node_render_path(write_node)
+        render_template = write_node_app.get_node_render_template(write_node)
+        publish_template = write_node_app.get_node_publish_template(write_node)                        
+        render_path_fields = render_template.get_fields(render_path)
+
+        review_submission_app.render_and_submit(
+            publish_template,
+            render_path_fields,
+            int(nuke.root()["first_frame"].value()),
+            int(nuke.root()["last_frame"].value()),
+            [sg_publish],
+            sg_task,
+            comment,
+            thumbnail_path,
+            progress_cb,
+        )
+
+    def _publish_write_node_render(self, task, write_node, write_node_app, published_script_path, sg_task, comment, progress_cb):
         """
         Publish render output for write node
         """
@@ -201,23 +267,10 @@ class PublishHook(Hook):
                                             comment,
                                             thumbnail_path, 
                                             [published_script_path])
-
-        # Create the Shotgun Version
-        if review_submission_app:
-            progress_cb(50, "Sending to Screening Room")
-            review_submission_app.render_and_submit(
-                publish_template,
-                render_path_fields,
-                int(nuke.root()["first_frame"].value()),
-                int(nuke.root()["last_frame"].value()),
-                [sg_publish],
-                sg_task,
-                comment
-            )
         
-        return publish_path        
+        return sg_publish, thumbnail_path
 
-    def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths=None):
+    def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths):
         """
         Helper method to register publish using the 
         specified publish info.
