@@ -88,12 +88,6 @@ class PublishHook(Hook):
         if not write_node_app:
             raise TankError("Unable to validate write node without tk-nuke-writenode app!")
                 
-        # If we have the tk-multi-reviewsubmission app we can create versions
-        review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
-        if not review_submission_app:
-            msg = "The Review Submission app can not be found. Shotgun Versions will not be automatically created."
-            self.parent.log_warning(msg)
-
         # Keep of track of what has been published in shotgun
         # this is needed as input into the review creation code...
         render_publishes = {}
@@ -137,7 +131,15 @@ class PublishHook(Hook):
             elif output_name == "quicktime":
                 # Submit published sequence to Screening Room
                 try:
-                    if review_submission_app:
+                    
+                    # If we have the tk-multi-reviewsubmission app we can create versions
+                    review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
+
+                    if not review_submission_app:
+                        self.parent.log_warning("The Review Submission app can not be found. "
+                                                "Shotgun Versions will not be automatically created.")
+                    
+                    else:
                         
                         # pick up sg data from the render dict we are maintianing
                         # note: we assume that the rendering tasks always happen
