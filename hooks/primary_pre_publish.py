@@ -68,6 +68,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-houdini":
             return self._do_houdini_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-softimage":
+            return self._do_softimage_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
@@ -164,7 +166,7 @@ class PrimaryPrePublishHook(Hook):
         
     def _do_houdini_pre_publish(self, task, work_template, progress_cb):
         """
-        Do Hiero primary pre-publish/scene validation
+        Do Houdini primary pre-publish/scene validation
         """
         import hou
 
@@ -182,6 +184,36 @@ class PrimaryPrePublishHook(Hook):
 
         return script_errors
 
+    def _do_softimage_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Softimage primary pre-publish/scene validation
+        """
+        import win32com
+        from win32com.client import Dispatch, constants
+        from pywintypes import com_error
+        Application = Dispatch("XSI.Application").Application
+
+        progress_cb(0, "Validating current scene", task)
+
+        # query the current scene 'name' from the application:
+        scene_filepath = Application.ActiveProject.ActiveScene.filename.value
+                    
+        # There doesn't seem to be an easy way to determin if the current scene 
+        # is 'new'.  However, if the file name is "Untitled.scn" and the scene 
+        # name is "Scene" rather than "Untitled", then we can be reasonably sure 
+        # that we haven't opened a file called Untitled.scn
+        scene_name = Application.ActiveProject.ActiveScene.Name
+        if scene_name == "Scene" and os.path.basename(scene_filepath) == "Untitled.scn":
+            scene_filepath = ""
+        else:
+            scene_filepath = os.path.abspath(scene_filepath)
+
+        # validate it
+        scene_errors = self._validate_work_file(scene_filepath, work_template, task["output"], progress_cb)
+
+        progress_cb(100)
+
+        return scene_errors
 
     def _validate_work_file(self, path, work_template, output, progress_cb):
         """
