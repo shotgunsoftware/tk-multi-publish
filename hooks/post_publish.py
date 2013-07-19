@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import sys
 
 import tank
 from tank import Hook
@@ -213,6 +214,8 @@ class PostPublishHook(Hook):
 
         # save the script:
         progress_cb(75, "Saving the scene file")
+        if sys.platform == 'win32':
+            new_path = new_path.replace(os.path.sep, '/')
         hou.hipFile.save(new_path)
 
         progress_cb(100)
