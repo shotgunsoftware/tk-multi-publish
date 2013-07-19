@@ -196,38 +196,37 @@ class PrimaryPublishHook(Hook):
                     break
 
         return dependency_paths
-    
-        
+
     def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
         """
-        from Py3dsMax import mxs
-        
+        import MaxPlus
+
         progress_cb(0.0, "Finding scene dependencies", task)
         dependencies = self._3dsmax_find_additional_scene_dependencies()
-        
+
         # get scene path
-        scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
-        
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath().data()
+
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
-        
+
         # use templates to convert to publish path:
         output = task["output"]
         fields = work_template.get_fields(scene_path)
         fields["TankType"] = output["tank_type"]
         publish_template = output["publish_template"]
         publish_path = publish_template.apply_fields(fields)
-        
+
         if os.path.exists(publish_path):
             raise TankError("The published file named '%s' already exists!" % publish_path)
-        
+
         # save the scene:
         progress_cb(10.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
-        mxs.saveMaxFile(scene_path)
-        
+        MaxPlus.FileManager.Save(scene_path)
+
         # copy the file:
         progress_cb(50.0, "Copying the file")
         try:
