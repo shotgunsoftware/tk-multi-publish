@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import uuid
 import tempfile
 
 import tank
@@ -640,9 +641,10 @@ class PrimaryPublishHook(Hook):
         #################################################################################
         # create a version!
         
-        jpg_pub_path = tempfile.NamedTemporaryFile(suffix=".jpg", prefix="tanktmp", delete=False).name
+        jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
+        
         thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
-        jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::PNGSaveOptions')
+        jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::JPEGSaveOptions')
         # save as a copy
         photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
         
@@ -674,6 +676,11 @@ class PrimaryPublishHook(Hook):
         # upload jpeg
         progress_cb(70.0, "Uploading to Shotgun...")
         self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+        
+        try:
+            os.remove(jpg_pub_path)
+        except:
+            pass
         
         progress_cb(100)
         
