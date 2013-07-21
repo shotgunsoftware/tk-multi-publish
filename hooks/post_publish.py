@@ -52,6 +52,8 @@ class PostPublishHook(Hook):
             self._do_houdini_post_publish(work_template, progress_cb)
         elif engine_name == "tk-softimage":
             self._do_softimage_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-photoshop":
+            self._do_photoshop_post_publish(work_template, progress_cb)
         else:
             raise TankError("Unable to perform post publish for unhandled engine %s" % engine_name)
         
@@ -251,6 +253,40 @@ class PostPublishHook(Hook):
         Application.SaveSceneAs(new_scene_path, False)
         
         progress_cb(100)
+
+    def _do_photoshop_post_publish(self, work_template, progress_cb):
+        """
+        Do any Photoshop post-publish work
+        """        
+        import photoshop
+        
+        progress_cb(0, "Versioning up the scene file")
+        
+        # get the current scene path:
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+        scene_path = doc.fullName.nativePath
+        
+        # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(scene_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version 
+        new_scene_path = work_template.apply_fields(fields)
+        
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
+        
+        # rename and save the file
+        progress_cb(50, "Saving the scene file")
+        new_file_name = photoshop.RemoteObject('flash.filesystem::File', new_scene_path)
+        # no options and do not save as a copy
+        # http://cssdk.host.adobe.com/sdk/1.5/docs/WebHelp/references/csawlib/com/adobe/photoshop/Document.html#saveAs()
+        doc.saveAs(new_file_name, None, False)
+                
+        progress_cb(100)
+
 
     def _get_next_work_file_version(self, work_template, fields):
         """

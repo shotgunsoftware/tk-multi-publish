@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import tempfile
 
 import tank
 from tank import Hook
@@ -86,6 +87,8 @@ class PrimaryPublishHook(Hook):
             return self._do_houdini_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-softimage":
             return self._do_softimage_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-photoshop":
+            return self._do_photoshop_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
@@ -576,6 +579,106 @@ class PrimaryPublishHook(Hook):
         """
         # initial implementation does nothing!
         return []
+
+    def _do_photoshop_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main Photoshop scene
+        """
+        import photoshop
+                
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+                
+        # get scene path
+        scene_path = doc.fullName.nativePath
+        
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+        
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+        
+        # save the scene:
+        progress_cb(0.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        doc.save()
+        
+        # copy the file:
+        progress_cb(25.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = fields.get("name").capitalize()
+        if not publish_name:
+            publish_name = os.path.basename(script_path)
+
+        # finally, register the publish:
+        progress_cb(50.0, "Registering the publish")
+        tank_publish = self._register_publish(publish_path, 
+                                              publish_name, 
+                                              sg_task, 
+                                              fields["version"], 
+                                              output["tank_type"],
+                                              comment,
+                                              thumbnail_path, 
+                                              dependency_paths=[])
+        
+        #################################################################################
+        # create a version!
+        
+        jpg_pub_path = tempfile.NamedTemporaryFile(suffix=".jpg", prefix="tanktmp", delete=False).name
+        thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
+        jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::PNGSaveOptions')
+        # save as a copy
+        photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
+        
+        # then register version
+        progress_cb(60.0, "Creating Version...")
+        ctx = self.parent.context
+        data = {
+            "user": ctx.user,
+            "description": comment,
+            "sg_first_frame": 1,
+            "frame_count": 1,
+            "frame_range": "1-1",
+            "sg_last_frame": 1,
+            "entity": ctx.entity,
+            "sg_path_to_frames": publish_path,
+            "project": ctx.project,
+            "sg_task": sg_task,
+            "code": tank_publish["code"],
+            "created_by": ctx.user,
+        }
+        
+        if tank.util.get_published_file_entity_type(self.parent.tank) == "PublishedFile":
+            data["published_files"] = [tank_publish]
+        else:# == "TankPublishedFile"
+            data["tank_published_file"] = tank_publish
+        
+        version = self.parent.shotgun.create("Version", data)
+        
+        # upload jpeg
+        progress_cb(70.0, "Uploading to Shotgun...")
+        self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+        
+        progress_cb(100)
+        
+        return publish_path
+
 
     def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths):
         """

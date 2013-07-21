@@ -76,6 +76,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_houdini_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-softimage":
             return self._do_softimage_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-photoshop":
+            return self._do_photoshop_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
@@ -220,6 +222,29 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
 
         return scene_errors
+
+    def _do_photoshop_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Softimage primary pre-publish/scene validation
+        """
+        import photoshop
+        
+        progress_cb(0.0, "Validating current scene", task)
+        
+        # get the current scene file:
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+        
+        scene_file = doc.fullName.nativePath
+            
+        # validate it:
+        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
+        return scene_errors
+
 
     def _validate_work_file(self, path, work_template, output, progress_cb):
         """
