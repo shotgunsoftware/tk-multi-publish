@@ -22,8 +22,7 @@ configuration:
     template_work:
         type: template
         description: A reference to a template which locates a work file on disk.
-        required_fields: [version]
-        optional_fields: [name]
+        fields: context, version, *
 
     hook_thumbnail:
         type: hook
@@ -123,8 +122,7 @@ configuration:
         
     primary_publish_template:
         type: template
-        required_fields: [version]
-        optional_fields: [name]
+        fields: context, version, *
         description: Template used to locate the primary published file within the file 
                      system.  If None then this must be determined within the publish hook.
 
@@ -169,8 +167,7 @@ configuration:
                                  If set to '' then this must be determined within the publish hook.
                 publish_template:
                     type: template
-                    required_fields: [version]
-                    optional_fields: [name]
+                    fields: context, version, * 
                     allows_empty: True
                     description: Template used to locate published files within the file system.
                                  If null then this must be determined within the publish hook.
@@ -192,7 +189,7 @@ description: "Provides UI and functionality to publish files to Shotgun."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.13.22"
+requires_core_version: "v0.14.11"
 requires_engine_version: 
 
 # this app works in all engines - it does not contain 
