@@ -134,9 +134,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -243,9 +241,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -327,9 +323,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(scene_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -401,9 +395,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (script_path, publish_path, e))
 
         # work out name for publish:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -485,9 +477,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -555,9 +545,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -623,9 +611,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(50.0, "Registering the publish")
@@ -685,7 +671,67 @@ class PrimaryPublishHook(Hook):
         progress_cb(100)
         
         return publish_path
-
+    
+    def _get_publish_name(self, path, template, fields=None):
+        """
+        Return the 'name' to be used for the file - if possible
+        this will return a 'versionless' name
+        """
+        # first, extract the fields from the path using the template:
+        fields = fields.copy() if fields else template.get_fields(path)
+        if "name" in fields and fields["name"]:
+            # well, that was easy!
+            return fields["name"].capitalize()
+        
+        # find out if version is used in the file name:
+        template_name, _ = os.path.splitext(os.path.basename(template.definition))
+        version_in_name = "{version}" in template_name
+    
+        # extract the file name from the path:
+        name, _ = os.path.splitext(os.path.basename(path))
+        delims_str = "_-. "
+        if version_in_name:
+            # looks like version is part of the file name so we        
+            # need to isolate it so that we can remove it safely.  
+            # First, find a dummy version whose string representation
+            # doesn't exist in the name string
+            version_key = template.keys["version"]
+            dummy_version = 9876
+            while True:
+                test_str = version_key.str_from_value(dummy_version)
+                if test_str not in name:
+                    break
+                dummy_version += 1
+            
+            # now use this dummy version and rebuild the path
+            fields["version"] = dummy_version
+            path = template.apply_fields(fields)
+            name, _ = os.path.splitext(os.path.basename(path))
+            
+            # we can now locate the version in the name and remove it
+            dummy_version_str = version_key.str_from_value(dummy_version)
+            
+            v_pos = name.find(dummy_version_str)
+            pre_v_str = name[:v_pos].rstrip("v").strip(delims_str)
+            post_v_str = name[v_pos + len(dummy_version_str):].strip(delims_str)
+            versionless_name = " ".join([s for s in [pre_v_str, post_v_str] if s])
+            if versionless_name:
+                # great - lets use this!
+                name = versionless_name
+            else: 
+                # likely that version is only thing in the name so 
+                # instead, replace the dummy version with #'s:
+                zero_version_str = version_key.str_from_value(0)        
+                new_version_str = "#" * len(zero_version_str)
+                name = name.replace(dummy_version_str, new_version_str)
+        
+        # finally, lets make it nice and human readable:
+        for c in delims_str:
+            name = name.replace(c, " ")
+        name = name.title()
+        
+        return name     
+     
 
     def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths):
         """

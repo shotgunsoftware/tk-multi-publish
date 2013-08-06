@@ -251,11 +251,11 @@ class PublishHook(Hook):
         publish_name = ""
         rp_name = render_path_fields.get("name")
         rp_channel = render_path_fields.get("channel")
-        if rp_name is None and rp_channel is None:
+        if not rp_name and not rp_channel:
             publish_name = "Publish"
-        elif rp_name is None:
+        elif not rp_name:
             publish_name = "Channel %s" % rp_channel
-        elif rp_channel is None:
+        elif not rp_channel:
             publish_name = rp_name
         else:
             publish_name = "%s, Channel %s" % (rp_name, rp_channel)
