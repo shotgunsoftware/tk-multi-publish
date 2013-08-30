@@ -69,7 +69,7 @@ class PublishDetailsForm(QtGui.QWidget):
         
     @property
     def comment(self):
-        return str(self._ui.comments_edit.toPlainText()).strip()
+        return self._safe_to_string(self._ui.comments_edit.toPlainText()).strip()
     @comment.setter
     def comment(self, value):
         self._ui.comments_edit.setPlainText(value)
@@ -294,8 +294,26 @@ class PublishDetailsForm(QtGui.QWidget):
     def _on_cancel(self):
         self.cancel.emit()
         
+    def _safe_to_string(self, value):
+        """
+        safely convert the value to a string - handles
+        QtCore.QString if usign PyQt
+        """
+        #
+        if isinstance(value, basestring):
+            # it's a string anyway so just return
+            return value
         
+        if hasattr(QtCore, "QString"):
+            # running PyQt!
+            if isinstance(value, QtCore.QString):
+                # QtCore.QString inherits from str but supports 
+                # unicode, go figure!  Lets play safe and return
+                # a utf-8 string
+                return str(value.toUtf8())
         
+        # For everything else, just return as string
+        return str(value)
         
         
         
