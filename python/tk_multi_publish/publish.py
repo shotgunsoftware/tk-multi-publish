@@ -81,7 +81,7 @@ class PublishHandler(object):
             form.publish.connect(lambda f = form: self._on_publish(f))
         except TankError, e:
             QtGui.QMessageBox.information(None, "Unable To Publish!", "%s" % e)
-            self._app.log_exception("Unable to publish")
+
         except Exception, e:
             self._app.log_exception("Unable to publish")
     
