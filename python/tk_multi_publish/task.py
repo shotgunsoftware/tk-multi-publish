@@ -33,24 +33,25 @@ class Task(QtCore.QObject):
     def output(self):
         return self._output
     
-    @property
-    def pre_publish_errors(self):
+    # @property
+    def __get_pre_publish_errors(self):
         return self._pre_publish_errors
-    @pre_publish_errors.setter
-    def pre_publish_errors(self, value):
+    # @pre_publish_errors.setter
+    def __set_pre_publish_errors(self, value):
         self._pre_publish_errors = value
         # emit modified signal
         self.modified.emit()
+    pre_publish_errors=property(__get_pre_publish_errors, __set_pre_publish_errors)
         
-    @property
-    def publish_errors(self):
+    # @property
+    def __get_publish_errors(self):
         return self._publish_errors
-    @publish_errors.setter
-    def publish_errors(self, value):
+    # @publish_errors.setter
+    def __set_publish_errors(self, value):
         self._publish_errors = value
         # emit modified signal
         self.modified.emit()
-    
+    publish_errors=property(__get_publish_errors, __set_publish_errors)
     
     def as_dictionary(self):
         """

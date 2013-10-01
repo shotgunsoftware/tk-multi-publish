@@ -34,14 +34,15 @@ class PublishProgressForm(QtGui.QWidget):
         self._ui.progress_bar.setValue(0)
         self._ui.details.setText("")
         
-    @property
-    def title(self):
+    # @property
+    def __get_title(self):
         return self._ui.title.toPlainText()
-    @title.setter
-    def title(self, value):
+    # @title.setter
+    def __set_title(self, value):
         self._ui.title.setText(value)
         QtCore.QCoreApplication.processEvents()
         time.sleep(0.1)
+    title=property(__get_title, __set_title)
         
     def set_reporter(self, reporter):
         """

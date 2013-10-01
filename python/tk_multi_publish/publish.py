@@ -20,7 +20,7 @@ from .progress import TaskProgressReporter
 from .publish_form import PublishForm
 
 from .output import PublishOutput
-from .item import *
+from .item import Item
 from .task import Task
     
 class PublishHandler(object):
@@ -233,31 +233,33 @@ class PublishHandler(object):
 
         # save the thumbnail to a temporary location:
         thumbnail_path = ""
-        if thumbnail and not thumbnail.isNull():
-            tmp_file = tempfile.NamedTemporaryFile(suffix=".png", prefix="tanktmp", delete=False)
-            thumbnail_path = tmp_file.name
-            tmp_file.close()
-            thumbnail.save(thumbnail_path)
+        try:
+            if thumbnail and not thumbnail.isNull():
+                # have a thumbnail so save it to a temporary file:
+                temp_file, thumbnail_path = tempfile.mkstemp(suffix=".png", prefix="tanktmp")
+                if temp_file:
+                    os.close(temp_file)
+                thumbnail.save(thumbnail_path)
+                    
+            # do the publish
+            publish_errors = []
+            do_post_publish = False
+            try:            
+                # do primary publish:
+                primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
+                if not primary_path:
+                    raise TankError("Primary publish didn't return a path!")
+                do_post_publish = True
                 
-        # do the publish
-        publish_errors = []
-        do_post_publish = False
-        try:            
-            # do primary publish:
-            primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
-            if not primary_path:
-                raise TankError("Primary publish didn't return a path!")
-            do_post_publish = True
-            
-            # do secondary publishes:
-            self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
-            
-        except TankError, e:
-            self._app.log_exception("Publish Failed")
-            publish_errors.append("%s" % e)
-        except Exception, e:
-            self._app.log_exception("Publish Failed")
-            publish_errors.append("%s" % e)
+                # do secondary publishes:
+                self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
+                
+            except TankError, e:
+                self._app.log_exception("Publish Failed")
+                publish_errors.append("%s" % e)
+            except Exception, e:
+                self._app.log_exception("Publish Failed")
+                publish_errors.append("%s" % e)
         finally:
             # delete temporary thumbnail file:
             if thumbnail_path:

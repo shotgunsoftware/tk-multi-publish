@@ -59,36 +59,38 @@ class PublishDetailsForm(QtGui.QWidget):
     def selected_tasks(self):
         return self._get_selected_tasks()
 
-    @property
-    def shotgun_task(self):
+    # @property
+    def __get_shotgun_task(self):
         return self._get_sg_task_combo_task(self._ui.sg_task_combo.currentIndex())
-        
-    @shotgun_task.setter
-    def shotgun_task(self, value):
+    # @shotgun_task.setter
+    def __set_shotgun_task(self, value):
         self._set_current_shotgun_task(value)
-        
-    @property
-    def comment(self):
+    shotgun_task=property(__get_shotgun_task, __set_shotgun_task)
+    
+    # @property
+    def __get_comment(self):
         return self._safe_to_string(self._ui.comments_edit.toPlainText()).strip()
-    @comment.setter
-    def comment(self, value):
+    # @comment.setter
+    def __set_comment(self, value):
         self._ui.comments_edit.setPlainText(value)
+    comment=property(__get_comment, __set_comment)
 
-    @property
-    def thumbnail(self):
+    # @property
+    def __get_thumbnail(self):
         return self._ui.thumbnail_widget.thumbnail
-    @thumbnail.setter
-    def thumbnail(self, value):
+    # @thumbnail.setter
+    def __set_thumbnail(self, value):
         self._ui.thumbnail_widget.thumbnail = value
+    thumbnail=property(__get_thumbnail, __set_thumbnail)
         
-    @property
-    def can_change_shotgun_task(self):
+    # @property
+    def __get_can_change_shotgun_task(self):
         """
         Control if the shotgun task can be changed or not
         """
         return self._ui.sg_task_stacked_widget.currenWidget() == self._ui.sg_task_menu_page
-    @can_change_shotgun_task.setter
-    def can_change_shotgun_task(self, value):
+    # @can_change_shotgun_task.setter
+    def __set_can_change_shotgun_task(self, value):
         page = None
         header_txt = ""
         if value:
@@ -100,6 +102,7 @@ class PublishDetailsForm(QtGui.QWidget):
 
         self._ui.sg_task_stacked_widget.setCurrentWidget(page)
         self._ui.task_header_label.setText(header_txt)
+    can_change_shotgun_task=property(__get_can_change_shotgun_task, __set_can_change_shotgun_task)
                     
     def initialize(self, tasks, sg_tasks):
         """

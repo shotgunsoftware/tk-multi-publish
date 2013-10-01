@@ -29,12 +29,13 @@ class ProgressReporter(QtCore.QObject):
         self._current_stage = None
         self._previous_percent = 0.0
         
-    @property
-    def stage_count(self):
+    # @property
+    def __get_stage_count(self):
         return self._stage_count   
-    @stage_count.setter
-    def stage_count(self, value):
+    # @stage_count.setter
+    def __set_stage_count(self, value):
         self._stage_count = max(1, value)
+    stage_count=property(__get_stage_count, __set_stage_count)
 
     def reset(self, new_stage_count=None):
         self._stages = []

@@ -86,12 +86,13 @@ class ItemList(QtGui.QWidget):
     def selected_items(self):
         return self._get_selected_items()
         
-    @property
-    def collapsed(self):
+    # @property
+    def __get_collapsed(self):
         return self._is_collapsed
-    @collapsed.setter
-    def collapsed(self, value):
+    # @collapsed.setter
+    def __set_collapsed(self, value):
         self._set_collapsed(value)
+    collapsed=property(__get_collapsed, __set_collapsed)
         
     def mousePressEvent(self, event):
         """
