@@ -22,7 +22,7 @@ configuration:
     template_work:
         type: template
         description: A reference to a template which locates a work file on disk.
-        fields: context, version, *
+        fields: context, *
 
     hook_thumbnail:
         type: hook
@@ -122,9 +122,10 @@ configuration:
         
     primary_publish_template:
         type: template
-        fields: context, version, *
+        fields: context, *
         description: Template used to locate the primary published file within the file 
                      system.  If None then this must be determined within the publish hook.
+        allows_ampty: True
 
     secondary_outputs:
         type: list
@@ -167,7 +168,7 @@ configuration:
                                  If set to '' then this must be determined within the publish hook.
                 publish_template:
                     type: template
-                    fields: context, version, * 
+                    fields: context, * 
                     allows_empty: True
                     description: Template used to locate published files within the file system.
                                  If null then this must be determined within the publish hook.
