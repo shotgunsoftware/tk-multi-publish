@@ -97,77 +97,105 @@ class PublishHook(Hook):
         # this is needed as input into the review creation code...
         render_publishes = {}
         
-        # process tasks:
+        # =====================================================
+        # =====================================================
+        # First pass:
+        #   - Publish Shotgun Write Nodes:
+        # =====================================================
+        # =====================================================
         for task in tasks:
             
             # keep track of our errors for this task
             errors = []
             
-            # the output name is 'render' or 'quicktime' in our std setup.
-            output_name = task["output"]["name"]
+            # the output name is 'render' in our std setup.
+            if task["output"]["name"] != "render":
+                continue
+
+            # report progress:
+            progress_cb(0.0, "Publishing", task)
             
             # each publish task is connected to a nuke write node
             # this value was populated via the scan scene hook
             write_node = task["item"].get("other_params", dict()).get("node")
             if not write_node:
                 raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
+
+            # publish write-node rendered sequence                
+            try:
+                (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
+                                                                               write_node, 
+                                                                               write_node_app, 
+                                                                               primary_publish_path, 
+                                                                               sg_task, 
+                                                                               comment, 
+                                                                               progress_cb)
+                
+                # keep track of our publish data so that we can pick it up later in review
+                render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
+            except Exception, e:
+                errors.append("Publish failed - %s" % e)
+
+            # if there is anything to report then add to result
+            if len(errors) > 0:
+                # add result:
+                results.append({"task":task, "errors":errors})
+
+            progress_cb(100)                
+
+
+        # =====================================================
+        # =====================================================
+        # Second pass:
+        #   - Submit published sequence to Screening Room
+        # =====================================================
+        # =====================================================
+        for task in tasks:
+            # keep track of our errors for this task
+            errors = []
             
+            # the output name is 'quicktime' in our std setup.
+            if task["output"]["name"] != "quicktime":
+                continue
+
             # report progress:
             progress_cb(0.0, "Publishing", task)
-        
-            # depending on output type:
-            if output_name == "render":
-
-                # publish write-node rendered sequence                
-                try:
-                    (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
-                                                                                   write_node, 
-                                                                                   write_node_app, 
-                                                                                   primary_publish_path, 
-                                                                                   sg_task, 
-                                                                                   comment, 
-                                                                                   progress_cb)
-                    
-                    # keep track of our publish data so that we can pick it up later in review
-                    render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
-                except Exception, e:
-                    errors.append("Publish failed - %s" % e)
             
-            elif output_name == "quicktime":
-                # Submit published sequence to Screening Room
-                try:
-                    
-                    # If we have the tk-multi-reviewsubmission app we can create versions
-                    review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
+            # each publish task is connected to a nuke write node
+            # this value was populated via the scan scene hook
+            write_node = task["item"].get("other_params", dict()).get("node")
+            if not write_node:
+                raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
 
-                    if not review_submission_app:
-                        self.parent.log_warning("The Review Submission app can not be found. "
-                                                "Shotgun Versions will not be automatically created.")
-                    
-                    else:
-                        
-                        # pick up sg data from the render dict we are maintianing
-                        # note: we assume that the rendering tasks always happen
-                        # before the review tasks inside the publish... 
-                        (sg_publish, thumbnail_path) = render_publishes[ write_node.name() ]
-                        
-                        self._send_to_screening_room(
-                            write_node,
-                            write_node_app,
-                            review_submission_app,
-                            sg_publish,
-                            sg_task,
-                            comment,
-                            thumbnail_path,
-                            progress_cb
-                        )
+            # Submit published sequence to Screening Room
+            try:
+                # If we have the tk-multi-reviewsubmission app we can create versions
+                review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
 
-                except Exception, e:
-                    errors.append("Submit to Screening Room failed - %s" % e)
-            
-            else:
-                # this should never happen!
-                errors.append("Don't know how to publish this item!")
+                if not review_submission_app:
+                    self.parent.log_warning("The Review Submission app can not be found. "
+                                            "Shotgun Versions will not be automatically created.")
+                
+                else:
+                    
+                    # pick up sg data from the render dict we are maintianing
+                    # note: we assume that the rendering tasks always happen
+                    # before the review tasks inside the publish... 
+                    (sg_publish, thumbnail_path) = render_publishes[ write_node.name() ]
+                    
+                    self._send_to_screening_room(
+                        write_node,
+                        write_node_app,
+                        review_submission_app,
+                        sg_publish,
+                        sg_task,
+                        comment,
+                        thumbnail_path,
+                        progress_cb
+                    )
+
+            except Exception, e:
+                errors.append("Submit to Screening Room failed - %s" % e)
                 
             # if there is anything to report then add to result
             if len(errors) > 0:
@@ -175,6 +203,23 @@ class PublishHook(Hook):
                 results.append({"task":task, "errors":errors})
 
             progress_cb(100)
+
+        # =====================================================
+        # =====================================================
+        # Final pass:
+        #   - Report any unhandled outputs!
+        # =====================================================
+        # =====================================================
+        for task in tasks:
+            # we only handled outputs of type 'render' or 'quicktime' so report
+            # errors for anything else!
+            if task["output"]["name"] not in ["render", "quicktime"]:
+                progress_cb(0.0, "Publishing", task)
+                
+                errors = ["Don't know how to publish this item!"]
+                results.append({"task":task, "errors":errors})
+
+                progress_cb(100)
 
         return results
 
