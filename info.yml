@@ -125,7 +125,7 @@ configuration:
         fields: context, *
         description: Template used to locate the primary published file within the file 
                      system.  If None then this must be determined within the publish hook.
-        allows_ampty: True
+        allows_empty: True
 
     secondary_outputs:
         type: list
