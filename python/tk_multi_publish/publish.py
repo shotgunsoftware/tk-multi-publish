@@ -293,28 +293,29 @@ class PublishHandler(object):
     def _build_task_list(self, items):
         """
         Takes a list of items and builds a list of tasks containing
-        each item and it's corresponding output
+        each item and it's corresponding output in output-centric
+        order
         """
-        
-        #TODO: build list by looping through outputs to order by output
-        
-        # create index from scene_item_type to output
-        outputs_by_type = {}
-        
-        outputs_by_type[self._primary_output.scene_item_type] = [self._primary_output]
-        for output in self._secondary_outputs:
-            outputs_by_type.setdefault(output.scene_item_type, list()).append(output)
-        
-        # build tasks for each item and output:
-        tasks = []
+
+        # need single list of all outputs:
+        all_outputs = [self._primary_output] + self._secondary_outputs
+
+        # first, validate that all items specify a known scene item type:
+        output_scene_item_types = set([output.scene_item_type for output in all_outputs])
         for item in items:
-            outputs = outputs_by_type.get(item.scene_item_type)
-            if not outputs:
+            if item.scene_item_type not in output_scene_item_types:
                 raise TankError("Item %s found with unrecognised scene item type %s" % (item.name, item.scene_item_type))
-                
-            for output in outputs:
-                tasks.append(Task(item, output))
-                
+             
+        # Now loop through all outputs and add build list of tasks.
+        # Note: this is deliberately output-centric to allow control
+        # of the order through the configuration (order of secondary
+        # outputs)
+        tasks = []
+        for output in all_outputs:
+            for item in items:
+                if item.scene_item_type == output.scene_item_type:
+                    tasks.append(Task(item, output))
+             
         return tasks
     
     def _scan_scene(self):
@@ -327,7 +328,6 @@ class PublishHandler(object):
         # validate that only one matches the primary type
         # and that all items are valid:
         primary_type = self._primary_output.scene_item_type
-        secondary_types = [output.scene_item_type for output in self._secondary_outputs]
         primary_item = None
         for item in items:
 

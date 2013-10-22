@@ -289,7 +289,10 @@ class PublishDetailsForm(QtGui.QWidget):
                     if tasks:
                         selected_tasks.extend(tasks)
             
-        return selected_tasks
+        # finally, ensure that tasks are returned in their
+        # original order:
+        ordered_selected_tasks = [task for task in self._tasks if task in selected_tasks]
+        return ordered_selected_tasks
                             
     def _on_publish(self):
         self.publish.emit()

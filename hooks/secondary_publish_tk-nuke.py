@@ -87,140 +87,118 @@ class PublishHook(Hook):
                         }
         """
         results = []
-            
-        # we will need the write node app if we have any render outputs to validate
-        write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
-        if not write_node_app:
-            raise TankError("Unable to validate write node without tk-nuke-writenode app!")
+
+        # it's important that tasks for render output are processed
+        # before tasks for quicktime output, so let's group the
+        # task list by output.  This can be controlled through the
+        # configuration but we shouldn't rely on that being set up 
+        # correctly!
+        output_order = ["render", "quicktime"]
+        tasks_by_output = {}
+        for task in tasks:
+            output_name = task["output"]["name"]
+            tasks_by_output.setdefault(output_name, list()).append(task)
+            if output_name not in output_order:
+                output_order.append(output_name)
+
+        # make sure we have any apps required by the publish process:
+        write_node_app = None
+        if tasks_by_output.get("render") or tasks_by_output.get("quicktime"):
+            # we will need the write node app if we have any render outputs to validate
+            write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
+            if not write_node_app:
+                raise TankError("Unable to publish Shotgun Write Nodes without the tk-nuke-writenode app!")
+
+        review_submission_app = None
+        if tasks_by_output.get("quicktime"):
+            # If we have the tk-multi-reviewsubmission app we can create versions
+            review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
+            if not review_submission_app:
+                raise TankError("Unable to publish Review Versions without the tk-multi-reviewsubmission app!")
+
                 
         # Keep of track of what has been published in shotgun
         # this is needed as input into the review creation code...
         render_publishes = {}
-        
-        # =====================================================
-        # =====================================================
-        # First pass:
-        #   - Publish Shotgun Write Nodes:
-        # =====================================================
-        # =====================================================
-        for task in tasks:
+
+        # process outputs in order:
+        for output_name in output_order:
             
-            # keep track of our errors for this task
-            errors = []
+            # process each task for this output:
+            for task in tasks_by_output.get(output_name, []):
             
-            # the output name is 'render' in our std setup.
-            if task["output"]["name"] != "render":
-                continue
-
-            # report progress:
-            progress_cb(0.0, "Publishing", task)
-            
-            # each publish task is connected to a nuke write node
-            # this value was populated via the scan scene hook
-            write_node = task["item"].get("other_params", dict()).get("node")
-            if not write_node:
-                raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
-
-            # publish write-node rendered sequence                
-            try:
-                (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
-                                                                               write_node, 
-                                                                               write_node_app, 
-                                                                               primary_publish_path, 
-                                                                               sg_task, 
-                                                                               comment, 
-                                                                               progress_cb)
-                
-                # keep track of our publish data so that we can pick it up later in review
-                render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
-            except Exception, e:
-                errors.append("Publish failed - %s" % e)
-
-            # if there is anything to report then add to result
-            if len(errors) > 0:
-                # add result:
-                results.append({"task":task, "errors":errors})
-
-            progress_cb(100)                
-
-
-        # =====================================================
-        # =====================================================
-        # Second pass:
-        #   - Submit published sequence to Screening Room
-        # =====================================================
-        # =====================================================
-        for task in tasks:
-            # keep track of our errors for this task
-            errors = []
-            
-            # the output name is 'quicktime' in our std setup.
-            if task["output"]["name"] != "quicktime":
-                continue
-
-            # report progress:
-            progress_cb(0.0, "Publishing", task)
-            
-            # each publish task is connected to a nuke write node
-            # this value was populated via the scan scene hook
-            write_node = task["item"].get("other_params", dict()).get("node")
-            if not write_node:
-                raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
-
-            # Submit published sequence to Screening Room
-            try:
-                # If we have the tk-multi-reviewsubmission app we can create versions
-                review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
-
-                if not review_submission_app:
-                    self.parent.log_warning("The Review Submission app can not be found. "
-                                            "Shotgun Versions will not be automatically created.")
-                
-                else:
-                    
-                    # pick up sg data from the render dict we are maintianing
-                    # note: we assume that the rendering tasks always happen
-                    # before the review tasks inside the publish... 
-                    (sg_publish, thumbnail_path) = render_publishes[ write_node.name() ]
-                    
-                    self._send_to_screening_room(
-                        write_node,
-                        write_node_app,
-                        review_submission_app,
-                        sg_publish,
-                        sg_task,
-                        comment,
-                        thumbnail_path,
-                        progress_cb
-                    )
-
-            except Exception, e:
-                errors.append("Submit to Screening Room failed - %s" % e)
-                
-            # if there is anything to report then add to result
-            if len(errors) > 0:
-                # add result:
-                results.append({"task":task, "errors":errors})
-
-            progress_cb(100)
-
-        # =====================================================
-        # =====================================================
-        # Final pass:
-        #   - Report any unhandled outputs!
-        # =====================================================
-        # =====================================================
-        for task in tasks:
-            # we only handled outputs of type 'render' or 'quicktime' so report
-            # errors for anything else!
-            if task["output"]["name"] not in ["render", "quicktime"]:
+                # keep track of our errors for this task
+                errors = []
+    
+                # report progress:
                 progress_cb(0.0, "Publishing", task)
-                
-                errors = ["Don't know how to publish this item!"]
-                results.append({"task":task, "errors":errors})
+            
+                if output_name == "render":
+                    # Publish the rendered output for a Shotgun Write Node
 
-                progress_cb(100)
+                    # each publish task is connected to a nuke write node
+                    # this value was populated via the scan scene hook
+                    write_node = task["item"].get("other_params", dict()).get("node")
+                    if not write_node:
+                        raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
+        
+                    # publish write-node rendered sequence                
+                    try:
+                        (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
+                                                                                       write_node, 
+                                                                                       write_node_app, 
+                                                                                       primary_publish_path, 
+                                                                                       sg_task, 
+                                                                                       comment, 
+                                                                                       progress_cb)
+                        
+                        # keep track of our publish data so that we can pick it up later in review
+                        render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
+                    except Exception, e:
+                        errors.append("Publish failed - %s" % e)
+    
+                elif output_name == "quicktime":
+                    # Publish the reviewable quicktime movie for a Shotgun Write Node
+    
+                    # each publish task is connected to a nuke write node
+                    # this value was populated via the scan scene hook
+                    write_node = task["item"].get("other_params", dict()).get("node")
+                    if not write_node:
+                        raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
+        
+                    # Submit published sequence to Screening Room
+                    try:
+                        # pick up sg data from the render dict we are maintianing
+                        # note: we assume that the rendering tasks always happen
+                        # before the review tasks inside the publish... 
+                        (sg_publish, thumbnail_path) = render_publishes[ write_node.name() ]
+                        
+                        self._send_to_screening_room (
+                            write_node,
+                            write_node_app,
+                            review_submission_app,
+                            sg_publish,
+                            sg_task,
+                            comment,
+                            thumbnail_path,
+                            progress_cb
+                        )
 
+                    except Exception, e:
+                        errors.append("Submit to Screening Room failed - %s" % e)
+                        
+                else:
+                    # unhandled output type!
+                    errors.append("Don't know how to publish this item!")
+    
+                # if there is anything to report then add to result
+                if len(errors) > 0:
+                    # add result:
+                    results.append({"task":task, "errors":errors})
+    
+                # task is finished
+                progress_cb(100)            
+        
         return results
 
 
