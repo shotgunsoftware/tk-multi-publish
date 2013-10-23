@@ -207,9 +207,20 @@ class PublishDetailsForm(QtGui.QWidget):
         tasks_by_group = {}
         for task in self._tasks:
             group = tasks_by_group.setdefault(task.output.display_group, dict())
-            group.setdefault("outputs", set()).add(task.output)
-            group.setdefault("items", set()).add(task.item)
-            #group.setdefault("errors", list()).extend(task.errors)
+            
+            # track unique outputs for this group maintaining order
+            # respective to task
+            group_outputs = group.setdefault("outputs", list())
+            if task.output not in group_outputs:
+                group_outputs.append(task.output)
+            
+            # track unique items for this group maintaining order
+            # respective to task
+            group_items = group.setdefault("items", list())
+            if task.item not in group_items:
+                group_items.append(task.item)
+            
+            # track tasks for this group:
             group.setdefault("tasks", list()).append(task)
 
             if not task.output.display_group in group_order:
