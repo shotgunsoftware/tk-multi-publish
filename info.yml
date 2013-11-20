@@ -166,6 +166,7 @@ configuration:
                     description: The type that will be used when registering any published
                                  files for this output with Shotgun.  
                                  If set to '' then this must be determined within the publish hook.
+                    allows_empty: True
                 publish_template:
                     type: template
                     fields: context, * 
