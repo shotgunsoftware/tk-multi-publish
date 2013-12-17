@@ -225,7 +225,7 @@ class PrimaryPrePublishHook(Hook):
 
     def _do_photoshop_pre_publish(self, task, work_template, progress_cb):
         """
-        Do Softimage primary pre-publish/scene validation
+        Do Photoshop primary pre-publish/scene validation
         """
         import photoshop
         
