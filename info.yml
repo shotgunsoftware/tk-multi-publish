@@ -180,6 +180,12 @@ configuration:
                     
         allows_empty: True
         default_value: []
+        
+    expand_single_items:
+        type: bool
+        description: Define if an output should be expanable to show the items it contains when 
+                     there is only a single item.
+        default_value: False
             
             
 # the Shotgun fields that this app needs in order to operate correctly

@@ -137,7 +137,9 @@ class ItemList(QtGui.QWidget):
         self._item_widgets = []
         
         # update title:
-        title = "<b>%d items available</b>, <i>expand to turn individual items on and off</i>" % len(self._items)
+        num_items = len(self._items)
+        title = ("<b>%d %s available</b>, <i>expand to turn individual items on and off</i>" 
+                    % (num_items, ("item" if num_items == 1 else "items")))
         self._ui.section_label.setText(title)
         
         # now build widgets for list:
