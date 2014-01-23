@@ -17,9 +17,22 @@ from item_list import ItemList
 from error_list import ErrorList
 
 thumbnail_widget = tank.platform.import_framework("tk-framework-widget", "thumbnail_widget")
+
+
 class ThumbnailWidget(thumbnail_widget.ThumbnailWidget):
     pass
-        
+
+
+class _ObjWrapper(object):
+    """ Wrap a python object for storage in PyQt and PySide items """
+    def __init__(self, obj=None):
+        self._obj = obj
+
+    @property
+    def obj(self):
+        return self._obj
+
+
 class PublishDetailsForm(QtGui.QWidget):
     """
     Implementation of the main publish UI
@@ -129,7 +142,7 @@ class PublishDetailsForm(QtGui.QWidget):
 
         # populate outputs list:
         self._populate_task_list()
-        
+
     def _get_sg_task_combo_task(self, index):
         """
         Get the shotgun task for the currently selected item in the task combo
@@ -138,13 +151,13 @@ class PublishDetailsForm(QtGui.QWidget):
         if task:
             if hasattr(QtCore, "QVariant") and isinstance(task, QtCore.QVariant):
                 task = task.toPyObject()
-                
-            # task is also a tuple ({}, ) to avoid PyQt QString conversion fun!
+
+            # task is a wrapped object to avoid PyQt QString conversion fun!
             if task:
-                task = task[0]
-            
+                task = task.obj
+
         return task
-        
+
     def _populate_shotgun_tasks(self, sg_tasks, allow_no_task = True):
         """
         Populate the shotgun task combo box with the provided
@@ -162,7 +175,7 @@ class PublishDetailsForm(QtGui.QWidget):
         # add tasks:
         for task in sg_tasks:
             label = "%s, %s" % (task["step"]["name"], task["content"])
-            self._ui.sg_task_combo.addItem(label, (task, ))
+            self._ui.sg_task_combo.addItem(label, _ObjWrapper(task))
 
         # reselect selected task if it is still in list:
         self._set_current_shotgun_task(current_task)
@@ -349,4 +362,4 @@ class PublishDetailsForm(QtGui.QWidget):
         
         
         
-        
+      
