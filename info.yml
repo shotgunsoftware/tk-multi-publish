@@ -77,7 +77,7 @@ configuration:
         
     hook_secondary_publish:
         type: hook
-        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_publish_path, progress_cb]
+        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb]
         default_value: "secondary_publish_{engine_name}"
         description: Specify the hook that will be used to do the publish.  This hook is 
                      passed a list of secondary tasks that are to be published.
@@ -86,7 +86,7 @@ configuration:
 
     hook_post_publish:
         type: hook
-        parameters: [work_template, progress_cb]
+        parameters: [work_template, primary_task, secondary_tasks, progress_cb]
         default_value: post_publish
         description: Specify the hook that will be used to do any post-publish work.  Typically, 
                      this hook will be responsible for versioning up the scene to the latest 
