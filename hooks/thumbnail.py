@@ -9,6 +9,10 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import tempfile
+import uuid
+import re
+
 import tank
 from tank import Hook
 
@@ -34,6 +38,8 @@ class ThumbnailHook(Hook):
         # depending on engine:
         if engine_name == "tk-hiero":
             return self._extract_hiero_thumbnail()
+        elif engine_name == "tk-photoshop":
+            return self._extract_photoshop_thumbnail()
 
         # default implementation does nothing        
         return None
@@ -46,8 +52,6 @@ class ThumbnailHook(Hook):
         """
         import hiero.core
         from PySide import QtCore
-        import tempfile
-        import uuid
         
         # get the menu selection from hiero engine
         selection = self.parent.engine.get_menu_selection()
@@ -79,3 +83,69 @@ class ThumbnailHook(Hook):
                     return None
         
         return None
+
+    def _extract_photoshop_thumbnail(self):
+        """
+        Extract a thumbnail from the current doc in Photoshop
+        
+        :returns str:    The path to the thumbnail on disk
+        """
+        import photoshop
+        MAX_THUMB_SIZE = 512
+                    
+        active_doc = photoshop.app.activeDocument
+        orig_name = active_doc.name
+        width_str = active_doc.width
+        height_str = active_doc.height
+        
+        # build temp name for the thumbnail doc (just in case we fail to close it!):
+        name, sfx = os.path.splitext(orig_name)
+        thumb_name = "%s_tkthumb.%s" % (name, sfx)
+        
+        # find the doc size in pixels
+        # Note: this doesn't handle measurements other than pixels.
+        doc_width = doc_height = 0
+        exp = re.compile("^(?P<value>[0-9]+) px$")
+        mo = exp.match (width_str)
+        if mo:
+            doc_width = int(mo.group("value"))
+        mo = exp.match (height_str)
+        if mo:
+            doc_height = int(mo.group("value"))
+
+        thumb_width = thumb_height = 0
+        if doc_width and doc_height:
+            max_sz = max(doc_width, doc_height)
+            if max_sz > MAX_THUMB_SIZE:
+                scale = min(float(MAX_THUMB_SIZE)/float(max_sz), 1.0)
+                thumb_width = max(min(int(width * scale), width), 1)
+                thumb_height = max(min(int(height * scale), height), 1)
+
+        # get a path in the temp dir to use for the thumbnail:
+        png_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.png" % uuid.uuid4().hex)
+        
+        # get a file object from Photoshop for this path and the current PNG save options:
+        thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', png_pub_path)
+        png_options = photoshop.RemoteObject('com.adobe.photoshop::PNGSaveOptions')
+
+        # duplicate the original doc:
+        save_options = photoshop.flexbase.requestStatic('com.adobe.photoshop.SaveOptions', 'DONOTSAVECHANGES')        
+        thumb_doc = active_doc.duplicate(thumb_name)
+
+        try:
+            # flatten image:
+            thumb_doc.flatten()            
+            
+            # resize if needed:
+            if thumb_width and thumb_height:
+                thumb_doc.resizeImage("%d px" % thumb_width, "%d px" % thumb_height)            
+        
+            # save:
+            thumb_doc.saveAs(thumbnail_file, png_options, True)
+
+        finally:
+            # close the doc:
+            thumb_doc.close(save_options)
+        
+        return png_pub_path
+
