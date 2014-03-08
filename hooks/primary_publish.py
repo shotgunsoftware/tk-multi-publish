@@ -631,6 +631,8 @@ class PrimaryPublishHook(Hook):
         
         thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
         jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::JPEGSaveOptions')
+        jpeg_options.quality = 12
+
         # save as a copy
         photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
         
