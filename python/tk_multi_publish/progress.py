@@ -8,8 +8,7 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-
-from tank.platform.qt import QtCore 
+from tank.platform.qt import QtCore
 
 class ProgressReporter(QtCore.QObject):
     """
@@ -84,9 +83,6 @@ class ProgressReporter(QtCore.QObject):
         finally:
             self._current_stage = stage
             self._previous_percent = current_percent
-        
-        #import time
-        #time.sleep(1.0)
         
 class TaskProgressReporter(ProgressReporter):
     def __init__(self, tasks):
