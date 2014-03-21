@@ -252,7 +252,8 @@ class PublishHandler(object):
                 do_post_publish = True
                 
                 # do secondary publishes:
-                self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
+                self._do_secondary_publish(secondary_tasks, primary_task, primary_path, sg_task, thumbnail_path, 
+                                           comment, progress.report)
                 
             except TankError, e:
                 self._app.log_exception("Publish Failed")
@@ -276,7 +277,7 @@ class PublishHandler(object):
             progress.reset(1)
             
             try:
-                self._do_post_publish(progress.report)
+                self._do_post_publish(primary_task, secondary_tasks, progress.report)
             except TankError, e:
                 self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
@@ -397,7 +398,7 @@ class PublishHandler(object):
         return primary_path
         
         
-    def _do_secondary_publish(self, secondary_tasks, primary_publish_path, sg_task, thumbnail_path, comment, progress_cb):
+    def _do_secondary_publish(self, secondary_tasks, primary_task, primary_publish_path, sg_task, thumbnail_path, comment, progress_cb):
         """
         Do publish of secondary tasks using the secondary publish hook
         """
@@ -409,6 +410,7 @@ class PublishHandler(object):
                                              comment = comment,
                                              thumbnail_path = thumbnail_path,
                                              sg_task = sg_task,
+                                             primary_task = primary_task.as_dictionary(),
                                              primary_publish_path=primary_publish_path,
                                              progress_cb=progress_cb)
         
@@ -433,14 +435,18 @@ class PublishHandler(object):
             else:
                 task.publish_errors = []
                 
-    def _do_post_publish(self, progress_cb):
+    def _do_post_publish(self, primary_task, secondary_tasks, progress_cb):
         """
         Do post-publish using the post-publish hook
         """
         
         # do post-publish using post-publish hook:
+        primary_hook_task = primary_task.as_dictionary()
+        secondary_hook_tasks = [task.as_dictionary() for task in secondary_tasks]
         self._app.execute_hook( "hook_post_publish",  
                                 work_template = self._work_template,
+                                primary_task = primary_hook_task,
+                                secondary_tasks = secondary_hook_tasks,
                                 progress_cb=progress_cb)
     
 

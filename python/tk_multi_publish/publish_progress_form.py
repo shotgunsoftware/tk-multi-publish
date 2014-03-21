@@ -58,9 +58,12 @@ class PublishProgressForm(QtGui.QWidget):
         self._ui.progress_bar.setValue(amount)
         if msg != None:
             self._ui.details.setText(msg)
-        
+
+        # force Qt to process all events:
         QtCore.QCoreApplication.processEvents()
-        
+
+        # give Qt a chance to process any events!
+        time.sleep(0.1)       
         
         
         
