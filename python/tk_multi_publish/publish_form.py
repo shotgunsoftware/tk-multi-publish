@@ -43,7 +43,10 @@ class PublishForm(QtGui.QWidget):
         self._ui.publish_result.close.connect(self._on_close)
         
         expand_single_items = self._app.get_setting("expand_single_items")
-        self._ui.publish_details.expand_single_items = expand_single_items 
+        self._ui.publish_details.expand_single_items = expand_single_items
+        
+        allow_taskless_publishes = self._app.get_setting("allow_taskless_publishes")
+        self._ui.publish_details.allow_no_task = allow_taskless_publishes
         
         # always start with the details page:
         self.show_publish_details()

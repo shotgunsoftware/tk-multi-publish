@@ -48,9 +48,11 @@ class PublishDetailsForm(QtGui.QWidget):
         """
         QtGui.QWidget.__init__(self, parent)
         
+        self.expand_single_items = False
+        self.allow_no_task = False
+        
         self._group_widget_info = {}
         self._tasks = []
-        self._expand_single_items = False
     
         # set up the UI
         from .ui.publish_details_form import Ui_PublishDetailsForm
@@ -117,15 +119,6 @@ class PublishDetailsForm(QtGui.QWidget):
         self._ui.sg_task_stacked_widget.setCurrentWidget(page)
         self._ui.task_header_label.setText(header_txt)
     can_change_shotgun_task=property(__get_can_change_shotgun_task, __set_can_change_shotgun_task)
-                 
-    # expand_single_items property
-    # @property
-    def __get_expand_single_items(self):
-        return self._expand_single_items
-    # @expand_single_items.setter
-    def __set_expand_single_items(self, value):
-        self._expand_single_items = value
-    expand_single_items=property(__get_expand_single_items, __set_expand_single_items)
                     
     def initialize(self, tasks, sg_tasks):
         """
@@ -158,7 +151,7 @@ class PublishDetailsForm(QtGui.QWidget):
 
         return task
 
-    def _populate_shotgun_tasks(self, sg_tasks, allow_no_task = True):
+    def _populate_shotgun_tasks(self, sg_tasks):
         """
         Populate the shotgun task combo box with the provided
         list of shotgun tasks
@@ -167,7 +160,7 @@ class PublishDetailsForm(QtGui.QWidget):
         self._ui.sg_task_combo.clear()
         
         # add 'no task' task:
-        if allow_no_task:
+        if self.allow_no_task:
             self._ui.sg_task_combo.addItem("Do not associate this publish with a task")
             self._ui.sg_task_combo.insertSeparator(self._ui.sg_task_combo.count())
             self._ui.sg_task_combo.insertSeparator(self._ui.sg_task_combo.count())
@@ -269,7 +262,7 @@ class PublishDetailsForm(QtGui.QWidget):
             widget_info["output_widgets"] = output_widgets
 
             # add item list if more than one item:                
-            if self._expand_single_items or len(tasks_by_group[group]["items"]) > 1:
+            if self.expand_single_items or len(tasks_by_group[group]["items"]) > 1:
                 item_list = ItemList(tasks_by_group[group]["items"], task_scroll_widget)
                 layout.addWidget(item_list)
                 widget_info["item_list"] = item_list
