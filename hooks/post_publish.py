@@ -19,22 +19,29 @@ class PostPublishHook(Hook):
     """
     Single hook that implements post-publish functionality
     """    
-    def execute(self, work_template, progress_cb, **kwargs):
+    def execute(self, work_template, primary_task, secondary_tasks, progress_cb, **kwargs):
         """
         Main hook entry point
         
-        :work_template: template
-                        This is the template defined in the config that
-                        represents the current work file
-                        
-        :progress_cb:   Function
-                        A progress callback to log progress during pre-publish.  Call:
-                        
-                            progress_cb(percentage, msg)
-                             
-                        to report progress to the UI
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
 
-        :returns:       None - raise a TankError to notify the user of a problem
+        :param primary_task:    The primary task that was published by the primary publish hook.  Passed
+                                in here for reference.
+
+        :param secondary_tasks: The list of secondary taskd that were published by the secondary 
+                                publish hook.  Passed in here for reference.
+                        
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
+        :raises:                Raise a TankError to notify the user of a problem
         """
         # get the engine name from the parent object (app/engine/etc.)
         engine_name = self.parent.engine.name

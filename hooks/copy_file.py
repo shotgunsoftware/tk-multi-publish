@@ -22,17 +22,35 @@ class CopyFile(Hook):
         """
         Main hook entry point
         
-        :source_path:   String
-                        Source file path to copy
+        :param source_path: String
+                            Source file path to copy
                         
-        :target_path:   String
-                        Target file path to copy to
+        :param target_path: String
+                            Target file path to copy to
                         
-        :task:          Dictionary
-                        The publish task that this file is being 
-                        copied for 
-                        
-        :returns:       None
+        :param task:        Dictionary
+                            The publish task that this file is being copied for.  This 
+                            is a dictionary containing the following entries:
+                            
+                            {
+                                item:   Dictionary
+                                        This is the item returned by the scan hook 
+                                        {   
+                                            name:           String
+                                            description:    String
+                                            type:           String
+                                            other_params:   Dictionary
+                                        }
+                                       
+                                output: Dictionary
+                                        This is the output as defined in the configuration - the 
+                                        primary output will always be named 'primary' 
+                                        {
+                                            name:             String
+                                            publish_template: template
+                                            tank_type:        String
+                                        }
+                            }                            
         """
         
         # create the folder if it doesn't exist
