@@ -85,9 +85,9 @@ class PublishForm(QtGui.QWidget):
     def show_publish_details(self):
         self._ui.pages.setCurrentWidget(self._ui.publish_details)
         
-    def show_publish_progress(self, stage):
+    def show_publish_progress(self, title):
         self._ui.pages.setCurrentWidget(self._ui.publish_progress)
-        self._ui.publish_progress.title = stage
+        self._ui.publish_progress.title = title
     
     def set_progress_reporter(self, reporter):
         self._ui.publish_progress.set_reporter(reporter)

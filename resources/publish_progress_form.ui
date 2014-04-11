@@ -30,7 +30,7 @@
       </spacer>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="2,0,0,0,3">
+      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0,1">
        <property name="spacing">
         <number>-1</number>
        </property>
@@ -39,10 +39,13 @@
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>97</height>
+           <height>100</height>
           </size>
          </property>
         </spacer>
@@ -60,6 +63,13 @@ font-size: 24px;
         </widget>
        </item>
        <item>
+        <widget class="QProgressBar" name="progress_bar">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="details">
          <property name="text">
           <string>(Details)</string>
@@ -73,7 +83,7 @@ font-size: 24px;
         </widget>
        </item>
        <item>
-        <widget class="QProgressBar" name="progress_bar">
+        <widget class="QProgressBar" name="stage_progress_bar">
          <property name="value">
           <number>24</number>
          </property>
@@ -87,7 +97,7 @@ font-size: 24px;
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -113,7 +123,6 @@ font-size: 24px;
  </widget>
  <resources>
   <include location="resources.qrc"/>
-  <include location="../../../../../../Developer/Applications/Qt/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
