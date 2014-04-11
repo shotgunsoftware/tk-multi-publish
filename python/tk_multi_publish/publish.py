@@ -163,7 +163,7 @@ class PublishHandler(object):
         publish_form.set_progress_reporter(progress)
 
         # show pre-publish progress:
-        publish_form.show_publish_progress("Doing Pre-Publish...")
+        publish_form.show_publish_progress("Doing Pre-Publish")
         progress.reset()
         
         # make dialog modal whilst we're doing work:
@@ -228,7 +228,7 @@ class PublishHandler(object):
                 return
                 
         # show publish progress:
-        publish_form.show_publish_progress("Publishing...")
+        publish_form.show_publish_progress("Publishing")
         progress.reset()
 
         # save the thumbnail to a temporary location:
@@ -273,7 +273,7 @@ class PublishHandler(object):
         
         # if publish didn't fail then do post publish:
         if do_post_publish:
-            publish_form.show_publish_progress("Doing Post-Publish...")
+            publish_form.show_publish_progress("Doing Post-Publish")
             progress.reset(1)
             
             try:

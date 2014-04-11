@@ -11,10 +11,10 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_PublishResultForm(object):
     def setupUi(self, PublishResultForm):
         PublishResultForm.setObjectName("PublishResultForm")
-        PublishResultForm.resize(546, 346)
+        PublishResultForm.resize(548, 384)
         self.verticalLayout_4 = QtGui.QVBoxLayout(PublishResultForm)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        spacerItem = QtGui.QSpacerItem(20, 97, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem = QtGui.QSpacerItem(20, 100, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout_4.addItem(spacerItem)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -68,9 +68,7 @@ class Ui_PublishResultForm(object):
         self.close_btn.setObjectName("close_btn")
         self.horizontalLayout_2.addWidget(self.close_btn)
         self.verticalLayout_4.addLayout(self.horizontalLayout_2)
-        self.verticalLayout_4.setStretch(0, 2)
-        self.verticalLayout_4.setStretch(1, 1)
-        self.verticalLayout_4.setStretch(2, 3)
+        self.verticalLayout_4.setStretch(2, 1)
 
         self.retranslateUi(PublishResultForm)
         QtCore.QMetaObject.connectSlotsByName(PublishResultForm)
