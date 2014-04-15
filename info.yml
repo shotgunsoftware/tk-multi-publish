@@ -189,8 +189,9 @@ configuration:
         
     allow_taskless_publishes:
         type: bool
-        description:    Allow publishes when no Task is specified.
-        default_value:  False
+        description:    Allow publishing when no Task is specified.  The publish will just be linked
+                        to the entity from the current work area
+        default_value:  True
             
             
 # the Shotgun fields that this app needs in order to operate correctly

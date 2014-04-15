@@ -180,7 +180,7 @@ class PublishDetailsForm(QtGui.QWidget):
         """
         
         # update the selection combo:
-        found_index = 0
+        found_index = None
         for ii in range(0, self._ui.sg_task_combo.count()):
             item_task = self._get_sg_task_combo_task(ii)
             
@@ -193,11 +193,11 @@ class PublishDetailsForm(QtGui.QWidget):
             if found:
                 found_index = ii
                 break
-        self._ui.sg_task_combo.setCurrentIndex(found_index)
+        self._ui.sg_task_combo.setCurrentIndex(found_index or 0)
         
         # also update the static label:
         label = "None!"
-        if found_index > 0:
+        if found_index != None:
             label = self._ui.sg_task_combo.itemText(found_index)
         self._ui.sg_task_label.setText(label)
             
