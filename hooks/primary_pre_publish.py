@@ -78,6 +78,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_softimage_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-photoshop":
             return self._do_photoshop_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
@@ -245,6 +247,25 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
 
+    def _do_motionbuilder_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Motionbuilder primary pre-publish/scene validation
+        """
+        from pyfbsdk import *
+
+        progress_cb(0.0, "Validating current scene", task)
+
+        # get the current scene file:
+        scene_file = FBApplication().FBXFileName
+        if scene_file:
+            scene_file = os.path.abspath(scene_file)
+
+        # validate it:
+        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
+
+        progress_cb(100)
+
+        return scene_errors
 
     def _validate_work_file(self, path, work_template, output, progress_cb):
         """
