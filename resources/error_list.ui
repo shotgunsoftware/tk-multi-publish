@@ -101,7 +101,6 @@ border-style: none;
  </widget>
  <resources>
   <include location="resources.qrc"/>
-  <include location="../../../../../../Developer/Applications/Qt/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

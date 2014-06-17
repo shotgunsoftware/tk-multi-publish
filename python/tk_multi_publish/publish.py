@@ -178,14 +178,6 @@ class PublishHandler(object):
         publish_form.window().show()
         publish_form.window().setGeometry(geom)
         """
-        
-        """
-        # (AD) - do some dummy progress...
-        import time
-        for p in range(1, 11):
-            progress.report(p * 10.0, "Doing something I guess - on %d of %d" % (p, 10))
-            time.sleep(1.0)
-        """
                     
         # do pre-publish:
         try:
