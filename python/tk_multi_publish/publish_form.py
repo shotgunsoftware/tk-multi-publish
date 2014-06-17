@@ -48,6 +48,8 @@ class PublishForm(QtGui.QWidget):
         allow_taskless_publishes = self._app.get_setting("allow_taskless_publishes")
         self._ui.publish_details.allow_no_task = allow_taskless_publishes
         
+        self._ui.primary_error_label.setVisible(False)
+        
         # always start with the details page:
         self.show_publish_details()
         
@@ -96,9 +98,6 @@ class PublishForm(QtGui.QWidget):
         """
         Show the result of the publish in the UI
         """
-        # update UI with result:
-        # TODO...
-        
         # show page:
         self._ui.pages.setCurrentWidget(self._ui.publish_result)
         self._ui.publish_result.status = success
@@ -159,6 +158,7 @@ class PublishForm(QtGui.QWidget):
         Set the primary task and update the UI accordingly
         """
         self._primary_task = task
+        self._primary_task.modified.connect(self._on_primary_task_modified)
         
         # update UI for primary task:
         icon_path = task.output.icon_path
@@ -166,9 +166,9 @@ class PublishForm(QtGui.QWidget):
             icon = QtGui.QPixmap(icon_path)
             if not icon.isNull():
                 self._ui.primary_icon_label.setPixmap(icon)
-                    
-        lines = []
         
+        # build details text and set:            
+        lines = []
         lines.append("<span style='font-size: 16px'}><b>%s - %s</b></span><span style='font-size: 12px'}>" % (task.output.display_name, task.item.name))
         if task.output.description:
             lines.append("%s" % task.output.description)
@@ -176,6 +176,29 @@ class PublishForm(QtGui.QWidget):
             lines.append("%s" % task.item.description)
         details_txt = "%s</span>" % "<br>".join(lines) 
         self._ui.primary_details_label.setText(details_txt)
+        
+        # update errors text:
+        self.__update_primary_errors()
+        
+    def _on_primary_task_modified(self):
+        """
+        Called when the primary task has been modified, e.g. there are new errors to report
+        """
+        # update the errors display for the primary publish
+        self.__update_primary_errors()
+        
+    def __update_primary_errors(self):
+        """
+        Update the primary publish UI with any errors that were found during the pre-publish stage
+        """
+        if self._primary_task and self._primary_task.pre_publish_errors:
+            error_txt = ("<font color='orange'>Validation checks returned some messages for your attention:"
+                          "</font><br>%s" % "<br>".join(self._primary_task.pre_publish_errors))
+            self._ui.primary_error_label.setText(error_txt)
+            self._ui.primary_error_label.setVisible(True)
+        else:
+            self._ui.primary_error_label.setVisible(False)
+        
         
     def _on_publish(self):
         """

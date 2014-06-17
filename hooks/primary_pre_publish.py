@@ -274,10 +274,8 @@ class PrimaryPrePublishHook(Hook):
         
         progress_cb(75, "Validating current version")
         
-        # check the version number against existing versions:
-        # TODO: this check is from the original maya publish - should
-        # it check against the existing published files as well? 
-        # (Note: tk-nuke-publish version is practically the same atm)
+        # check the version number against existing work file versions to avoid accidentally
+        # bypassing more recent work!
         existing_versions = self.parent.tank.paths_from_template(work_template, fields, ["version"])
         version_numbers = [ work_template.get_fields(v).get("version") for v in existing_versions]
         curr_v_no = fields["version"]
@@ -285,9 +283,9 @@ class PrimaryPrePublishHook(Hook):
         if max_v_no > curr_v_no:
             # there is a higher version number - this means that someone is working
             # on an old version of the file. Warn them about upgrading.
-            errors.append("Your current work file is v%03d, however a more recent "
-                   "version (v%03d) already exists. After publishing, your version "
-                   "will become v%03d, thereby shadowing some previous work. " % (curr_v_no, max_v_no, max_v_no + 1))
+            errors.append("Your current work file is v%03d, however a more recent version (v%03d) already exists.  "
+                          "After publishing, this file will become v%03d, replacing any more recent work from v%03d!"
+                          % (curr_v_no, max_v_no, max_v_no + 1, max_v_no))
         
         return errors
         

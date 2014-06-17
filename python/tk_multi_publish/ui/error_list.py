@@ -61,4 +61,3 @@ class Ui_ErrorList(object):
         self.section_label.setText(QtGui.QApplication.translate("ErrorList", "<b><font color=\'orange\'>Validation checks returned some messages for your attention:</font></b>", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc
-from . import resources_rc
