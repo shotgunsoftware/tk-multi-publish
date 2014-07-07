@@ -421,8 +421,13 @@ class PrimaryPublishHook(Hook):
         # figure out all the inputs to the scene and pass them as dependency candidates
         dependency_paths = []
         for read_node in nuke.allNodes("Read"):
-            # make sure we normalize file paths
-            file_name = read_node.knob("file").evaluate().replace('/', os.path.sep)
+            # make sure we have a file path and normalize it
+            # file knobs set to "" in Python will evaluate to None. This is different than
+            # if you set file to an empty string in the UI, which will evaluate to ""!
+            file_name = read_node.knob("file").evaluate()
+            if not file_name:
+                continue
+            file_name = file_name.replace('/', os.path.sep)
             # validate against all our templates
             for template in self.parent.tank.templates.values():
                 if template.validate(file_name):
