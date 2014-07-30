@@ -34,7 +34,8 @@ class ItemWidget(QtGui.QWidget):
         # update description
         lines = []
         lines.append("<b>%s</b>" % self._item.name)
-        lines.append("%s" % self._item.description)
+        if self._item.description:
+            lines.append("%s" % self._item.description)
         self._ui.details_label.setText("<br>".join(lines))
         
     @property

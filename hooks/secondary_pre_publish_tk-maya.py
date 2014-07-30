@@ -10,6 +10,7 @@
 
 import os
 import maya.cmds as cmds
+import maya.mel as mel
 
 import tank
 from tank import Hook
@@ -82,12 +83,12 @@ class PrePublishHook(Hook):
             # report progress:
             progress_cb(0, "Validating", task)
         
-            # pre-publish item here, e.g.
-            #if output["name"] == "foo":
-            #    ...
-            #else:
-            # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")        
+            # pre-publish alembic_cache output
+            if output["name"] == "alembic_cache":
+                errors.extend(self.__validate_item_for_alembic_cache_publish(item))
+            else:
+                # don't know how to publish this output types!
+                errors.append("Don't know how to publish this item!")            
 
             # if there is anything to report then add to result
             if len(errors) > 0:
@@ -98,5 +99,28 @@ class PrePublishHook(Hook):
             
         return results
 
+    def __validate_item_for_alembic_cache_publish(self, item):
+        """
+        Validate that the item is valid to be exported to an alembic cache
+        
+        :param item:    The item to validate
+        :returns:       A list of any errors found during validation that should be reported
+                        to the artist
+        """
+        errors = []
+        
+        # check that the AbcExport command is available!
+        if not mel.eval("exists \"AbcExport\""):
+            errors.append("Could not find the AbcExport command needed to publish Alembic caches!")
+        
+        # check that the group still exists:
+        if not cmds.objExists(item["name"]):
+            errors.append("This group couldn't be found in the scene!")
     
+        # and that it still contains meshes:
+        elif not cmds.ls(item["name"], dag=True, type="mesh"):
+            errors.append("This group doesn't appear to contain any meshes!")
+    
+        # finally return any errors
+        return errors    
     

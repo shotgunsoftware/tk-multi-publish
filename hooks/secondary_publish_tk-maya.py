@@ -11,6 +11,7 @@
 import os
 import shutil
 import maya.cmds as cmds
+import maya.mel as mel
 
 import tank
 from tank import Hook
@@ -100,12 +101,16 @@ class PublishHook(Hook):
             # report progress:
             progress_cb(0, "Publishing", task)
         
-            # publish item here, e.g.
-            #if output["name"] == "foo":
-            #    ...
-            #else:
-            # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")   
+            # publish alembic_cache output
+            if output["name"] == "alembic_cache":
+                try:
+                   self.__publish_alembic_cache_for_item(item, output, work_template, primary_publish_path, 
+                                                         sg_task, comment, thumbnail_path, progress_cb)
+                except Exception, e:
+                   errors.append("Publish failed - %s" % e)
+            else:
+                # don't know how to publish this output types!
+                errors.append("Don't know how to publish this item!")
 
             # if there is anything to report then add to result
             if len(errors) > 0:
@@ -116,11 +121,73 @@ class PublishHook(Hook):
              
         return results
 
-
-
-
+    def __publish_alembic_cache_for_item(self, item, output, work_template, primary_publish_path, 
+                                        sg_task, comment, thumbnail_path, progress_cb):
+        """
+        Export an Alembic cache for the specified item and publish it to Shotgun.
         
+        :param item:                    The item to publish
+        :param output:                  The output definition to publish with
+        :param work_template:           The work template for the current scene
+        :param primary_publish_path:    The path to the primary published file
+        :param sg_task:                 The Shotgun task we are publishing for
+        :param comment:                 The publish comment/description
+        :param thumbnail_path:          The path to the publish thumbnail
+        :param progress_cb:             A callback that can be used to report progress
+        """
+        progress_cb(10, "Analysing geometry group")
+        
+        geom_name = item["name"]
+        tank_type = output["tank_type"]
+        publish_template = output["publish_template"]        
 
+        # get the current scene path and extract fields from it
+        # using the work template:
+        scene_path = os.path.abspath(cmds.file(query=True, sn=True))
+        fields = work_template.get_fields(scene_path)
+        publish_version = fields["version"]
+
+        # update fields with the sanitized geometry name:
+        sanitized_geom_name = geom_name.strip("|").replace(":", "_")
+        fields["geometry_name"] = sanitized_geom_name
+
+        # create the publish path by applying the fields 
+        # with the publish template:
+        progress_cb(20, "Determining publish path")
+        publish_path = publish_template.apply_fields(fields)
+
+        # build and execute the Alembic export command for this item:
+        progress_cb(30, "Exporting Alembic cache")
+        #frame_start = int(cmds.playbackOptions(q=True, min=True))
+        #frame_end = int(cmds.playbackOptions(q=True, max=True))
+        
+        # The AbcExport command expects forward slashes!
+        abc_publish_path = publish_path.replace("\\", "/")
+        #abc_export_cmd = ("AbcExport -j \"-fr %d %d -root %s -file %s\"" 
+        #                  % (frame_start, frame_end, item["name"], abc_publish_path))
+        abc_export_cmd = ("AbcExport -j \"-root %s -file %s\"" 
+                          % (item["name"], abc_publish_path))
+        try:
+            self.parent.log_debug("Executing command: %s" % abc_export_cmd)
+            mel.eval(abc_export_cmd)
+        except Exception, e:
+            raise TankError("Failed to export Alembic Cache: %s" % e)
+
+        # register the publish:
+        progress_cb(75, "Registering the publish")        
+        args = {
+            "tk": self.parent.tank,
+            "context": self.parent.context,
+            "comment": comment,
+            "path": publish_path,
+            "name": geom_name,
+            "version_number": publish_version,
+            "thumbnail_path": thumbnail_path,
+            "task": sg_task,
+            "dependency_paths": [primary_publish_path],
+            "published_file_type":tank_type
+        }
+        tank.util.register_publish(**args)
 
 
 
