@@ -66,5 +66,10 @@ class ScanSceneHook(Hook):
 
         # create the primary item - this will match the primary output 'scene_item_type':            
         items.append({"type": "work_file", "name": name})
+        
+        # if there is any geometry in the scene (poly meshes or nurbs patches), then
+        # add a geometry item to the list:
+        if cmds.ls(geometry=True, noIntermediate=True):
+            items.append({"type":"geometry", "name":"All Scene Geometry"})
 
         return items
