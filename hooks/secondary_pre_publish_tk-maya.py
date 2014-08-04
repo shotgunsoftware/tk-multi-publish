@@ -113,13 +113,9 @@ class PrePublishHook(Hook):
         if not mel.eval("exists \"AbcExport\""):
             errors.append("Could not find the AbcExport command needed to publish Alembic caches!")
         
-        # check that the group still exists:
-        if not cmds.objExists(item["name"]):
-            errors.append("This group couldn't be found in the scene!")
-    
-        # and that it still contains meshes:
-        elif not cmds.ls(item["name"], dag=True, type="mesh"):
-            errors.append("This group doesn't appear to contain any meshes!")
+        # check that there is still geometry in the scene:
+        if not cmds.ls(geometry=True, noIntermediate=True):
+            errors.append("The scene does not contain any geometry!")
     
         # finally return any errors
         return errors    

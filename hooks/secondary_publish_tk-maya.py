@@ -104,7 +104,7 @@ class PublishHook(Hook):
             # publish alembic_cache output
             if output["name"] == "alembic_cache":
                 try:
-                   self.__publish_alembic_cache_for_item(item, output, work_template, primary_publish_path, 
+                   self.__publish_alembic_cache(item, output, work_template, primary_publish_path, 
                                                          sg_task, comment, thumbnail_path, progress_cb)
                 except Exception, e:
                    errors.append("Publish failed - %s" % e)
@@ -121,10 +121,10 @@ class PublishHook(Hook):
              
         return results
 
-    def __publish_alembic_cache_for_item(self, item, output, work_template, primary_publish_path, 
+    def __publish_alembic_cache(self, item, output, work_template, primary_publish_path, 
                                         sg_task, comment, thumbnail_path, progress_cb):
         """
-        Export an Alembic cache for the specified item and publish it to Shotgun.
+        Publish an Alembic cache file for the scene and publish it to Shotgun.
         
         :param item:                    The item to publish
         :param output:                  The output definition to publish with
@@ -135,38 +135,47 @@ class PublishHook(Hook):
         :param thumbnail_path:          The path to the publish thumbnail
         :param progress_cb:             A callback that can be used to report progress
         """
-        progress_cb(10, "Analysing geometry group")
-        
-        geom_name = item["name"]
-        tank_type = output["tank_type"]
-        publish_template = output["publish_template"]        
+        # determine the publish info to use
+        #
+        progress_cb(10, "Determining publish details")
 
         # get the current scene path and extract fields from it
         # using the work template:
         scene_path = os.path.abspath(cmds.file(query=True, sn=True))
         fields = work_template.get_fields(scene_path)
         publish_version = fields["version"]
-
-        # update fields with the sanitized geometry name:
-        sanitized_geom_name = geom_name.strip("|").replace(":", "_")
-        fields["geometry_name"] = sanitized_geom_name
-
+        tank_type = output["tank_type"]
+                
         # create the publish path by applying the fields 
         # with the publish template:
-        progress_cb(20, "Determining publish path")
+        publish_template = output["publish_template"]
         publish_path = publish_template.apply_fields(fields)
 
-        # build and execute the Alembic export command for this item:
-        progress_cb(30, "Exporting Alembic cache")
-        #frame_start = int(cmds.playbackOptions(q=True, min=True))
-        #frame_end = int(cmds.playbackOptions(q=True, max=True))
+        # determine the publish name:
+        publish_name = fields.get("name")
+        if not publish_name:
+            publish_name = os.path.basename(publish_path)
         
-        # The AbcExport command expects forward slashes!
-        abc_publish_path = publish_path.replace("\\", "/")
-        #abc_export_cmd = ("AbcExport -j \"-fr %d %d -root %s -file %s\"" 
-        #                  % (frame_start, frame_end, item["name"], abc_publish_path))
-        abc_export_cmd = ("AbcExport -j \"-root %s -file %s\"" 
-                          % (item["name"], abc_publish_path))
+        # Find additional info from the scene:
+        #
+        alembic_args = {}
+        progress_cb(10, "Analysing scene")
+
+        # find the animated frame range to use:
+        start_frame, end_frame = self.__find_scene_animation_range()
+        if start_frame and end_frame:
+            alembic_args["fr"] = "%d %d" % (start_frame, end_frame)
+
+        # Set the output path: 
+        # Note: The AbcExport command expects forward slashes!
+        alembic_args["file"] = publish_path.replace("\\", "/")
+
+        # build the export command...
+        abc_export_cmd = ("AbcExport -j \"%s\"" 
+                          % " ".join(["-%s %s" % (flag, value) for flag, value in alembic_args.iteritems()]))
+
+        # ...and execute it:
+        progress_cb(30, "Exporting Alembic cache")
         try:
             self.parent.log_debug("Executing command: %s" % abc_export_cmd)
             mel.eval(abc_export_cmd)
@@ -180,7 +189,7 @@ class PublishHook(Hook):
             "context": self.parent.context,
             "comment": comment,
             "path": publish_path,
-            "name": geom_name,
+            "name": publish_name,
             "version_number": publish_version,
             "thumbnail_path": thumbnail_path,
             "task": sg_task,
@@ -189,5 +198,19 @@ class PublishHook(Hook):
         }
         tank.util.register_publish(**args)
 
+    def __find_scene_animation_range(self):
+        """
+        """
+        # look for any animation in the scene:
+        animation_curves = cmds.ls(typ="animCurve")
 
+        start = end = None
+        for ac in animation_curves:
+            pass
+        
+        # (AD) - temp - this is the old code!
+        start = int(cmds.playbackOptions(q=True, min=True))
+        end = int(cmds.playbackOptions(q=True, max=True))        
+        
+        return (start, end)
 

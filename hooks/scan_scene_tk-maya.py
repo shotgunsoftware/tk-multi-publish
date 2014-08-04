@@ -66,11 +66,10 @@ class ScanSceneHook(Hook):
 
         # create the primary item - this will match the primary output 'scene_item_type':            
         items.append({"type": "work_file", "name": name})
-
-        # look for root level groups that have meshes as children:
-        for grp in cmds.ls(assemblies=True, long=True):
-            if cmds.ls(grp, dag=True, type="mesh"):
-                # include this group as a 'geometry' type
-                items.append({"type":"geometry", "name":grp})
+        
+        # if there is any geometry in the scene (poly meshes or nurbs patches), then
+        # add a geometry item to the list:
+        if cmds.ls(geometry=True, noIntermediate=True):
+            items.append({"type":"geometry", "name":"All Scene Geometry"})
 
         return items
