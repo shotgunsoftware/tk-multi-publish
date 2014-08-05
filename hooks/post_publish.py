@@ -19,29 +19,22 @@ class PostPublishHook(Hook):
     """
     Single hook that implements post-publish functionality
     """    
-    def execute(self, work_template, primary_task, secondary_tasks, progress_cb, **kwargs):
+    def execute(self, work_template, progress_cb, **kwargs):
         """
         Main hook entry point
         
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param primary_task:    The primary task that was published by the primary publish hook.  Passed
-                                in here for reference.
-
-        :param secondary_tasks: The list of secondary taskd that were published by the secondary 
-                                publish hook.  Passed in here for reference.
+        :work_template: template
+                        This is the template defined in the config that
+                        represents the current work file
                         
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
+        :progress_cb:   Function
+                        A progress callback to log progress during pre-publish.  Call:
                         
-                                    progress_cb(percentage, msg)
+                            progress_cb(percentage, msg)
                              
-                                to report progress to the UI
+                        to report progress to the UI
 
-        :returns:               None
-        :raises:                Raise a TankError to notify the user of a problem
+        :returns:       None - raise a TankError to notify the user of a problem
         """
         # get the engine name from the parent object (app/engine/etc.)
         engine_name = self.parent.engine.name
@@ -49,6 +42,8 @@ class PostPublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             self._do_maya_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            self._do_motionbuilder_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
@@ -90,6 +85,36 @@ class PostPublishHook(Hook):
         cmds.file(rename=new_scene_path)
         cmds.file(save=True)
         
+        progress_cb(100)
+
+    def _do_motionbuilder_post_publish(self, work_template, progress_cb):
+        """
+        Do any Motion Builder post-publish work
+        """
+        from pyfbsdk import FBApplication
+
+        mb_app = FBApplication()
+        
+        progress_cb(0, "Versioning up the script")
+
+        # get the current script path:
+        original_path = mb_app.FBXFileName
+        script_path = os.path.abspath(original_path)
+
+        # increment version and construct new name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(script_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version
+        new_path = work_template.apply_fields(fields)
+
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (script_path, new_path))
+
+        # save the script:
+        progress_cb(75, "Saving the scene file")
+        mb_app.FileSave(new_path)
+
         progress_cb(100)
 
     def _do_3dsmax_post_publish(self, work_template, progress_cb):
@@ -186,19 +211,14 @@ class PostPublishHook(Hook):
 
         # rename script:
         nuke.root()["name"].setValue(new_path)
-        
+    
         # update write nodes:
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         if write_node_app:
-            # only need to forceably reset the write node render paths if the app version
-            # is less than or equal to v0.1.11
-            from distutils.version import LooseVersion
-            if (write_node_app.version != "Undefined" 
-                and LooseVersion(write_node_app.version) <= LooseVersion("v0.1.11")):
-                progress_cb(50, "Resetting render paths for write nodes")
-                # reset render paths for all write nodes:
-                for wn in write_node_app.get_write_nodes():
-                    write_node_app.reset_node_render_path(wn)
+            progress_cb(50, "Resetting render paths for write nodes")
+            # reset render paths for all write nodes:
+            for wn in write_node_app.get_write_nodes():
+                 write_node_app.reset_node_render_path(wn)
                         
         # save the script:
         progress_cb(75, "Saving the scene file")
