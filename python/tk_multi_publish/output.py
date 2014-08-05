@@ -65,6 +65,18 @@ class PublishOutput(object):
     @property
     def publish_template(self):
         return self._publish_template
+
+    @property
+    def hook_scan_scene(self):
+        return self._raw_fields["hook_scan_scene"]
+
+    @property
+    def hook_secondary_pre_publish(self):
+        return self._raw_fields["hook_secondary_pre_publish"]
+
+    @property
+    def hook_secondary_publish(self):
+        return self._raw_fields["hook_secondary_publish"]
         
     @property
     def selected(self):
