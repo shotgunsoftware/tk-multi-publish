@@ -92,6 +92,8 @@ class PrimaryPublishHook(Hook):
             return self._do_softimage_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-photoshop":
             return self._do_photoshop_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-mari":
+            return self._do_mari_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)        
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
@@ -749,6 +751,22 @@ class PrimaryPublishHook(Hook):
         progress_cb(100)
         
         return publish_path
+    
+    def _do_mari_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Perform the primary publish for Mari
+        
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
+        """
+        # Currently there is no primary publish for Mari so just return:
+        progress_cb(0.0, "Skipping primary publish", task)
     
     def _get_publish_name(self, path, template, fields=None):
         """

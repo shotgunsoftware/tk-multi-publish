@@ -40,15 +40,68 @@ class ThumbnailHook(Hook):
             return self._extract_hiero_thumbnail()
         elif engine_name == "tk-photoshop":
             return self._extract_photoshop_thumbnail()
+        elif engine_name == "tk-mari":
+            return self._extract_mari_thumbnail()
 
         # default implementation does nothing        
         return None
     
+    def _extract_mari_thumbnail(self):
+        """
+        Render a thumbnail for the current canvas in Mari
+        
+        :returns:   The path to the thumbnail on disk
+        """
+        import mari
+        if not mari.projects.current():
+            return
+        
+        canvas = mari.canvases.current()
+        if not canvas:
+            return
+        
+        # calculate the maximum size to capture:
+        MAX_THUMB_SIZE = 512
+        sz = canvas.size()
+        thumb_width = sz.width()
+        thumb_height = sz.height()
+        max_sz = max(thumb_width, sz.height())
+    
+        if max_sz > MAX_THUMB_SIZE:
+            scale = min(float(MAX_THUMB_SIZE)/float(max_sz), 1.0)
+            thumb_width = max(min(int(thumb_width * scale), thumb_width), 1)
+            thumb_height = max(min(int(thumb_height * scale), thumb_height), 1)
+    
+        # disable the HUD:
+        hud_enabled = canvas.getDisplayProperty("HUD/RenderHud")
+        if hud_enabled:
+            # Note - this doesn't seem to work when capturing an image!
+            canvas.setDisplayProperty("HUD/RenderHud", False)
+
+        # render the thumbnail:
+        thumb = None
+        try:    
+            thumb = canvas.captureImage(thumb_width, thumb_height)
+        except:
+            pass
+        
+        # reset the HUD
+        if hud_enabled:
+            canvas.setDisplayProperty("HUD/RenderHud", True)
+        
+        if thumb:
+            # save the thumbnail
+            png_thumb_path = os.path.join(tempfile.gettempdir(), "sgtk_thumb_%s.png" % uuid.uuid4().hex)
+            thumb.save(png_thumb_path)
+        
+        return png_thumb_path
+    
     
     def _extract_hiero_thumbnail(self):
         """
-        Extracts the 
-        
+        Render a thumbnail from the first valid sequence in Hiero
+
+        :returns:   The path to the thumbnail on disk
         """
         import hiero.core
         from PySide import QtCore
@@ -88,7 +141,7 @@ class ThumbnailHook(Hook):
         """
         Extract a thumbnail from the current doc in Photoshop
         
-        :returns str:    The path to the thumbnail on disk
+        :returns:   The path to the thumbnail on disk
         """
         import photoshop
         MAX_THUMB_SIZE = 512
