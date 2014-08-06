@@ -158,21 +158,25 @@ class PublishHook(Hook):
         
         # Find additional info from the scene:
         #
-        alembic_args = {}
         progress_cb(10, "Analysing scene")
+                
+        alembic_args = ["-renderableOnly",   # only renderable objects (visible and not templated)
+                        "-writeFaceSets",    # write shading group set assignments (Maya 2015+)
+                        "-uvWrite"           # write uv's (only the current uv set gets written)
+                        ]        
 
         # find the animated frame range to use:
         start_frame, end_frame = self.__find_scene_animation_range()
         if start_frame and end_frame:
-            alembic_args["fr"] = "%d %d" % (start_frame, end_frame)
+            alembic_args.append("-fr %d %d" % (start_frame, end_frame))
 
         # Set the output path: 
         # Note: The AbcExport command expects forward slashes!
-        alembic_args["file"] = publish_path.replace("\\", "/")
+        alembic_args.append("-file %s" % publish_path.replace("\\", "/"))
 
-        # build the export command...
-        abc_export_cmd = ("AbcExport -j \"%s\"" 
-                          % " ".join(["-%s %s" % (flag, value) for flag, value in alembic_args.iteritems()]))
+        # build the export command.  Note, use AbcExport -help in Maya for
+        # more detailed Alembic export help
+        abc_export_cmd = ("AbcExport -j \"%s\"" % " ".join(alembic_args))
 
         # ...and execute it:
         progress_cb(30, "Exporting Alembic cache")
