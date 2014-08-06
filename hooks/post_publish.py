@@ -44,7 +44,7 @@ class PostPublishHook(Hook):
             self._do_maya_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
-        elif engine_name == "tk-3dsmax":
+        elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
             self._do_3dsmax_post_publish(work_template, progress_cb)
         elif engine_name == "tk-hiero":
             self._do_hiero_post_publish(work_template, progress_cb)

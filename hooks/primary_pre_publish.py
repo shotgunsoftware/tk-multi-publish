@@ -68,7 +68,7 @@ class PrimaryPrePublishHook(Hook):
             return self._do_maya_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-3dsmax":
+        elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
             return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
