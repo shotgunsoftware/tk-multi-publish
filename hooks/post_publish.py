@@ -61,6 +61,8 @@ class PostPublishHook(Hook):
             self._do_softimage_post_publish(work_template, progress_cb)
         elif engine_name == "tk-photoshop":
             self._do_photoshop_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-mari":
+            self._do_mari_post_publish(work_template, progress_cb)            
         else:
             raise TankError("Unable to perform post publish for unhandled engine %s" % engine_name)
         
@@ -299,6 +301,15 @@ class PostPublishHook(Hook):
                 
         progress_cb(100)
 
+    def _do_mari_post_publish(self, work_template, progress_cb):
+        """
+        Mari specific post-publish
+        
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        """
+        # nothing to do for Mari post-publish
+        pass
 
     def _get_next_work_file_version(self, work_template, fields):
         """
