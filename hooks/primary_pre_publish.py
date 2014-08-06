@@ -80,6 +80,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_softimage_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-photoshop":
             return self._do_photoshop_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-mari":
+            return self._do_mari_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
@@ -268,6 +270,20 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
           
         return scene_errors
+
+    def _do_mari_pre_publish(self, task, work_template, progress_cb):
+        """
+        Perform any pre-publish for the primary task in Mari.
+        
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
+        """
+        # currently there is no primary publish for Mari so just return
+        return []
 
 
     def _validate_work_file(self, path, work_template, output, progress_cb):

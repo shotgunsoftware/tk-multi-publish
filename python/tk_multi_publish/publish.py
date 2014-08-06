@@ -239,8 +239,6 @@ class PublishHandler(object):
             try:            
                 # do primary publish:
                 primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
-                if not primary_path:
-                    raise TankError("Primary publish didn't return a path!")
                 do_post_publish = True
                 
                 # do secondary publishes:
@@ -304,7 +302,7 @@ class PublishHandler(object):
                 self._app.log_debug("Skipping item '%s' as it has an unrecognised scene item type %s" 
                                     % (item.name, item.scene_item_type))               
              
-        # Now loop through all outputs and add build list of tasks.
+        # Now loop through all outputs and build list of tasks.
         # Note: this is deliberately output-centric to allow control
         # of the order through the configuration (order of secondary
         # outputs)
@@ -338,6 +336,9 @@ class PublishHandler(object):
                                     % primary_type)
                 else:
                     primary_item = item
+                
+        if not primary_item:
+            raise TankError("Scan scene didn't return a primary item to publish!")
                 
         return items
         

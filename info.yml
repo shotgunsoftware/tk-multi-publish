@@ -23,6 +23,7 @@ configuration:
         type: template
         description: A reference to a template which locates a work file on disk.
         fields: context, *
+        allows_empty: True
 
     hook_thumbnail:
         type: hook
