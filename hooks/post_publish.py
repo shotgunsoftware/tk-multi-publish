@@ -218,14 +218,19 @@ class PostPublishHook(Hook):
 
         # rename script:
         nuke.root()["name"].setValue(new_path)
-    
+        
         # update write nodes:
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         if write_node_app:
-            progress_cb(50, "Resetting render paths for write nodes")
-            # reset render paths for all write nodes:
-            for wn in write_node_app.get_write_nodes():
-                 write_node_app.reset_node_render_path(wn)
+            # only need to forceably reset the write node render paths if the app version
+            # is less than or equal to v0.1.11
+            from distutils.version import LooseVersion
+            if (write_node_app.version != "Undefined" 
+                and LooseVersion(write_node_app.version) <= LooseVersion("v0.1.11")):
+                progress_cb(50, "Resetting render paths for write nodes")
+                # reset render paths for all write nodes:
+                for wn in write_node_app.get_write_nodes():
+                    write_node_app.reset_node_render_path(wn)
                         
         # save the script:
         progress_cb(75, "Saving the scene file")
