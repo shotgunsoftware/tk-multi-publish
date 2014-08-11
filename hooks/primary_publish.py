@@ -78,6 +78,8 @@ class PrimaryPublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             return self._do_maya_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            return self._do_motionbuilder_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-3dsmax":
@@ -200,6 +202,74 @@ class PrimaryPublishHook(Hook):
         return dependency_paths
     
         
+    def _do_motionbuilder_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main Motion Builder scene
+        """
+        from pyfbsdk import FBApplication
+
+        mb_app = FBApplication()
+
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._motionbuilder_find_additional_scene_dependencies()
+
+        # get scene path
+        scene_path = os.path.abspath(mb_app.FBXFileName)
+
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+
+        # save the scene:
+        progress_cb(10.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        mb_app.FileSave(scene_path)
+
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path,
+                               publish_name,
+                               sg_task,
+                               fields["version"],
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path,
+                               dependencies)
+
+        progress_cb(100)
+
+        return publish_path
+
+    def _motionbuilder_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the scene
+        """
+        # initial implementation does nothing!
+        return []
+
+
     def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
@@ -428,6 +498,7 @@ class PrimaryPublishHook(Hook):
             if not file_name:
                 continue
             file_name = file_name.replace('/', os.path.sep)
+
             # validate against all our templates
             for template in self.parent.tank.templates.values():
                 if template.validate(file_name):

@@ -49,6 +49,8 @@ class PostPublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             self._do_maya_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            self._do_motionbuilder_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
@@ -90,6 +92,36 @@ class PostPublishHook(Hook):
         cmds.file(rename=new_scene_path)
         cmds.file(save=True)
         
+        progress_cb(100)
+
+    def _do_motionbuilder_post_publish(self, work_template, progress_cb):
+        """
+        Do any Motion Builder post-publish work
+        """
+        from pyfbsdk import FBApplication
+
+        mb_app = FBApplication()
+        
+        progress_cb(0, "Versioning up the script")
+
+        # get the current script path:
+        original_path = mb_app.FBXFileName
+        script_path = os.path.abspath(original_path)
+
+        # increment version and construct new name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(script_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version
+        new_path = work_template.apply_fields(fields)
+
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (script_path, new_path))
+
+        # save the script:
+        progress_cb(75, "Saving the scene file")
+        mb_app.FileSave(new_path)
+
         progress_cb(100)
 
     def _do_3dsmax_post_publish(self, work_template, progress_cb):

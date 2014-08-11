@@ -66,6 +66,8 @@ class PrimaryPrePublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             return self._do_maya_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
@@ -101,6 +103,28 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
         
+    def _do_motionbuilder_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do Motion Builder primary pre-publish/scene validation
+        """
+        from pyfbsdk import FBApplication
+
+        mb_app = FBApplication()
+
+        progress_cb(0, "Validating current script", task)
+
+        # get the current script file path:
+        script_file = mb_app.FBXFileName
+        if script_file:
+            script_file = os.path.abspath(script_file)
+
+        # validate it
+        script_errors = self._validate_work_file(script_file, work_template, task["output"], progress_cb)
+
+        progress_cb(100)
+
+        return script_errors
+
     def _do_3dsmax_pre_publish(self, task, work_template, progress_cb):
         """
         Do 3ds Max primary pre-publish/scene validation
