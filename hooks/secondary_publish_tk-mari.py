@@ -223,8 +223,19 @@ class PublishHook(Hook):
         else:
             # flatten layers in the channel and publish the flattened layer:
             progress_cb(50, "Exporting channel")
-            flattened_layer = channel.flatten()
+            # remember the current channel:
+            current_channel = geo.currentChannel()
+            # duplicate the channel so we don't operate on the original:
+            duplicate_channel = geo.createDuplicateChannel(channel)
+            # flatten it into a single layer:
+            flattened_layer = duplicate_channel.flatten()
+            # export the images for it:
             flattened_layer.exportImages(output_path)
+            # set the current channel back - not doing this will result in Mari crashing
+            # when the duplicated channel is removed!
+            geo.setCurrentChannel(current_channel)
+            # remove the duplicate channel, destroying the channel and the flattened layer:
+            geo.removeChannel(duplicate_channel, geo.DESTROY_ALL)
 
         # register the publish:
         progress_cb(80, "Registering the publish")
