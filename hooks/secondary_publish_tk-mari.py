@@ -152,12 +152,14 @@ class PublishHook(Hook):
         channel = geo.findChannel(channel_name)
         if not channel:
             raise TankError("Failed to find channel '%s' on '%s'!" % (channel_name, geo_name))
+        publish_name = "%s, %s" % (geo_name, channel_name)
         
         layer = None
         if layer_name:
             layer = channel.findLayer(layer_name)
             if not layer:
                 raise TankError("Failed to find layer '%s' in channel '%s' on '%s'!" % (layer_name, channel_name, geo_name))
+            publish_name = "%s, %s - %s" % (geo_name, channel_name, layer_name)
 
         # build the publish output path:
         progress_cb(20, "Building publish path")
@@ -208,9 +210,6 @@ class PublishHook(Hook):
         output_path = None
         try:
             fields["UDIM"] = "$UDIM"
-            fields["channel"] = "$CHANNEL"
-            if layer:
-                fields["layer"] = "$LAYER"
             output_path = publish_template.apply_fields(fields)
         except TankError, e:
             raise TankError("Failed to build the Mari output path: %s" % e)
@@ -244,7 +243,7 @@ class PublishHook(Hook):
             "context": self.parent.context,
             "comment": comment,
             "path": publish_path,
-            "name": geo_name,
+            "name": publish_name,
             "version_number": fields["version"],
             "thumbnail_path": thumbnail_path,
             "task": sg_task,
