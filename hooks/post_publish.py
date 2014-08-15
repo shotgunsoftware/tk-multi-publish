@@ -72,18 +72,8 @@ class PostPublishHook(Hook):
         """
         Do any Maya post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import maya.cmds as cmds
         
@@ -113,18 +103,8 @@ class PostPublishHook(Hook):
         """
         Do any Motion Builder post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """
         from pyfbsdk import FBApplication
 
@@ -156,18 +136,8 @@ class PostPublishHook(Hook):
         """
         Do any 3ds Max post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         from Py3dsMax import mxs
         
@@ -196,18 +166,8 @@ class PostPublishHook(Hook):
         """
         Do any Hiero post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import hiero.core
         
@@ -252,18 +212,8 @@ class PostPublishHook(Hook):
         """
         Do any nuke post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import nuke
         
@@ -309,18 +259,8 @@ class PostPublishHook(Hook):
         """
         Do any nuke post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """
         import hou
         
@@ -352,18 +292,8 @@ class PostPublishHook(Hook):
         """
         Do any Softimage post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import win32com
         from win32com.client import Dispatch, constants
@@ -395,18 +325,8 @@ class PostPublishHook(Hook):
         """
         Do any Photoshop post-publish work
 
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
-
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
-                        
-                                    progress_cb(percentage, msg)
-                             
-                                to report progress to the UI
-
-        :returns:               None
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import photoshop
         
