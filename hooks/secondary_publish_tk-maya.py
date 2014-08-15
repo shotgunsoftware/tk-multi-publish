@@ -150,6 +150,10 @@ class PublishHook(Hook):
         # with the publish template:
         publish_template = output["publish_template"]
         publish_path = publish_template.apply_fields(fields)
+        
+        # ensure the publish folder exists:
+        publish_folder = os.path.basename(publish_path)
+        self.parent.ensure_folder_exists(publish_folder)        
 
         # determine the publish name:
         publish_name = fields.get("name")

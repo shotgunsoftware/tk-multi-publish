@@ -214,6 +214,10 @@ class PublishHook(Hook):
         except TankError, e:
             raise TankError("Failed to build the Mari output path: %s" % e)
         
+        # ensure the publish folder exists:
+        publish_folder = os.path.basename(publish_path)
+        self.parent.ensure_folder_exists(publish_folder)
+        
         # publish the layer:
         if layer:
             # publish a specific layer:
