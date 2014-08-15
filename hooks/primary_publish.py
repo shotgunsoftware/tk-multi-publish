@@ -207,7 +207,7 @@ class PrimaryPublishHook(Hook):
         dependencies = self._3dsmax_find_additional_scene_dependencies()
 
         # get scene path
-        scene_path = MaxPlus.FileManager.GetFileNameAndPath().data()
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
 
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)

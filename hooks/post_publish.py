@@ -92,7 +92,7 @@ class PostPublishHook(Hook):
         progress_cb(0, "Versioning up the scene file")
 
         # get the current scene path:
-        scene_path = MaxPlus.FileManager.GetFileNameAndPath().data()
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
 
         # increment version and construct new file name:
         progress_cb(25, "Finding next version number")

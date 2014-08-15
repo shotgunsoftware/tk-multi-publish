@@ -108,7 +108,7 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(0.0, "Validating current scene", task)
 
         # get the current scene file:
-        scene_file = MaxPlus.FileManager.GetFileNameAndPath().data()
+        scene_file = MaxPlus.FileManager.GetFileNameAndPath()
 
         # validate it:
         scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
