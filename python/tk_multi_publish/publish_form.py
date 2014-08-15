@@ -158,10 +158,13 @@ class PublishForm(QtGui.QWidget):
         Set the primary task and update the UI accordingly
         """
         self._primary_task = task
+
+        # connect to the primary tasks modified signal so that we can
+        # update the UI if something changes.
         self._primary_task.modified.connect(self._on_primary_task_modified)
         
         # update UI for primary task:
-        icon_path = task.output.icon_path
+        icon_path = self._primary_task.output.icon_path
         if os.path.isfile(icon_path) and os.path.exists(icon_path):
             icon = QtGui.QPixmap(icon_path)
             if not icon.isNull():
@@ -169,11 +172,14 @@ class PublishForm(QtGui.QWidget):
         
         # build details text and set:            
         lines = []
-        lines.append("<span style='font-size: 16px'}><b>%s - %s</b></span><span style='font-size: 12px'}>" % (task.output.display_name, task.item.name))
-        if task.output.description:
-            lines.append("%s" % task.output.description)
-        if task.item.description:
-            lines.append("%s" % task.item.description)
+        name_str = self._primary_task.output.display_name
+        if self._primary_task.item.name:
+            name_str = "%s - %s" % (name_str, self._primary_task.item.name)
+        lines.append("<span style='font-size: 16px'}><b>%s</b></span><span style='font-size: 12px'}>" % (name_str))
+        if self._primary_task.output.description:
+            lines.append("%s" % self._primary_task.output.description)
+        if self._primary_task.item.description:
+            lines.append("%s" % self._primary_task.item.description)
         details_txt = "%s</span>" % "<br>".join(lines) 
         self._ui.primary_details_label.setText(details_txt)
         

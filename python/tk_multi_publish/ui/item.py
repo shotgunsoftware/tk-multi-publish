@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_Item(object):
     def setupUi(self, Item):
         Item.setObjectName("Item")
-        Item.resize(286, 38)
+        Item.resize(314, 38)
         self.horizontalLayout = QtGui.QHBoxLayout(Item)
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
@@ -24,7 +24,7 @@ class Ui_Item(object):
         self.select_cb.setText("")
         self.select_cb.setObjectName("select_cb")
         self.verticalLayout.addWidget(self.select_cb)
-        spacerItem = QtGui.QSpacerItem(10, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.details_label = QtGui.QLabel(Item)

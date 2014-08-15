@@ -239,8 +239,6 @@ class PublishHandler(object):
             try:            
                 # do primary publish:
                 primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
-                if not primary_path:
-                    raise TankError("Primary publish didn't return a path!")
                 do_post_publish = True
                 
                 # do secondary publishes:
@@ -293,19 +291,24 @@ class PublishHandler(object):
         # need single list of all outputs:
         all_outputs = [self._primary_output] + self._secondary_outputs
 
-        # first, validate that all items specify a known scene item type:
+        # First, validate that all items specify a known scene item type.  Any
+        # that don't are skipped and won't be published by the app.
+        valid_items = []
         output_scene_item_types = set([output.scene_item_type for output in all_outputs])
         for item in items:
-            if item.scene_item_type not in output_scene_item_types:
-                raise TankError("Item %s found with unrecognised scene item type %s" % (item.name, item.scene_item_type))
+            if item.scene_item_type in output_scene_item_types:
+                valid_items.append(item)
+            else:
+                self._app.log_debug("Skipping item '%s' as it has an unrecognised scene item type %s" 
+                                    % (item.name, item.scene_item_type))               
              
-        # Now loop through all outputs and add build list of tasks.
+        # Now loop through all outputs and build list of tasks.
         # Note: this is deliberately output-centric to allow control
         # of the order through the configuration (order of secondary
         # outputs)
         tasks = []
         for output in all_outputs:
-            for item in items:
+            for item in valid_items:
                 if item.scene_item_type == output.scene_item_type:
                     tasks.append(Task(item, output))
              
@@ -333,6 +336,9 @@ class PublishHandler(object):
                                     % primary_type)
                 else:
                     primary_item = item
+                
+        if not primary_item:
+            raise TankError("Scan scene didn't return a primary item to publish!")
                 
         return items
         

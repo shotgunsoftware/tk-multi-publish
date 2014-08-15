@@ -11,6 +11,7 @@
 import os
 import shutil
 import maya.cmds as cmds
+import maya.mel as mel
 
 import tank
 from tank import Hook
@@ -100,12 +101,16 @@ class PublishHook(Hook):
             # report progress:
             progress_cb(0, "Publishing", task)
         
-            # publish item here, e.g.
-            #if output["name"] == "foo":
-            #    ...
-            #else:
-            # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")   
+            # publish alembic_cache output
+            if output["name"] == "alembic_cache":
+                try:
+                   self.__publish_alembic_cache(item, output, work_template, primary_publish_path, 
+                                                         sg_task, comment, thumbnail_path, progress_cb)
+                except Exception, e:
+                   errors.append("Publish failed - %s" % e)
+            else:
+                # don't know how to publish this output types!
+                errors.append("Don't know how to publish this item!")
 
             # if there is anything to report then add to result
             if len(errors) > 0:
@@ -116,11 +121,104 @@ class PublishHook(Hook):
              
         return results
 
-
-
-
+    def __publish_alembic_cache(self, item, output, work_template, primary_publish_path, 
+                                        sg_task, comment, thumbnail_path, progress_cb):
+        """
+        Publish an Alembic cache file for the scene and publish it to Shotgun.
         
+        :param item:                    The item to publish
+        :param output:                  The output definition to publish with
+        :param work_template:           The work template for the current scene
+        :param primary_publish_path:    The path to the primary published file
+        :param sg_task:                 The Shotgun task we are publishing for
+        :param comment:                 The publish comment/description
+        :param thumbnail_path:          The path to the publish thumbnail
+        :param progress_cb:             A callback that can be used to report progress
+        """
+        # determine the publish info to use
+        #
+        progress_cb(10, "Determining publish details")
 
+        # get the current scene path and extract fields from it
+        # using the work template:
+        scene_path = os.path.abspath(cmds.file(query=True, sn=True))
+        fields = work_template.get_fields(scene_path)
+        publish_version = fields["version"]
+        tank_type = output["tank_type"]
+                
+        # create the publish path by applying the fields 
+        # with the publish template:
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        # ensure the publish folder exists:
+        publish_folder = os.path.dirname(publish_path)
+        self.parent.ensure_folder_exists(publish_folder)        
 
+        # determine the publish name:
+        publish_name = fields.get("name")
+        if not publish_name:
+            publish_name = os.path.basename(publish_path)
+        
+        # Find additional info from the scene:
+        #
+        progress_cb(10, "Analysing scene")
+                
+        alembic_args = ["-renderableOnly",   # only renderable objects (visible and not templated)
+                        "-writeFaceSets",    # write shading group set assignments (Maya 2015+)
+                        "-uvWrite"           # write uv's (only the current uv set gets written)
+                        ]        
 
+        # find the animated frame range to use:
+        start_frame, end_frame = self.__find_scene_animation_range()
+        if start_frame and end_frame:
+            alembic_args.append("-fr %d %d" % (start_frame, end_frame))
+
+        # Set the output path: 
+        # Note: The AbcExport command expects forward slashes!
+        alembic_args.append("-file %s" % publish_path.replace("\\", "/"))
+
+        # build the export command.  Note, use AbcExport -help in Maya for
+        # more detailed Alembic export help
+        abc_export_cmd = ("AbcExport -j \"%s\"" % " ".join(alembic_args))
+
+        # ...and execute it:
+        progress_cb(30, "Exporting Alembic cache")
+        try:
+            self.parent.log_debug("Executing command: %s" % abc_export_cmd)
+            mel.eval(abc_export_cmd)
+        except Exception, e:
+            raise TankError("Failed to export Alembic Cache: %s" % e)
+
+        # register the publish:
+        progress_cb(75, "Registering the publish")        
+        args = {
+            "tk": self.parent.tank,
+            "context": self.parent.context,
+            "comment": comment,
+            "path": publish_path,
+            "name": publish_name,
+            "version_number": publish_version,
+            "thumbnail_path": thumbnail_path,
+            "task": sg_task,
+            "dependency_paths": [primary_publish_path],
+            "published_file_type":tank_type
+        }
+        tank.util.register_publish(**args)
+
+    def __find_scene_animation_range(self):
+        """
+        """
+        # look for any animation in the scene:
+        animation_curves = cmds.ls(typ="animCurve")
+
+        start = end = None
+        for ac in animation_curves:
+            pass
+        
+        # (AD) - temp - this is the old code!
+        start = int(cmds.playbackOptions(q=True, min=True))
+        end = int(cmds.playbackOptions(q=True, max=True))        
+        
+        return (start, end)
 

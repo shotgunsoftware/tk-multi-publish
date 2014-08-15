@@ -9,8 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import maya.cmds as cmds
-import maya.mel as mel
+import mari
 
 import tank
 from tank import Hook
@@ -83,10 +82,12 @@ class PrePublishHook(Hook):
             # report progress:
             progress_cb(0, "Validating", task)
         
-            # pre-publish alembic_cache output
-            if output["name"] == "alembic_cache":
-                errors.extend(self.__validate_item_for_alembic_cache_publish(item))
-            else:
+            if output["name"] in ["channel", "layer"]:
+                # validate mari texture publish:
+                validation_errors = self._validate_texture_publish(item, output)
+                if validation_errors: 
+                    errors.extend(validation_errors)
+            else:        
                 # don't know how to publish this output types!
                 errors.append("Don't know how to publish this item!")            
 
@@ -98,25 +99,29 @@ class PrePublishHook(Hook):
             progress_cb(100)
             
         return results
-
-    def __validate_item_for_alembic_cache_publish(self, item):
-        """
-        Validate that the item is valid to be exported to an alembic cache
-        
-        :param item:    The item to validate
-        :returns:       A list of any errors found during validation that should be reported
-                        to the artist
-        """
-        errors = []
-        
-        # check that the AbcExport command is available!
-        if not mel.eval("exists \"AbcExport\""):
-            errors.append("Could not find the AbcExport command needed to publish Alembic caches!")
-        
-        # check that there is still geometry in the scene:
-        if not cmds.ls(geometry=True, noIntermediate=True):
-            errors.append("The scene does not contain any geometry!")
     
-        # finally return any errors
-        return errors    
+    def _validate_texture_publish(self, item, output):
+        """
+        Validate the specified texture publish
+        
+        :param item:            The item to publish
+        :param output:          The output definition for the item
+        """
+        # extract the geo, channel & layer from the other params - these
+        # were determined in the scan scene hook.
+        params = item.get("other_params")
+        geo_name = params["geo"]
+        channel_name = params["channel"]
+        layer_name = params.get("layer")        
+
+        errors = []
+
+        # (TODO) do any validation here
+        # 
+
+        return errors
+        
+        
+        
+    
     
