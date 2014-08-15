@@ -69,6 +69,19 @@ class PostPublishHook(Hook):
     def _do_maya_post_publish(self, work_template, progress_cb):
         """
         Do any Maya post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """        
         import maya.cmds as cmds
         
@@ -97,6 +110,19 @@ class PostPublishHook(Hook):
     def _do_motionbuilder_post_publish(self, work_template, progress_cb):
         """
         Do any Motion Builder post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """
         from pyfbsdk import FBApplication
 
@@ -127,6 +153,19 @@ class PostPublishHook(Hook):
     def _do_3dsmax_post_publish(self, work_template, progress_cb):
         """
         Do any 3ds Max post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """        
         from Py3dsMax import mxs
         
@@ -154,6 +193,19 @@ class PostPublishHook(Hook):
     def _do_hiero_post_publish(self, work_template, progress_cb):
         """
         Do any Hiero post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """        
         import hiero.core
         
@@ -197,6 +249,19 @@ class PostPublishHook(Hook):
     def _do_nuke_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """        
         import nuke
         
@@ -241,6 +306,19 @@ class PostPublishHook(Hook):
     def _do_houdini_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """
         import hou
         
@@ -271,6 +349,19 @@ class PostPublishHook(Hook):
     def _do_softimage_post_publish(self, work_template, progress_cb):
         """
         Do any Softimage post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """        
         import win32com
         from win32com.client import Dispatch, constants
@@ -301,6 +392,19 @@ class PostPublishHook(Hook):
     def _do_photoshop_post_publish(self, work_template, progress_cb):
         """
         Do any Photoshop post-publish work
+
+        :param work_template:   template
+                                This is the template defined in the config that
+                                represents the current work file
+
+        :param progress_cb:     Function
+                                A progress callback to log progress during pre-publish.  Call:
+                        
+                                    progress_cb(percentage, msg)
+                             
+                                to report progress to the UI
+
+        :returns:               None
         """        
         import photoshop
         
