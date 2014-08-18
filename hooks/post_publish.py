@@ -71,6 +71,9 @@ class PostPublishHook(Hook):
     def _do_maya_post_publish(self, work_template, progress_cb):
         """
         Do any Maya post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import maya.cmds as cmds
         
@@ -99,6 +102,9 @@ class PostPublishHook(Hook):
     def _do_motionbuilder_post_publish(self, work_template, progress_cb):
         """
         Do any Motion Builder post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """
         from pyfbsdk import FBApplication
 
@@ -129,6 +135,9 @@ class PostPublishHook(Hook):
     def _do_3dsmax_post_publish(self, work_template, progress_cb):
         """
         Do any 3ds Max post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         from Py3dsMax import mxs
         
@@ -156,6 +165,9 @@ class PostPublishHook(Hook):
     def _do_hiero_post_publish(self, work_template, progress_cb):
         """
         Do any Hiero post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import hiero.core
         
@@ -199,6 +211,9 @@ class PostPublishHook(Hook):
     def _do_nuke_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import nuke
         
@@ -243,6 +258,9 @@ class PostPublishHook(Hook):
     def _do_houdini_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """
         import hou
         
@@ -273,6 +291,9 @@ class PostPublishHook(Hook):
     def _do_softimage_post_publish(self, work_template, progress_cb):
         """
         Do any Softimage post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import win32com
         from win32com.client import Dispatch, constants
@@ -303,6 +324,9 @@ class PostPublishHook(Hook):
     def _do_photoshop_post_publish(self, work_template, progress_cb):
         """
         Do any Photoshop post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import photoshop
         

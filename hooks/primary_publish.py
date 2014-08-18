@@ -100,6 +100,15 @@ class PrimaryPublishHook(Hook):
     def _do_maya_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Maya scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import maya.cmds as cmds
         
@@ -207,6 +216,15 @@ class PrimaryPublishHook(Hook):
     def _do_motionbuilder_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Motion Builder scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         from pyfbsdk import FBApplication
 
@@ -275,6 +293,15 @@ class PrimaryPublishHook(Hook):
     def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         from Py3dsMax import mxs
         
@@ -341,6 +368,15 @@ class PrimaryPublishHook(Hook):
     def _do_hiero_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the currently selected hiero project.
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import hiero.core
         
@@ -426,6 +462,15 @@ class PrimaryPublishHook(Hook):
     def _do_nuke_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Nuke script
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import nuke
         
@@ -517,6 +562,15 @@ class PrimaryPublishHook(Hook):
     def _do_houdini_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Houdini scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import hou
 
@@ -582,6 +636,15 @@ class PrimaryPublishHook(Hook):
     def _do_softimage_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Softimage scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import win32com
         from win32com.client import Dispatch, constants
@@ -650,6 +713,15 @@ class PrimaryPublishHook(Hook):
     def _do_photoshop_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Photoshop scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import photoshop
                 
