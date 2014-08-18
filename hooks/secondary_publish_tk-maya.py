@@ -153,7 +153,7 @@ class PublishHook(Hook):
         
         # ensure the publish folder exists:
         publish_folder = os.path.dirname(publish_path)
-        self.parent.ensure_folder_exists(publish_folder)        
+        self.parent.ensure_folder_exists(publish_folder)
 
         # determine the publish name:
         publish_name = fields.get("name")
@@ -163,14 +163,17 @@ class PublishHook(Hook):
         # Find additional info from the scene:
         #
         progress_cb(10, "Analysing scene")
-                
+
+        # set the alembic args that make the most sense when working with Mari.  These flags
+        # will ensure the export of an Alembic file that contains all visible geometry from
+        # the current scene together with UV's and face sets for use in Mari.
         alembic_args = ["-renderableOnly",   # only renderable objects (visible and not templated)
                         "-writeFaceSets",    # write shading group set assignments (Maya 2015+)
                         "-uvWrite"           # write uv's (only the current uv set gets written)
                         ]        
 
         # find the animated frame range to use:
-        start_frame, end_frame = self.__find_scene_animation_range()
+        start_frame, end_frame = self._find_scene_animation_range()
         if start_frame and end_frame:
             alembic_args.append("-fr %d %d" % (start_frame, end_frame))
 
@@ -206,17 +209,21 @@ class PublishHook(Hook):
         }
         tank.util.register_publish(**args)
 
-    def __find_scene_animation_range(self):
+    def _find_scene_animation_range(self):
         """
+        Find the animation range from the current scene.
         """
         # look for any animation in the scene:
         animation_curves = cmds.ls(typ="animCurve")
-
-        start = end = None
-        for ac in animation_curves:
-            pass
         
-        # (AD) - temp - this is the old code!
+        # if there aren't any animation curves then just return
+        # a single frame:
+        if not animation_curves:
+            return (1, 1)
+        
+        # something in the scene is animated so return the
+        # current timeline.  This could be extended if needed
+        # to calculate the frame range of the animated curves.
         start = int(cmds.playbackOptions(q=True, min=True))
         end = int(cmds.playbackOptions(q=True, max=True))        
         

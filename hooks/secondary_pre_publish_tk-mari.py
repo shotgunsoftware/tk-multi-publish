@@ -116,8 +116,22 @@ class PrePublishHook(Hook):
 
         errors = []
 
-        # (TODO) do any validation here
-        # 
+        # check that the geo, channel & layer are still valid:
+        geo = mari.geo.find(geo_name)
+        if not geo:
+            errors.append("Failed to find geometry in the project!")
+            return errors
+        
+        channel = geo.findChannel(channel_name)
+        if not channel:
+            errors.append("Failed to find channel on geometry!")
+            return errors
+        
+        if layer_name:
+            layer = channel.findLayer(layer_name)
+            if not layer:
+                errors.append("Failed to find layer for channel!")
+                return errors
 
         return errors
         

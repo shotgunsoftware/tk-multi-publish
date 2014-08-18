@@ -62,7 +62,7 @@ class ScanSceneHook(Hook):
         
         # Mari doesn't have a primary publish item at the moment so
         # just add a dummy item to keep the app happy:
-        items.append({"type": "work_file", "name":None})
+        items.append({"type":"work_file", "name":None})
 
         # Look for all layers for all channels on all geometry.  Create items for both
         # the flattened channel as well as the individual layers
@@ -94,9 +94,6 @@ class ScanSceneHook(Hook):
                     params = {"geo":geo.name(), "channel":channel.name(), "layer":layer_name}                    
                     items.append({"type":"layer", "name":item_name, "other_params":params})
 
-        # Add secondary item for project archive:
-        # TODO
-
         return items
 
     def find_publishable_layers_r(self, layers):
@@ -110,11 +107,13 @@ class ScanSceneHook(Hook):
         """
         publishable = []
         for layer in layers:
+            # Note, only paintable or procedural layers are exportable from Mari - all
+            # other layer types are only used within Mari.
             if layer.isPaintableLayer() or layer.isProceduralLayer():
                 # these are the only types of layers that are publishable
                 publishable.append(layer)
             elif layer.isGroupLayer():
-                # recurse over all layers in the group:
+                # recurse over all layers in the group looking for exportable layers:
                 grouped_layers = self.find_publishable_layers_r(layer.layerStack().layerList())
                 publishable.extend(grouped_layers or [])
     
