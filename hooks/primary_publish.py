@@ -765,8 +765,17 @@ class PrimaryPublishHook(Hook):
                                 to the UI
         :returns:               The path to the file that has been published        
         """
-        # Currently there is no primary publish for Mari so just return:
-        progress_cb(0.0, "Skipping primary publish", task)
+        import mari
+        
+        # Currently there is no primary publish for Mari so just save the current 
+        # project to ensure nothing is lost if something goes wrong!
+        progress_cb(0, "Saving the current project", task)
+        proj = mari.projects.current()
+        if proj:
+            proj.save()
+            
+        progress_cb(100)
+
     
     def _get_publish_name(self, path, template, fields=None):
         """
