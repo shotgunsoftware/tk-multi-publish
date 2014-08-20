@@ -198,8 +198,7 @@ class PublishHook(Hook):
             
             # 5. Find next version to use - note that version may be different across channels and/or layers        
             progress_cb(30, "Finding next publish version to use")
-            existing_publishes = self.__find_matching_publishes(self.parent.context, publish_template, 
-                                                                fields, ignore_keys = ["version", "UDIM"])
+            existing_publishes = self.__find_publishes(self.parent.context, publish_name, output["tank_type"])
             fields["version"] = max([p["version_number"] for p in existing_publishes] or [0]) + 1        
 
             publish_path = publish_template.apply_fields(fields)
@@ -257,89 +256,45 @@ class PublishHook(Hook):
             args["dependency_paths"] = [geo_publish_path]
         sgtk.util.register_publish(**args)
         
-        
-    def __find_matching_publishes(self, ctx, template, fields, ignore_keys = None):
+    def __find_publishes(self, ctx, publish_name, publish_type):
         """
-        Given a context, fields dictionary and template, find all publishes that
-        match ignoring any keys specified.
+        Given a context, publish name and type, find all publishes from Shotgun
+        that match.
         
-        :param ctx:         Context to use when looking for publishes
-        :param template:    Template to use to match paths against
-        :param fields:      Fields to match when looking for publishes
-        :param ignore_keys: Field keys to ignore when looking for publishes
+        :param ctx:             Context to use when looking for publishes
+        :param publish_name:    The name of the publishes to look for
+        :param publish_type:    The type of publishes to look for
         
-        :returns:           A list of Shotgun publish records that match the search
-                            criteria
+        :returns:               A list of Shotgun publish records that match the search
+                                criteria        
         """
-        ignore_keys = ignore_keys or []
+        publish_entity_type = sgtk.util.get_published_file_entity_type(self.parent.sgtk)
+        if publish_entity_type == "PublishedFile":
+            publish_type_field = "published_file_type.PublishedFileType.code"
+        else:
+            publish_type_field = "tank_type.TankType.code"
         
-        if self.__cached_publishes == None:
-            self.__cached_publishes = []
+        # construct filters from the context:
+        filters = [["project", "is", ctx.project]]
+        if ctx.entity:
+            filters.append(["entity", "is", ctx.entity])
+        if ctx.task:
+            filters.append(["task", "is", ctx.task])
             
-            # retrieve a list of all publishes for this context from Shotgun:
-            pf_entity_type = sgtk.util.get_published_file_entity_type(self.parent.sgtk)
-            filters = [["project", "is", ctx.project]]
-            if ctx.entity:
-                filters.append(["entity", "is", ctx.entity])
-            if ctx.task:
-                filters.append(["task", "is", ctx.task])
-        
-            sg_publishes = []
-            try:
-                query_fields = ["path", "version_number"]
-                sg_publishes = self.parent.shotgun.find(pf_entity_type, filters, query_fields)
-            except Exception, e:
-                raise TankError("Failed to find publishes for context %s: %s" % (ctx, e))
-                
-            # get the local paths for all publishes and add everything to the cache:
-            publish_paths = self.get_publish_paths(sg_publishes)
-            self.__cached_publishes = [{"sg_publish":sg_publish, "path":path} 
-                                       for sg_publish, path in zip(sg_publishes, publish_paths)]
-                
-        # copy input fields and remove any ignore keys:
-        fields = fields.copy()
-        for ignore_key in ignore_keys:
-            if ignore_key in fields:
-                del(fields[ignore_key])
-        
-        found_publishes = []
-        for publish in self.__cached_publishes:
-            path = publish["path"]
-            sg_publish = publish["sg_publish"]
-            version = sg_publish["version_number"]
+        # add in name & type:
+        if publish_name:
+            filters.append(["name", "is", publish_name])
+        if publish_type:
+            filters.append([publish_type_field, "is", publish_type])
             
-            # extract the fields for this path using the template:
-            path_fields = template.validate_and_get_fields(path)
-            if not path_fields:
-                continue
+        # retrieve a list of all matching publishes from Shotgun:
+        sg_publishes = []
+        try:
+            query_fields = ["version_number"]
+            sg_publishes = self.parent.shotgun.find(publish_entity_type, filters, query_fields)
+        except Exception, e:
+            raise TankError("Failed to find publishes of type '%s', called '%s', for context %s: %s" 
+                            % (publish_name, publish_type, ctx, e))
+        return sg_publishes
 
-            # remove any ignore keys from fields:
-            for ignore_key in ignore_keys:
-                if ignore_key in path_fields:
-                    del(path_fields[ignore_key])
 
-            # finally, look for exact matches:
-            if path_fields == fields:
-                found_publishes.append(sg_publish)
-
-        return found_publishes
-                
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-    
