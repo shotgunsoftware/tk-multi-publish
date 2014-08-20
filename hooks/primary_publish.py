@@ -24,53 +24,53 @@ class PrimaryPublishHook(Hook):
         """
         Main hook entry point
         :param task:            Primary task to be published.  This is a
-                        dictionary containing the following keys:
-                        {   
-                            item:   Dictionary
-                                    This is the item returned by the scan hook 
-                                    {   
-                                        name:           String
-                                        description:    String
-                                        type:           String
-                                        other_params:   Dictionary
-                                    }
-                                   
-                            output: Dictionary
-                                    This is the output as defined in the configuration - the 
-                                    primary output will always be named 'primary' 
-                                    {
-                                        name:             String
-                                        publish_template: template
-                                        tank_type:        String
-                                    }
-                        }
+                                dictionary containing the following keys:
+                                {   
+                                    item:   Dictionary
+                                            This is the item returned by the scan hook 
+                                            {   
+                                                name:           String
+                                                description:    String
+                                                type:           String
+                                                other_params:   Dictionary
+                                            }
+                                           
+                                    output: Dictionary
+                                            This is the output as defined in the configuration - the 
+                                            primary output will always be named 'primary' 
+                                            {
+                                                name:             String
+                                                publish_template: template
+                                                tank_type:        String
+                                            }
+                                }
                         
         :param work_template:   template
-                        This is the template defined in the config that
-                        represents the current work file
+                                This is the template defined in the config that
+                                represents the current work file
                
         :param comment:         String
-                        The comment provided for the publish
+                                The comment provided for the publish
                         
         :param thumbnail:       Path string
-                        The default thumbnail provided for the publish
+                                The default thumbnail provided for the publish
                         
         :param sg_task:         Dictionary (shotgun entity description)
-                        The shotgun task to use for the publish    
+                                The shotgun task to use for the publish    
                         
         :param progress_cb:     Function
-                        A progress callback to log progress during pre-publish.  Call:
-                        
-                            progress_cb(percentage, msg)
-                             
-                        to report progress to the UI
+                                A progress callback to log progress during pre-publish.  Call:
+                                
+                                    progress_cb(percentage, msg)
+                                     
+                                to report progress to the UI
         
-        :returns:       Path String
-                        Hook should return the path of the primary publish so that it
-                        can be passed as a dependency to all secondary publishes
-        
+        :returns:               Path String
+                                Hook should return the path of the primary publish so that it
+                                can be passed as a dependency to all secondary publishes
+                
         :raises:                Hook should raise a TankError if publish of the 
-                        primary task fails
+                                primary task fails
         """
         # get the engine name from the parent object (app/engine/etc.)
         engine_name = self.parent.engine.name
@@ -213,6 +213,83 @@ class PrimaryPublishHook(Hook):
         return dependency_paths
     
         
+    def _do_motionbuilder_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main Motion Builder scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
+        """
+        from pyfbsdk import FBApplication
+
+        mb_app = FBApplication()
+
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._motionbuilder_find_additional_scene_dependencies()
+
+        # get scene path
+        scene_path = os.path.abspath(mb_app.FBXFileName)
+
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+
+        # save the scene:
+        progress_cb(10.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        mb_app.FileSave(scene_path)
+
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path,
+                               publish_name,
+                               sg_task,
+                               fields["version"],
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path,
+                               dependencies)
+
+        progress_cb(100)
+
+        return publish_path
+
+    def _motionbuilder_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the scene
+        """
+        # initial implementation does nothing!
+        return []
+
+
     def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb, engine_name):
         """
         Publish the main 3ds Max scene
@@ -227,10 +304,10 @@ class PrimaryPublishHook(Hook):
         :returns:               The path to the file that has been published        
         """
         import max_sdk
-
+        
         progress_cb(0.0, "Finding scene dependencies", task)
         dependencies = self._3dsmax_find_additional_scene_dependencies()
-
+        
         # get scene path
         scene_path = MaxSdk.GetScenePath(engine_name)
         
@@ -250,8 +327,6 @@ class PrimaryPublishHook(Hook):
         # save the scene:
         progress_cb(10.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
-
-        # Save scene
         MaxSdk.Save(scene_path, engine_name)
         
         # copy the file:
