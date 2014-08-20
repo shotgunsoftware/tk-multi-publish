@@ -20,7 +20,7 @@ from .progress import TaskProgressReporter
 from .publish_form import PublishForm
 
 from .output import PublishOutput
-from .item import *
+from .item import Item
 from .task import Task
     
 class PublishHandler(object):
@@ -81,7 +81,7 @@ class PublishHandler(object):
             form.publish.connect(lambda f = form: self._on_publish(f))
         except TankError, e:
             QtGui.QMessageBox.information(None, "Unable To Publish!", "%s" % e)
-            self._app.log_exception("Unable to publish")
+
         except Exception, e:
             self._app.log_exception("Unable to publish")
     
@@ -163,7 +163,7 @@ class PublishHandler(object):
         publish_form.set_progress_reporter(progress)
 
         # show pre-publish progress:
-        publish_form.show_publish_progress("Doing Pre-Publish...")
+        publish_form.show_publish_progress("Doing Pre-Publish")
         progress.reset()
         
         # make dialog modal whilst we're doing work:
@@ -177,14 +177,6 @@ class PublishHandler(object):
         publish_form.window().hide()
         publish_form.window().show()
         publish_form.window().setGeometry(geom)
-        """
-        
-        """
-        # (AD) - do some dummy progress...
-        import time
-        for p in range(1, 11):
-            progress.report(p * 10.0, "Doing something I guess - on %d of %d" % (p, 10))
-            time.sleep(1.0)
         """
                     
         # do pre-publish:
@@ -228,36 +220,37 @@ class PublishHandler(object):
                 return
                 
         # show publish progress:
-        publish_form.show_publish_progress("Publishing...")
+        publish_form.show_publish_progress("Publishing")
         progress.reset()
 
         # save the thumbnail to a temporary location:
         thumbnail_path = ""
-        if thumbnail and not thumbnail.isNull():
-            tmp_file = tempfile.NamedTemporaryFile(suffix=".png", prefix="tanktmp", delete=False)
-            thumbnail_path = tmp_file.name
-            tmp_file.close()
-            thumbnail.save(thumbnail_path)
+        try:
+            if thumbnail and not thumbnail.isNull():
+                # have a thumbnail so save it to a temporary file:
+                temp_file, thumbnail_path = tempfile.mkstemp(suffix=".png", prefix="tanktmp")
+                if temp_file:
+                    os.close(temp_file)
+                thumbnail.save(thumbnail_path)
+                    
+            # do the publish
+            publish_errors = []
+            do_post_publish = False
+            try:            
+                # do primary publish:
+                primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
+                do_post_publish = True
                 
-        # do the publish
-        publish_errors = []
-        do_post_publish = False
-        try:            
-            # do primary publish:
-            primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
-            if not primary_path:
-                raise TankError("Primary publish didn't return a path!")
-            do_post_publish = True
-            
-            # do secondary publishes:
-            self._do_secondary_publish(secondary_tasks, primary_path, sg_task, thumbnail_path, comment, progress.report)
-            
-        except TankError, e:
-            self._app.log_exception("Publish Failed")
-            publish_errors.append("%s" % e)
-        except Exception, e:
-            self._app.log_exception("Publish Failed")
-            publish_errors.append("%s" % e)
+                # do secondary publishes:
+                self._do_secondary_publish(secondary_tasks, primary_task, primary_path, sg_task, thumbnail_path, 
+                                           comment, progress.report)
+                
+            except TankError, e:
+                self._app.log_exception("Publish Failed")
+                publish_errors.append("%s" % e)
+            except Exception, e:
+                self._app.log_exception("Publish Failed")
+                publish_errors.append("%s" % e)
         finally:
             # delete temporary thumbnail file:
             if thumbnail_path:
@@ -270,11 +263,11 @@ class PublishHandler(object):
         
         # if publish didn't fail then do post publish:
         if do_post_publish:
-            publish_form.show_publish_progress("Doing Post-Publish...")
+            publish_form.show_publish_progress("Doing Post-Publish")
             progress.reset(1)
             
             try:
-                self._do_post_publish(progress.report)
+                self._do_post_publish(primary_task, secondary_tasks, progress.report)
             except TankError, e:
                 self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
@@ -291,28 +284,34 @@ class PublishHandler(object):
     def _build_task_list(self, items):
         """
         Takes a list of items and builds a list of tasks containing
-        each item and it's corresponding output
+        each item and it's corresponding output in output-centric
+        order
         """
-        
-        #TODO: build list by looping through outputs to order by output
-        
-        # create index from scene_item_type to output
-        outputs_by_type = {}
-        
-        outputs_by_type[self._primary_output.scene_item_type] = [self._primary_output]
-        for output in self._secondary_outputs:
-            outputs_by_type.setdefault(output.scene_item_type, list()).append(output)
-        
-        # build tasks for each item and output:
-        tasks = []
+
+        # need single list of all outputs:
+        all_outputs = [self._primary_output] + self._secondary_outputs
+
+        # First, validate that all items specify a known scene item type.  Any
+        # that don't are skipped and won't be published by the app.
+        valid_items = []
+        output_scene_item_types = set([output.scene_item_type for output in all_outputs])
         for item in items:
-            outputs = outputs_by_type.get(item.scene_item_type)
-            if not outputs:
-                raise TankError("Item %s found with unrecognised scene item type %s" % (item.name, item.scene_item_type))
-                
-            for output in outputs:
-                tasks.append(Task(item, output))
-                
+            if item.scene_item_type in output_scene_item_types:
+                valid_items.append(item)
+            else:
+                self._app.log_debug("Skipping item '%s' as it has an unrecognised scene item type %s" 
+                                    % (item.name, item.scene_item_type))               
+             
+        # Now loop through all outputs and build list of tasks.
+        # Note: this is deliberately output-centric to allow control
+        # of the order through the configuration (order of secondary
+        # outputs)
+        tasks = []
+        for output in all_outputs:
+            for item in valid_items:
+                if item.scene_item_type == output.scene_item_type:
+                    tasks.append(Task(item, output))
+             
         return tasks
     
     def _scan_scene(self):
@@ -325,7 +324,6 @@ class PublishHandler(object):
         # validate that only one matches the primary type
         # and that all items are valid:
         primary_type = self._primary_output.scene_item_type
-        secondary_types = [output.scene_item_type for output in self._secondary_outputs]
         primary_item = None
         for item in items:
 
@@ -338,6 +336,9 @@ class PublishHandler(object):
                                     % primary_type)
                 else:
                     primary_item = item
+                
+        if not primary_item:
+            raise TankError("Scan scene didn't return a primary item to publish!")
                 
         return items
         
@@ -395,7 +396,7 @@ class PublishHandler(object):
         return primary_path
         
         
-    def _do_secondary_publish(self, secondary_tasks, primary_publish_path, sg_task, thumbnail_path, comment, progress_cb):
+    def _do_secondary_publish(self, secondary_tasks, primary_task, primary_publish_path, sg_task, thumbnail_path, comment, progress_cb):
         """
         Do publish of secondary tasks using the secondary publish hook
         """
@@ -407,6 +408,7 @@ class PublishHandler(object):
                                              comment = comment,
                                              thumbnail_path = thumbnail_path,
                                              sg_task = sg_task,
+                                             primary_task = primary_task.as_dictionary(),
                                              primary_publish_path=primary_publish_path,
                                              progress_cb=progress_cb)
         
@@ -431,14 +433,18 @@ class PublishHandler(object):
             else:
                 task.publish_errors = []
                 
-    def _do_post_publish(self, progress_cb):
+    def _do_post_publish(self, primary_task, secondary_tasks, progress_cb):
         """
         Do post-publish using the post-publish hook
         """
         
         # do post-publish using post-publish hook:
+        primary_hook_task = primary_task.as_dictionary()
+        secondary_hook_tasks = [task.as_dictionary() for task in secondary_tasks]
         self._app.execute_hook( "hook_post_publish",  
                                 work_template = self._work_template,
+                                primary_task = primary_hook_task,
+                                secondary_tasks = secondary_hook_tasks,
                                 progress_cb=progress_cb)
     
 

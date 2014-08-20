@@ -22,8 +22,8 @@ configuration:
     template_work:
         type: template
         description: A reference to a template which locates a work file on disk.
-        required_fields: [version]
-        optional_fields: [name]
+        fields: context, *
+        allows_empty: True
 
     hook_thumbnail:
         type: hook
@@ -78,7 +78,7 @@ configuration:
         
     hook_secondary_publish:
         type: hook
-        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_publish_path, progress_cb]
+        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb]
         default_value: "secondary_publish_{engine_name}"
         description: Specify the hook that will be used to do the publish.  This hook is 
                      passed a list of secondary tasks that are to be published.
@@ -87,7 +87,7 @@ configuration:
 
     hook_post_publish:
         type: hook
-        parameters: [work_template, progress_cb]
+        parameters: [work_template, primary_task, secondary_tasks, progress_cb]
         default_value: post_publish
         description: Specify the hook that will be used to do any post-publish work.  Typically, 
                      this hook will be responsible for versioning up the scene to the latest 
@@ -123,10 +123,10 @@ configuration:
         
     primary_publish_template:
         type: template
-        required_fields: [version]
-        optional_fields: [name]
+        fields: context, *
         description: Template used to locate the primary published file within the file 
                      system.  If None then this must be determined within the publish hook.
+        allows_empty: True
 
     secondary_outputs:
         type: list
@@ -167,10 +167,10 @@ configuration:
                     description: The type that will be used when registering any published
                                  files for this output with Shotgun.  
                                  If set to '' then this must be determined within the publish hook.
+                    allows_empty: True
                 publish_template:
                     type: template
-                    required_fields: [version]
-                    optional_fields: [name]
+                    fields: context, * 
                     allows_empty: True
                     description: Template used to locate published files within the file system.
                                  If null then this must be determined within the publish hook.
@@ -181,6 +181,18 @@ configuration:
                     
         allows_empty: True
         default_value: []
+        
+    expand_single_items:
+        type: bool
+        description: Define if an output should be expanable to show the items it contains when 
+                     there is only a single item.
+        default_value: False
+        
+    allow_taskless_publishes:
+        type: bool
+        description:    Allow publishing when no Task is specified.  The publish will just be linked
+                        to the entity from the current work area
+        default_value:  True
             
             
 # the Shotgun fields that this app needs in order to operate correctly
@@ -192,7 +204,7 @@ description: "Provides UI and functionality to publish files to Shotgun."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.13.22"
+requires_core_version: "v0.14.58"
 requires_engine_version: 
 
 # this app works in all engines - it does not contain 
@@ -201,5 +213,5 @@ supported_engines:
 
 # the frameworks required to run this app
 frameworks:
-    - {"name": "tk-framework-widget", "version": "v0.1.15"}
+    - {"name": "tk-framework-widget", "version": "v0.2.x"}    
     

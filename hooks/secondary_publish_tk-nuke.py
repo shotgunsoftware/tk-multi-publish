@@ -21,137 +21,163 @@ class PublishHook(Hook):
     Single hook that implements publish functionality for secondary tasks
     """
             
-    def execute(self, tasks, work_template, comment, thumbnail_path, sg_task, primary_publish_path, progress_cb, **kwargs):
+    def execute(self, tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb, **kwargs):
         """
         Main hook entry point
-        :tasks:         List of secondary tasks to be published.  Each task is a 
-                        dictionary containing the following keys:
-                        {
-                            item:   Dictionary
-                                    This is the item returned by the scan hook 
-                                    {   
-                                        name:           String
-                                        description:    String
-                                        type:           String
-                                        other_params:   Dictionary
-                                    }
-                                   
-                            output: Dictionary
-                                    This is the output as defined in the configuration - the 
-                                    primary output will always be named 'primary' 
-                                    {
-                                        name:             String
-                                        publish_template: template
-                                        tank_type:        String
-                                    }
-                        }
+        :param tasks:                   List of secondary tasks to be published.  Each task is a 
+                                        dictionary containing the following keys:
+                                        {
+                                            item:   Dictionary
+                                                    This is the item returned by the scan hook 
+                                                    {   
+                                                        name:           String
+                                                        description:    String
+                                                        type:           String
+                                                        other_params:   Dictionary
+                                                    }
+                                                   
+                                            output: Dictionary
+                                                    This is the output as defined in the configuration - the 
+                                                    primary output will always be named 'primary' 
+                                                    {
+                                                        name:             String
+                                                        publish_template: template
+                                                        tank_type:        String
+                                                    }
+                                        }
                         
-        :work_template: template
-                        This is the template defined in the config that
-                        represents the current work file
+        :param work_template:           template
+                                        This is the template defined in the config that
+                                        represents the current work file
                
-        :comment:       String
-                        The comment provided for the publish
+        :param comment:                 String
+                                        The comment provided for the publish
                         
-        :thumbnail:     Path string
-                        The default thumbnail provided for the publish
+        :param thumbnail:               Path string
+                                        The default thumbnail provided for the publish
                         
-        :sg_task:       Dictionary (shotgun entity description)
-                        The shotgun task to use for the publish               
-                     
-        :primary_publish_path: Path string
-                        This is the path of the primary published file as returned
-                        by the primary publish hook                     
+        :param sg_task:                 Dictionary (shotgun entity description)
+                                        The shotgun task to use for the publish    
                         
-        :progress_cb:   Function
-                        A progress callback to log progress during pre-publish.  Call:
+        :param primary_publish_path:    Path string
+                                        This is the path of the primary published file as returned
+                                        by the primary publish hook
                         
-                            progress_cb(percentage, msg)
-                             
-                        to report progress to the UI
+        :param progress_cb:             Function
+                                        A progress callback to log progress during pre-publish.  Call:
+                                        
+                                            progress_cb(percentage, msg)
+                                             
+                                        to report progress to the UI
+                        
+        :param primary_task:            The primary task that was published by the primary publish hook.  Passed
+                                        in here for reference.  This is a dictionary in the same format as the
+                                        secondary tasks above.
         
-        :returns:       A list of any tasks that had problems that need to be reported 
-                        in the UI.  Each item in the list should be a dictionary containing 
-                        the following keys:
-                        {
-                            task:   Dictionary
-                                    This is the task that was passed into the hook and
-                                    should not be modified
-                                    {
-                                        item:...
-                                        output:...
-                                    }
-                                    
-                            errors: List
-                                    A list of error messages (strings) to report    
-                        }
+        :returns:                       A list of any tasks that had problems that need to be reported 
+                                        in the UI.  Each item in the list should be a dictionary containing 
+                                        the following keys:
+                                        {
+                                            task:   Dictionary
+                                                    This is the task that was passed into the hook and
+                                                    should not be modified
+                                                    {
+                                                        item:...
+                                                        output:...
+                                                    }
+                                                    
+                                            errors: List
+                                                    A list of error messages (strings) to report    
+                                        }
         """
         results = []
-            
-        # we will need the write node app if we have any render outputs to validate
-        write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
-        if not write_node_app:
-            raise TankError("Unable to validate write node without tk-nuke-writenode app!")
+
+        # it's important that tasks for render output are processed
+        # before tasks for quicktime output, so let's group the
+        # task list by output.  This can be controlled through the
+        # configuration but we shouldn't rely on that being set up 
+        # correctly!
+        output_order = ["render", "quicktime"]
+        tasks_by_output = {}
+        for task in tasks:
+            output_name = task["output"]["name"]
+            tasks_by_output.setdefault(output_name, list()).append(task)
+            if output_name not in output_order:
+                output_order.append(output_name)
+
+        # make sure we have any apps required by the publish process:
+        write_node_app = None
+        if tasks_by_output.get("render") or tasks_by_output.get("quicktime"):
+            # we will need the write node app if we have any render outputs to validate
+            write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
+            if not write_node_app:
+                raise TankError("Unable to publish Shotgun Write Nodes without the tk-nuke-writenode app!")
+
+        review_submission_app = None
+        if tasks_by_output.get("quicktime"):
+            # If we have the tk-multi-reviewsubmission app we can create versions
+            review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
+            if not review_submission_app:
+                raise TankError("Unable to publish Review Versions without the tk-multi-reviewsubmission app!")
+
                 
         # Keep of track of what has been published in shotgun
         # this is needed as input into the review creation code...
         render_publishes = {}
-        
-        # process tasks:
-        for task in tasks:
-            
-            # keep track of our errors for this task
-            errors = []
-            
-            # the output name is 'render' or 'quicktime' in our std setup.
-            output_name = task["output"]["name"]
-            
-            # each publish task is connected to a nuke write node
-            # this value was populated via the scan scene hook
-            write_node = task["item"].get("other_params", dict()).get("node")
-            if not write_node:
-                raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
-            
-            # report progress:
-            progress_cb(0.0, "Publishing", task)
-        
-            # depending on output type:
-            if output_name == "render":
 
-                # publish write-node rendered sequence                
-                try:
-                    (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
-                                                                                   write_node, 
-                                                                                   write_node_app, 
-                                                                                   primary_publish_path, 
-                                                                                   sg_task, 
-                                                                                   comment, 
-                                                                                   progress_cb)
-                    
-                    # keep track of our publish data so that we can pick it up later in review
-                    render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
-                except Exception, e:
-                    errors.append("Publish failed - %s" % e)
+        # process outputs in order:
+        for output_name in output_order:
             
-            elif output_name == "quicktime":
-                # Submit published sequence to Screening Room
-                try:
-                    
-                    # If we have the tk-multi-reviewsubmission app we can create versions
-                    review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
+            # process each task for this output:
+            for task in tasks_by_output.get(output_name, []):
+            
+                # keep track of our errors for this task
+                errors = []
+    
+                # report progress:
+                progress_cb(0.0, "Publishing", task)
+            
+                if output_name == "render":
+                    # Publish the rendered output for a Shotgun Write Node
 
-                    if not review_submission_app:
-                        self.parent.log_warning("The Review Submission app can not be found. "
-                                                "Shotgun Versions will not be automatically created.")
-                    
-                    else:
+                    # each publish task is connected to a nuke write node
+                    # this value was populated via the scan scene hook
+                    write_node = task["item"].get("other_params", dict()).get("node")
+                    if not write_node:
+                        raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
+        
+                    # publish write-node rendered sequence                
+                    try:
+                        (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
+                                                                                       write_node, 
+                                                                                       write_node_app, 
+                                                                                       primary_publish_path, 
+                                                                                       sg_task, 
+                                                                                       comment, 
+                                                                                       progress_cb)
                         
+                        # keep track of our publish data so that we can pick it up later in review
+                        render_publishes[ write_node.name() ] = (sg_publish, thumbnail_path)
+                    except Exception, e:
+                        errors.append("Publish failed - %s" % e)
+    
+                elif output_name == "quicktime":
+                    # Publish the reviewable quicktime movie for a Shotgun Write Node
+    
+                    # each publish task is connected to a nuke write node
+                    # this value was populated via the scan scene hook
+                    write_node = task["item"].get("other_params", dict()).get("node")
+                    if not write_node:
+                        raise TankError("Could not determine nuke write node for item '%s'!" % str(task))
+        
+                    # Submit published sequence to Screening Room
+                    try:
                         # pick up sg data from the render dict we are maintianing
                         # note: we assume that the rendering tasks always happen
                         # before the review tasks inside the publish... 
                         (sg_publish, thumbnail_path) = render_publishes[ write_node.name() ]
                         
-                        self._send_to_screening_room(
+                        self._send_to_screening_room (
                             write_node,
                             write_node_app,
                             review_submission_app,
@@ -162,20 +188,21 @@ class PublishHook(Hook):
                             progress_cb
                         )
 
-                except Exception, e:
-                    errors.append("Submit to Screening Room failed - %s" % e)
-            
-            else:
-                # this should never happen!
-                errors.append("Don't know how to publish this item!")
-                
-            # if there is anything to report then add to result
-            if len(errors) > 0:
-                # add result:
-                results.append({"task":task, "errors":errors})
-
-            progress_cb(100)
-
+                    except Exception, e:
+                        errors.append("Submit to Screening Room failed - %s" % e)
+                        
+                else:
+                    # unhandled output type!
+                    errors.append("Don't know how to publish this item!")
+    
+                # if there is anything to report then add to result
+                if len(errors) > 0:
+                    # add result:
+                    results.append({"task":task, "errors":errors})
+    
+                # task is finished
+                progress_cb(100)            
+        
         return results
 
 
@@ -251,11 +278,11 @@ class PublishHook(Hook):
         publish_name = ""
         rp_name = render_path_fields.get("name")
         rp_channel = render_path_fields.get("channel")
-        if rp_name is None and rp_channel is None:
+        if not rp_name and not rp_channel:
             publish_name = "Publish"
-        elif rp_name is None:
+        elif not rp_name:
             publish_name = "Channel %s" % rp_channel
-        elif rp_channel is None:
+        elif not rp_channel:
             publish_name = rp_name
         else:
             publish_name = "%s, Channel %s" % (rp_name, rp_channel)

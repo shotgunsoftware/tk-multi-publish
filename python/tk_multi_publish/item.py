@@ -22,7 +22,7 @@ class Item(object):
         
     @property
     def name(self):
-        return self._raw_fields["name"]
+        return self._raw_fields.get("name", "")
     
     @property
     def scene_item_type(self):

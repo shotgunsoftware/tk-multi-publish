@@ -19,22 +19,29 @@ class PostPublishHook(Hook):
     """
     Single hook that implements post-publish functionality
     """    
-    def execute(self, work_template, progress_cb, **kwargs):
+    def execute(self, work_template, primary_task, secondary_tasks, progress_cb, **kwargs):
         """
         Main hook entry point
         
-        :work_template: template
+        :param work_template:   template
                         This is the template defined in the config that
                         represents the current work file
                         
-        :progress_cb:   Function
+        :param primary_task:    The primary task that was published by the primary publish hook.  Passed
+                                in here for reference.
+
+        :param secondary_tasks: The list of secondary taskd that were published by the secondary 
+                                publish hook.  Passed in here for reference.
+                        
+        :param progress_cb:     Function
                         A progress callback to log progress during pre-publish.  Call:
                         
                             progress_cb(percentage, msg)
                              
                         to report progress to the UI
 
-        :returns:       None - raise a TankError to notify the user of a problem
+        :returns:               None
+        :raises:                Raise a TankError to notify the user of a problem
         """
         # get the engine name from the parent object (app/engine/etc.)
         engine_name = self.parent.engine.name
@@ -42,6 +49,8 @@ class PostPublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             self._do_maya_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            self._do_motionbuilder_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
@@ -52,12 +61,19 @@ class PostPublishHook(Hook):
             self._do_houdini_post_publish(work_template, progress_cb)
         elif engine_name == "tk-softimage":
             self._do_softimage_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-photoshop":
+            self._do_photoshop_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-mari":
+            self._do_mari_post_publish(work_template, progress_cb)            
         else:
             raise TankError("Unable to perform post publish for unhandled engine %s" % engine_name)
         
     def _do_maya_post_publish(self, work_template, progress_cb):
         """
         Do any Maya post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import maya.cmds as cmds
         
@@ -83,36 +99,75 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
 
+    def _do_motionbuilder_post_publish(self, work_template, progress_cb):
+        """
+        Do any Motion Builder post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        """
+        from pyfbsdk import FBApplication
+
+        mb_app = FBApplication()
+        
+        progress_cb(0, "Versioning up the script")
+
+        # get the current script path:
+        original_path = mb_app.FBXFileName
+        script_path = os.path.abspath(original_path)
+
+        # increment version and construct new name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(script_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version
+        new_path = work_template.apply_fields(fields)
+
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (script_path, new_path))
+
+        # save the script:
+        progress_cb(75, "Saving the scene file")
+        mb_app.FileSave(new_path)
+
+        progress_cb(100)
+
     def _do_3dsmax_post_publish(self, work_template, progress_cb):
         """
         Do any 3ds Max post-publish work
-        """
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        """        
         import MaxPlus
-
+        
         progress_cb(0, "Versioning up the scene file")
-
+        
         # get the current scene path:
         scene_path = MaxPlus.FileManager.GetFileNameAndPath()
-
+        
         # increment version and construct new file name:
         progress_cb(25, "Finding next version number")
         fields = work_template.get_fields(scene_path)
         next_version = self._get_next_work_file_version(work_template, fields)
-        fields["version"] = next_version
+        fields["version"] = next_version 
         new_scene_path = work_template.apply_fields(fields)
-
+        
         # log info
         self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
-
+        
         # rename and save the file
         progress_cb(50, "Saving the scene file")
         MaxPlus.FileManager.Save(new_scene_path)
-
+        
         progress_cb(100)
-
+        
     def _do_hiero_post_publish(self, work_template, progress_cb):
         """
         Do any Hiero post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import hiero.core
         
@@ -156,6 +211,9 @@ class PostPublishHook(Hook):
     def _do_nuke_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import nuke
         
@@ -181,6 +239,11 @@ class PostPublishHook(Hook):
         # update write nodes:
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         if write_node_app:
+            # only need to forceably reset the write node render paths if the app version
+            # is less than or equal to v0.1.11
+            from distutils.version import LooseVersion
+            if (write_node_app.version != "Undefined" 
+                and LooseVersion(write_node_app.version) <= LooseVersion("v0.1.11")):
             progress_cb(50, "Resetting render paths for write nodes")
             # reset render paths for all write nodes:
             for wn in write_node_app.get_write_nodes():
@@ -195,6 +258,9 @@ class PostPublishHook(Hook):
     def _do_houdini_post_publish(self, work_template, progress_cb):
         """
         Do any nuke post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """
         import hou
         
@@ -225,6 +291,9 @@ class PostPublishHook(Hook):
     def _do_softimage_post_publish(self, work_template, progress_cb):
         """
         Do any Softimage post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
         """        
         import win32com
         from win32com.client import Dispatch, constants
@@ -251,6 +320,52 @@ class PostPublishHook(Hook):
         Application.SaveSceneAs(new_scene_path, False)
         
         progress_cb(100)
+
+    def _do_photoshop_post_publish(self, work_template, progress_cb):
+        """
+        Do any Photoshop post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        """        
+        import photoshop
+        
+        progress_cb(0, "Versioning up the scene file")
+        
+        # get the current scene path:
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+        scene_path = doc.fullName.nativePath
+        
+        # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(scene_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version 
+        new_scene_path = work_template.apply_fields(fields)
+        
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
+        
+        # rename and save the file
+        progress_cb(50, "Saving the scene file")
+        new_file_name = photoshop.RemoteObject('flash.filesystem::File', new_scene_path)
+        # no options and do not save as a copy
+        # http://cssdk.host.adobe.com/sdk/1.5/docs/WebHelp/references/csawlib/com/adobe/photoshop/Document.html#saveAs()
+        doc.saveAs(new_file_name, None, False)
+                
+        progress_cb(100)
+
+    def _do_mari_post_publish(self, work_template, progress_cb):
+        """
+        Mari specific post-publish
+        
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        """
+        # nothing to do for Mari post-publish
+        pass
 
     def _get_next_work_file_version(self, work_template, fields):
         """

@@ -8,14 +8,15 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-
-from tank.platform.qt import QtCore 
+from tank.platform.qt import QtCore
 
 class ProgressReporter(QtCore.QObject):
     """
     Simple progress interface
     """
-    progress = QtCore.Signal(float, object)
+    
+    # signal emitted when new progress has been reported.
+    progress = QtCore.Signal(int, float, float, object)# stage, stage_percent, overall_percent, message
     
     def __init__(self, stage_count=1):
         """
@@ -27,22 +28,25 @@ class ProgressReporter(QtCore.QObject):
         self._stages = []
         
         self._current_stage = None
+        self._previous_stage_percent = 0.0
         self._previous_percent = 0.0
         
-    @property
-    def stage_count(self):
+    # @property
+    def __get_stage_count(self):
         return self._stage_count   
-    @stage_count.setter
-    def stage_count(self, value):
+    # @stage_count.setter
+    def __set_stage_count(self, value):
         self._stage_count = max(1, value)
+    stage_count=property(__get_stage_count, __set_stage_count)
 
     def reset(self, new_stage_count=None):
         self._stages = []
         if new_stage_count != None:
             self._stage_count = max(1, new_stage_count)
-        self._previous_percent = 0.0
         self._current_stage = None
-        self.progress.emit(0.0, "")
+        self._previous_stage_percent = 0.0
+        self._previous_percent = 0.0
+        self.progress.emit(1, 0.0, 0.0, "")
 
     def report(self, percent, msg=None, stage=None):
         """
@@ -59,33 +63,40 @@ class ProgressReporter(QtCore.QObject):
                     found_stage = True
                     break
             if not found_stage:
+                # this is a new stage
                 self._stages.append(stage)
+                self._previous_stage_percent = 0.0
+            else:
+                # TODO - this currently doesn't handle reporting progress 
+                # asynchronously across stages!
+                pass
+
+        # clamp the stage percentage and stop it going backwards!:
+        stage_percent = min(max(percent, 0.0), 100.0)
+        if stage_percent < self._previous_stage_percent:
+            stage_percent = self._previous_stage_percent
         
         # work out per-stage percentage based on the number of stages
-        stage_num = len(self._stages)
+        stage_num = max(1, len(self._stages))
         max_stage_count = max(self._stage_count, stage_num)
         
         # work out the current overall percentage.  This
         # will depend on the number of stages completed
         # so far
-        current_percent = ((100.0 * (stage_num-1)) + percent)/max_stage_count
+        current_percent = ((100.0 * (stage_num-1)) + stage_percent)/max_stage_count
         
-        # just in case, clamp to range:
+        # just in case, clamp and stop it going backwards!:
         current_percent = min(max(current_percent, 0.0), 100.0)
-       
-        # don't want to allow progress to go backwards!
         if current_percent < self._previous_percent:
             current_percent = self._previous_percent
         
         # emit signal:
         try:
-            self.progress.emit(current_percent, msg)
+            self.progress.emit(stage_num, stage_percent, current_percent, msg)
         finally:
             self._current_stage = stage
+            self._previous_stage_percent = stage_percent
             self._previous_percent = current_percent
-        
-        #import time
-        #time.sleep(1.0)
         
 class TaskProgressReporter(ProgressReporter):
     def __init__(self, tasks):

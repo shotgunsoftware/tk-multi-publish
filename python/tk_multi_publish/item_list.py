@@ -34,7 +34,8 @@ class ItemWidget(QtGui.QWidget):
         # update description
         lines = []
         lines.append("<b>%s</b>" % self._item.name)
-        lines.append("%s" % self._item.description)
+        if self._item.description:
+            lines.append("%s" % self._item.description)
         self._ui.details_label.setText("<br>".join(lines))
         
     @property
@@ -86,12 +87,13 @@ class ItemList(QtGui.QWidget):
     def selected_items(self):
         return self._get_selected_items()
         
-    @property
-    def collapsed(self):
+    # @property
+    def __get_collapsed(self):
         return self._is_collapsed
-    @collapsed.setter
-    def collapsed(self, value):
+    # @collapsed.setter
+    def __set_collapsed(self, value):
         self._set_collapsed(value)
+    collapsed=property(__get_collapsed, __set_collapsed)
         
     def mousePressEvent(self, event):
         """
@@ -136,7 +138,9 @@ class ItemList(QtGui.QWidget):
         self._item_widgets = []
         
         # update title:
-        title = "<b>%d items available</b>, <i>expand to turn individual items on and off</i>" % len(self._items)
+        num_items = len(self._items)
+        title = ("<b>%d %s available</b>, <i>expand to turn individual items on and off</i>" 
+                    % (num_items, ("item" if num_items == 1 else "items")))
         self._ui.section_label.setText(title)
         
         # now build widgets for list:

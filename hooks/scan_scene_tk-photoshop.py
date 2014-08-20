@@ -9,7 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import maya.cmds as cmds
+import photoshop
 
 import tank
 from tank import Hook
@@ -57,19 +57,17 @@ class ScanSceneHook(Hook):
         items = []
         
         # get the main scene:
-        scene_name = cmds.file(query=True, sn=True)
-        if not scene_name:
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+        
+        if not doc.saved:
             raise TankError("Please Save your file before Publishing")
         
-        scene_path = os.path.abspath(scene_name)
+        scene_path = doc.fullName.nativePath
         name = os.path.basename(scene_path)
 
         # create the primary item - this will match the primary output 'scene_item_type':            
         items.append({"type": "work_file", "name": name})
-        
-        # if there is any geometry in the scene (poly meshes or nurbs patches), then
-        # add a geometry item to the list:
-        if cmds.ls(geometry=True, noIntermediate=True):
-            items.append({"type":"geometry", "name":"All Scene Geometry"})
 
         return items

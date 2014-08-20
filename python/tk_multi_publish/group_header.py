@@ -27,9 +27,10 @@ class GroupHeader(QtGui.QWidget):
         
         self.name = group_name
         
-    @property
-    def name(self):
+    # @property
+    def __get_name(self):
         return self._ui.name_label.toPlainText()
-    @name.setter
-    def name(self, value):
+    # @name.setter
+    def __set_name(self, value):
         self._ui.name_label.setText(value)
+    name=property(__get_name, __set_name)

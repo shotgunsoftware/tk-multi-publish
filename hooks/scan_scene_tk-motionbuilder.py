@@ -9,11 +9,13 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import maya.cmds as cmds
+from pyfbsdk import FBApplication
 
-import tank
-from tank import Hook
-from tank import TankError
+import sgtk
+from sgtk import Hook
+from sgtk import TankError
+
+mb_app = FBApplication()
 
 class ScanSceneHook(Hook):
     """
@@ -57,19 +59,13 @@ class ScanSceneHook(Hook):
         items = []
         
         # get the main scene:
-        scene_name = cmds.file(query=True, sn=True)
-        if not scene_name:
+        scene_path = mb_app.FBXFileName
+        if not scene_path:
             raise TankError("Please Save your file before Publishing")
-        
-        scene_path = os.path.abspath(scene_name)
-        name = os.path.basename(scene_path)
 
-        # create the primary item - this will match the primary output 'scene_item_type':            
-        items.append({"type": "work_file", "name": name})
+        name = os.path.basename(scene_path)
         
-        # if there is any geometry in the scene (poly meshes or nurbs patches), then
-        # add a geometry item to the list:
-        if cmds.ls(geometry=True, noIntermediate=True):
-            items.append({"type":"geometry", "name":"All Scene Geometry"})
+        # create the primary item - 'type' should match the 'primary_scene_item_type':            
+        items.append({"type": "work_file", "name": name})
 
         return items

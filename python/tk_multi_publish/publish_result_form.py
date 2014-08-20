@@ -36,21 +36,23 @@ class PublishResultForm(QtGui.QWidget):
         
         self._update_ui()
         
-    @property
-    def status(self):
+    # @property
+    def __get_status(self):
         return self._status
-    @status.setter
-    def status(self, value):
+    # @status.setter
+    def __set_status(self, value):
         self._status = value
         self._update_ui()
+    status=property(__get_status, __set_status)
     
-    @property
-    def errors(self):
+    # @property
+    def __get_errors(self):
         return self._errors
-    @errors.setter
-    def errors(self, value):
+    # @errors.setter
+    def __set_errors(self, value):
         self._errors = value
         self._update_ui()
+    errors=property(__get_errors, __set_errors)
         
     def _on_close(self):
         self.close.emit()

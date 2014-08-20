@@ -9,6 +9,8 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import uuid
+import tempfile
 
 import tank
 from tank import Hook
@@ -21,7 +23,7 @@ class PrimaryPublishHook(Hook):
     def execute(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb, **kwargs):
         """
         Main hook entry point
-        :task:          Primary task to be published.  This is a
+        :param task:            Primary task to be published.  This is a
                         dictionary containing the following keys:
                         {   
                             item:   Dictionary
@@ -43,20 +45,20 @@ class PrimaryPublishHook(Hook):
                                     }
                         }
                         
-        :work_template: template
+        :param work_template:   template
                         This is the template defined in the config that
                         represents the current work file
                
-        :comment:       String
+        :param comment:         String
                         The comment provided for the publish
                         
-        :thumbnail:     Path string
+        :param thumbnail:       Path string
                         The default thumbnail provided for the publish
                         
-        :sg_task:       Dictionary (shotgun entity description)
+        :param sg_task:         Dictionary (shotgun entity description)
                         The shotgun task to use for the publish    
                         
-        :progress_cb:   Function
+        :param progress_cb:     Function
                         A progress callback to log progress during pre-publish.  Call:
                         
                             progress_cb(percentage, msg)
@@ -67,7 +69,7 @@ class PrimaryPublishHook(Hook):
                         Hook should return the path of the primary publish so that it
                         can be passed as a dependency to all secondary publishes
         
-                        Hook should raise a TankError if publish of the 
+        :raises:                Hook should raise a TankError if publish of the 
                         primary task fails
         """
         # get the engine name from the parent object (app/engine/etc.)
@@ -76,22 +78,37 @@ class PrimaryPublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             return self._do_maya_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-motionbuilder":
+            return self._do_motionbuilder_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
-            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_3dsmax_publish(task, engine_name, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-houdini":
             return self._do_houdini_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-softimage":
             return self._do_softimage_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-photoshop":
+            return self._do_photoshop_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-mari":
+            return self._do_mari_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)        
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
     def _do_maya_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Maya scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import maya.cmds as cmds
         
@@ -130,9 +147,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -196,37 +211,60 @@ class PrimaryPublishHook(Hook):
                     break
 
         return dependency_paths
-
-    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    
+        
+    def _do_3dsmax_publish(self, engine_name, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
-        import MaxPlus
 
         progress_cb(0.0, "Finding scene dependencies", task)
         dependencies = self._3dsmax_find_additional_scene_dependencies()
 
         # get scene path
-        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
-
+        scene_path = ''
+        if engine_name == "tk-3dsmax":
+            from Py3dsMax import mxs
+            scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
+        elif engine_name == "tk-3dsmax-plus":
+            import MaxPlus
+            scene_path = MaxPlus.FileManager.GetFileNameAndPath()
+        
+        
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
-
+        
         # use templates to convert to publish path:
         output = task["output"]
         fields = work_template.get_fields(scene_path)
         fields["TankType"] = output["tank_type"]
         publish_template = output["publish_template"]
         publish_path = publish_template.apply_fields(fields)
-
+        
         if os.path.exists(publish_path):
             raise TankError("The published file named '%s' already exists!" % publish_path)
-
+        
         # save the scene:
         progress_cb(10.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
-        MaxPlus.FileManager.Save(scene_path)
 
+        # Save scene
+        if engine_name == "tk-3dsmax":
+            from Py3dsMax import mxs
+            mxs.saveMaxFile(scene_path)
+        elif engine_name == "tk-3dsmax-plus":
+            import MaxPlus
+            MaxPlus.FileManager.Save(scene_path)
+        
         # copy the file:
         progress_cb(50.0, "Copying the file")
         try:
@@ -238,9 +276,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -268,6 +304,15 @@ class PrimaryPublishHook(Hook):
     def _do_hiero_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the currently selected hiero project.
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import hiero.core
         
@@ -322,9 +367,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(scene_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -355,6 +398,15 @@ class PrimaryPublishHook(Hook):
     def _do_nuke_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Nuke script
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import nuke
         
@@ -396,9 +448,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (script_path, publish_path, e))
 
         # work out name for publish:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -424,8 +474,14 @@ class PrimaryPublishHook(Hook):
         # figure out all the inputs to the scene and pass them as dependency candidates
         dependency_paths = []
         for read_node in nuke.allNodes("Read"):
-            # make sure we normalize file paths
-            file_name = read_node.knob("file").evaluate().replace('/', os.path.sep)
+            # make sure we have a file path and normalize it
+            # file knobs set to "" in Python will evaluate to None. This is different than
+            # if you set file to an empty string in the UI, which will evaluate to ""!
+            file_name = read_node.knob("file").evaluate()
+            if not file_name:
+                continue
+            file_name = file_name.replace('/', os.path.sep)
+
             # validate against all our templates
             for template in self.parent.tank.templates.values():
                 if template.validate(file_name):
@@ -442,6 +498,15 @@ class PrimaryPublishHook(Hook):
     def _do_houdini_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Houdini scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import hou
 
@@ -480,9 +545,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -509,6 +572,15 @@ class PrimaryPublishHook(Hook):
     def _do_softimage_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main Softimage scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
         """
         import win32com
         from win32com.client import Dispatch, constants
@@ -550,9 +622,7 @@ class PrimaryPublishHook(Hook):
             raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
 
         # work out publish name:
-        publish_name = fields.get("name").capitalize()
-        if not publish_name:
-            publish_name = os.path.basename(script_path)
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
 
         # finally, register the publish:
         progress_cb(75.0, "Registering the publish")
@@ -575,6 +645,211 @@ class PrimaryPublishHook(Hook):
         """
         # initial implementation does nothing!
         return []
+
+    def _do_photoshop_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main Photoshop scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
+        """
+        import photoshop
+                
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+                
+        # get scene path
+        scene_path = doc.fullName.nativePath
+        
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+        
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+        
+        # save the scene:
+        progress_cb(0.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        doc.save()
+        
+        # copy the file:
+        progress_cb(25.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
+
+        # finally, register the publish:
+        progress_cb(50.0, "Registering the publish")
+        tank_publish = self._register_publish(publish_path, 
+                                              publish_name, 
+                                              sg_task, 
+                                              fields["version"], 
+                                              output["tank_type"],
+                                              comment,
+                                              thumbnail_path, 
+                                              dependency_paths=[])
+        
+        #################################################################################
+        # create a version!
+        
+        jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
+        
+        thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
+        jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::JPEGSaveOptions')
+        jpeg_options.quality = 12
+
+        # save as a copy
+        photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
+        
+        # then register version
+        progress_cb(60.0, "Creating Version...")
+        ctx = self.parent.context
+        data = {
+            "user": ctx.user,
+            "description": comment,
+            "sg_first_frame": 1,
+            "frame_count": 1,
+            "frame_range": "1-1",
+            "sg_last_frame": 1,
+            "entity": ctx.entity,
+            "sg_path_to_frames": publish_path,
+            "project": ctx.project,
+            "sg_task": sg_task,
+            "code": tank_publish["code"],
+            "created_by": ctx.user,
+        }
+        
+        if tank.util.get_published_file_entity_type(self.parent.tank) == "PublishedFile":
+            data["published_files"] = [tank_publish]
+        else:# == "TankPublishedFile"
+            data["tank_published_file"] = tank_publish
+        
+        version = self.parent.shotgun.create("Version", data)
+        
+        # upload jpeg
+        progress_cb(70.0, "Uploading to Shotgun...")
+        self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+        
+        try:
+            os.remove(jpg_pub_path)
+        except:
+            pass
+        
+        progress_cb(100)
+        
+        return publish_path
+    
+    def _do_mari_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Perform the primary publish for Mari
+        
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
+        """
+        import mari
+        
+        # Currently there is no primary publish for Mari so just save the current 
+        # project to ensure nothing is lost if something goes wrong!
+        progress_cb(0, "Saving the current project", task)
+        proj = mari.projects.current()
+        if proj:
+            proj.save()
+            
+        progress_cb(100)
+
+    
+    def _get_publish_name(self, path, template, fields=None):
+        """
+        Return the 'name' to be used for the file - if possible
+        this will return a 'versionless' name
+        """
+        # first, extract the fields from the path using the template:
+        fields = fields.copy() if fields else template.get_fields(path)
+        if "name" in fields and fields["name"]:
+            # well, that was easy!
+            name = fields["name"]
+        else:
+            # find out if version is used in the file name:
+            template_name, _ = os.path.splitext(os.path.basename(template.definition))
+            version_in_name = "{version}" in template_name
+        
+            # extract the file name from the path:
+            name, _ = os.path.splitext(os.path.basename(path))
+            delims_str = "_-. "
+            if version_in_name:
+                # looks like version is part of the file name so we        
+                # need to isolate it so that we can remove it safely.  
+                # First, find a dummy version whose string representation
+                # doesn't exist in the name string
+                version_key = template.keys["version"]
+                dummy_version = 9876
+                while True:
+                    test_str = version_key.str_from_value(dummy_version)
+                    if test_str not in name:
+                        break
+                    dummy_version += 1
+                
+                # now use this dummy version and rebuild the path
+                fields["version"] = dummy_version
+                path = template.apply_fields(fields)
+                name, _ = os.path.splitext(os.path.basename(path))
+                
+                # we can now locate the version in the name and remove it
+                dummy_version_str = version_key.str_from_value(dummy_version)
+                
+                v_pos = name.find(dummy_version_str)
+                # remove any preceeding 'v'
+                pre_v_str = name[:v_pos].rstrip("v")
+                post_v_str = name[v_pos + len(dummy_version_str):]
+                
+                if (pre_v_str and post_v_str 
+                    and pre_v_str[-1] in delims_str 
+                    and post_v_str[0] in delims_str):
+                    # only want one delimiter - strip the second one:
+                    post_v_str = post_v_str.lstrip(delims_str)
+
+                versionless_name = pre_v_str + post_v_str
+                versionless_name = versionless_name.strip(delims_str)
+                
+                if versionless_name:
+                    # great - lets use this!
+                    name = versionless_name
+                else: 
+                    # likely that version is only thing in the name so 
+                    # instead, replace the dummy version with #'s:
+                    zero_version_str = version_key.str_from_value(0)        
+                    new_version_str = "#" * len(zero_version_str)
+                    name = name.replace(dummy_version_str, new_version_str)
+        
+        return name     
+     
 
     def _register_publish(self, path, name, sg_task, publish_version, tank_type, comment, thumbnail_path, dependency_paths):
         """
