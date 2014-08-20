@@ -21,44 +21,44 @@ class PrimaryPrePublishHook(Hook):
     def execute(self, task, work_template, progress_cb, **kwargs):
         """
         Main hook entry point
-        :param task:            Primary task to be pre-published.  This is a
-                                dictionary containing the following keys:
-                                {   
-                                    item:   Dictionary
-                                            This is the item returned by the scan hook 
-                                            {   
-                                                name:           String
-                                                description:    String
-                                                type:           String
-                                                other_params:   Dictionary
-                                            }
-                                           
-                                    output: Dictionary
-                                            This is the output as defined in the configuration - the 
-                                            primary output will always be named 'primary' 
-                                            {
-                                                name:             String
-                                                publish_template: template
-                                                tank_type:        String
-                                            }
-                                }
-        :param work_template:   template
-                                This is the template defined in the config that
-                                represents the current work file
+        :task:          Primary task to be pre-published.  This is a
+                        dictionary containing the following keys:
+                        {   
+                            item:   Dictionary
+                                    This is the item returned by the scan hook 
+                                    {   
+                                        name:           String
+                                        description:    String
+                                        type:           String
+                                        other_params:   Dictionary
+                                    }
+                                   
+                            output: Dictionary
+                                    This is the output as defined in the configuration - the 
+                                    primary output will always be named 'primary' 
+                                    {
+                                        name:             String
+                                        publish_template: template
+                                        tank_type:        String
+                                    }
+                        }
+        :work_template: template
+                        This is the template defined in the config that
+                        represents the current work file
                         
-        :param progress_cb:     Function
-                                A progress callback to log progress during pre-publish.  Call:
+        :progress_cb:   Function
+                        A progress callback to log progress during pre-publish.  Call:
                         
-                                    progress_cb(percentage, msg)
+                            progress_cb(percentage, msg)
                              
-                                to report progress to the UI
+                        to report progress to the UI
 
-        :returns:               List 
-                                A list of non-critical problems that should be 
-                                reported to the user but not stop the publish.
+        :returns:       List 
+                        A list of non-critical problems that should be 
+                        reported to the user but not stop the publish.
                         
-        :raises:                Hook should raise a TankError if the primary task
-                                can't be published!
+                        Hook should raise a TankError if the primary task
+                        can't be published!
         """
         # get the engine name from the parent object (app/engine/etc.)
         engine_name = self.parent.engine.name
@@ -66,8 +66,6 @@ class PrimaryPrePublishHook(Hook):
         # depending on engine:
         if engine_name == "tk-maya":
             return self._do_maya_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-motionbuilder":
-            return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
@@ -78,23 +76,12 @@ class PrimaryPrePublishHook(Hook):
             return self._do_houdini_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-softimage":
             return self._do_softimage_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-photoshop":
-            return self._do_photoshop_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-mari":
-            return self._do_mari_pre_publish(task, work_template, progress_cb)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
     def _do_maya_pre_publish(self, task, work_template, progress_cb):
         """
         Do Maya primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
         """
         import maya.cmds as cmds
         
@@ -111,49 +98,10 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
           
         return scene_errors
-<<<<<<< HEAD
-=======
-        
-    def _do_motionbuilder_pre_publish(self, task, work_template, progress_cb):
-        """
-        Do Motion Builder primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
-        """
-        from pyfbsdk import FBApplication
-
-        mb_app = FBApplication()
-
-        progress_cb(0, "Validating current script", task)
-
-        # get the current script file path:
-        script_file = mb_app.FBXFileName
-        if script_file:
-            script_file = os.path.abspath(script_file)
-
-        # validate it
-        script_errors = self._validate_work_file(script_file, work_template, task["output"], progress_cb)
-
-        progress_cb(100)
-
-        return script_errors
->>>>>>> master
 
     def _do_3dsmax_pre_publish(self, task, work_template, progress_cb):
         """
         Do 3ds Max primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
         """
         import MaxPlus
 
@@ -172,13 +120,6 @@ class PrimaryPrePublishHook(Hook):
     def _do_nuke_pre_publish(self, task, work_template, progress_cb):
         """
         Do Nuke primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
         """
         import nuke
         
@@ -199,13 +140,6 @@ class PrimaryPrePublishHook(Hook):
     def _do_hiero_pre_publish(self, task, work_template, progress_cb):
         """
         Do Hiero primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
         """
         import hiero.core
         
@@ -239,13 +173,6 @@ class PrimaryPrePublishHook(Hook):
     def _do_houdini_pre_publish(self, task, work_template, progress_cb):
         """
         Do Houdini primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
         """
         import hou
 
@@ -266,13 +193,6 @@ class PrimaryPrePublishHook(Hook):
     def _do_softimage_pre_publish(self, task, work_template, progress_cb):
         """
         Do Softimage primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
         """
         import win32com
         from win32com.client import Dispatch, constants
@@ -300,50 +220,6 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
 
         return scene_errors
-
-    def _do_photoshop_pre_publish(self, task, work_template, progress_cb):
-        """
-        Do Photoshop primary pre-publish/scene validation
-
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
-        """
-        import photoshop
-        
-        progress_cb(0.0, "Validating current scene", task)
-        
-        # get the current scene file:
-        doc = photoshop.app.activeDocument
-        if doc is None:
-            raise TankError("There is no currently active document!")
-        
-        scene_file = doc.fullName.nativePath
-            
-        # validate it:
-        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
-        
-        progress_cb(100)
-          
-        return scene_errors
-
-    def _do_mari_pre_publish(self, task, work_template, progress_cb):
-        """
-        Perform any pre-publish for the primary task in Mari.
-        
-        :param task:            The primary task to pre-publish
-        :param work_template:   The primary work template to use
-        :param progress_cb:     A callback to use when reporting any progress
-                                to the UI
-        :returns:               A list of any errors or problems that were found
-                                during pre-publish
-        """
-        # currently there is no primary publish for Mari so just return
-        return []
-
 
     def _validate_work_file(self, path, work_template, output, progress_cb):
         """
@@ -373,8 +249,10 @@ class PrimaryPrePublishHook(Hook):
         
         progress_cb(75, "Validating current version")
         
-        # check the version number against existing work file versions to avoid accidentally
-        # bypassing more recent work!
+        # check the version number against existing versions:
+        # TODO: this check is from the original maya publish - should
+        # it check against the existing published files as well? 
+        # (Note: tk-nuke-publish version is practically the same atm)
         existing_versions = self.parent.tank.paths_from_template(work_template, fields, ["version"])
         version_numbers = [ work_template.get_fields(v).get("version") for v in existing_versions]
         curr_v_no = fields["version"]
@@ -382,9 +260,9 @@ class PrimaryPrePublishHook(Hook):
         if max_v_no > curr_v_no:
             # there is a higher version number - this means that someone is working
             # on an old version of the file. Warn them about upgrading.
-            errors.append("Your current work file is v%03d, however a more recent version (v%03d) already exists.  "
-                          "After publishing, this file will become v%03d, replacing any more recent work from v%03d!"
-                          % (curr_v_no, max_v_no, max_v_no + 1, max_v_no))
+            errors.append("Your current work file is v%03d, however a more recent "
+                   "version (v%03d) already exists. After publishing, your version "
+                   "will become v%03d, thereby shadowing some previous work. " % (curr_v_no, max_v_no, max_v_no + 1))
         
         return errors
         
