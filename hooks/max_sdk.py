@@ -16,6 +16,9 @@ class MaxSdk(object):
 
     @staticmethod
     def Save(scene_path, engine_name): 
+        """
+        Save Scene.
+        """
         if engine_name == "tk-3dsmax":
             from Py3dsMax import mxs
             mxs.saveMaxFile(scene_path)
@@ -25,6 +28,10 @@ class MaxSdk(object):
 
     @staticmethod
     def GetScenePath(engine_name):
+        """
+        Get full Path (including filename) of current scene.
+        """
+
         scene_path = ''
         if engine_name == "tk-3dsmax":
             from Py3dsMax import mxs
