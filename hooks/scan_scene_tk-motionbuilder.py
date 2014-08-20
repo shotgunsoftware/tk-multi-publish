@@ -11,9 +11,9 @@
 import os
 from pyfbsdk import FBApplication
 
-import tank
-from tank import Hook
-from tank import TankError
+import sgtk
+from sgtk import Hook
+from sgtk import TankError
 
 mb_app = FBApplication()
 

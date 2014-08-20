@@ -88,6 +88,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_maya_pre_publish(self, task, work_template, progress_cb):
         """
         Do Maya primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         import maya.cmds as cmds
         
@@ -108,6 +115,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_motionbuilder_pre_publish(self, task, work_template, progress_cb):
         """
         Do Motion Builder primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         from pyfbsdk import FBApplication
 
@@ -130,6 +144,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_3dsmax_pre_publish(self, task, work_template, progress_cb):
         """
         Do 3ds Max primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         from Py3dsMax import mxs
         
@@ -148,6 +169,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_nuke_pre_publish(self, task, work_template, progress_cb):
         """
         Do Nuke primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         import nuke
         
@@ -168,6 +196,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_hiero_pre_publish(self, task, work_template, progress_cb):
         """
         Do Hiero primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         import hiero.core
         
@@ -201,6 +236,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_houdini_pre_publish(self, task, work_template, progress_cb):
         """
         Do Houdini primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         import hou
 
@@ -221,6 +263,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_softimage_pre_publish(self, task, work_template, progress_cb):
         """
         Do Softimage primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         import win32com
         from win32com.client import Dispatch, constants
@@ -252,6 +301,13 @@ class PrimaryPrePublishHook(Hook):
     def _do_photoshop_pre_publish(self, task, work_template, progress_cb):
         """
         Do Photoshop primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
         """
         import photoshop
         
