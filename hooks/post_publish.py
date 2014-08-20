@@ -24,9 +24,9 @@ class PostPublishHook(Hook):
         Main hook entry point
         
         :param work_template:   template
-                        This is the template defined in the config that
-                        represents the current work file
-                        
+                                This is the template defined in the config that
+                                represents the current work file
+
         :param primary_task:    The primary task that was published by the primary publish hook.  Passed
                                 in here for reference.
 
@@ -34,11 +34,11 @@ class PostPublishHook(Hook):
                                 publish hook.  Passed in here for reference.
                         
         :param progress_cb:     Function
-                        A progress callback to log progress during pre-publish.  Call:
+                                A progress callback to log progress during pre-publish.  Call:
                         
-                            progress_cb(percentage, msg)
+                                    progress_cb(percentage, msg)
                              
-                        to report progress to the UI
+                                to report progress to the UI
 
         :returns:               None
         :raises:                Raise a TankError to notify the user of a problem
@@ -140,12 +140,12 @@ class PostPublishHook(Hook):
         :param progress_cb:     Callback to be used when reporting progress
         """        
         import max_sdk
-
+        
         progress_cb(0, "Versioning up the scene file")
-
+        
         # get scene path
         scene_path = MaxSdk.GetScenePath(engine_name)
-       
+        
         # increment version and construct new file name:
         progress_cb(25, "Finding next version number")
         fields = work_template.get_fields(scene_path)
@@ -235,7 +235,7 @@ class PostPublishHook(Hook):
 
         # rename script:
         nuke.root()["name"].setValue(new_path)
-    
+        
         # update write nodes:
         write_node_app = tank.platform.current_engine().apps.get("tk-nuke-writenode")
         if write_node_app:
@@ -244,10 +244,10 @@ class PostPublishHook(Hook):
             from distutils.version import LooseVersion
             if (write_node_app.version != "Undefined" 
                 and LooseVersion(write_node_app.version) <= LooseVersion("v0.1.11")):
-            progress_cb(50, "Resetting render paths for write nodes")
-            # reset render paths for all write nodes:
-            for wn in write_node_app.get_write_nodes():
-                 write_node_app.reset_node_render_path(wn)
+                progress_cb(50, "Resetting render paths for write nodes")
+                # reset render paths for all write nodes:
+                for wn in write_node_app.get_write_nodes():
+                    write_node_app.reset_node_render_path(wn)
                         
         # save the script:
         progress_cb(75, "Saving the scene file")
