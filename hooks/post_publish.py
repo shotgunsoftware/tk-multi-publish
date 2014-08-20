@@ -54,7 +54,7 @@ class PostPublishHook(Hook):
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
-            self._do_3dsmax_post_publish(work_template, progress_cb)
+            self._do_3dsmax_post_publish(work_template, progress_cb, engine_name)
         elif engine_name == "tk-hiero":
             self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-houdini":
@@ -132,20 +132,20 @@ class PostPublishHook(Hook):
 
         progress_cb(100)
 
-    def _do_3dsmax_post_publish(self, work_template, progress_cb):
+    def _do_3dsmax_post_publish(self, work_template, progress_cb, engine_name):
         """
         Do any 3ds Max post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
         """        
-        import MaxPlus
-        
+        import max_sdk
+
         progress_cb(0, "Versioning up the scene file")
-        
-        # get the current scene path:
-        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
-        
+
+        # get scene path
+        scene_path = MaxSdk.GetScenePath(engine_name)
+       
         # increment version and construct new file name:
         progress_cb(25, "Finding next version number")
         fields = work_template.get_fields(scene_path)
@@ -158,7 +158,7 @@ class PostPublishHook(Hook):
         
         # rename and save the file
         progress_cb(50, "Saving the scene file")
-        MaxPlus.FileManager.Save(new_scene_path)
+        MaxSdk.Save(scene_path, engine_name)
         
         progress_cb(100)
         

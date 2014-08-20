@@ -83,7 +83,7 @@ class PrimaryPublishHook(Hook):
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
-            return self._do_3dsmax_publish(task, engine_name, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb, engine_name)
         elif engine_name == "tk-hiero":
             return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-houdini":
@@ -213,7 +213,7 @@ class PrimaryPublishHook(Hook):
         return dependency_paths
     
         
-    def _do_3dsmax_publish(self, engine_name, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb, engine_name):
         """
         Publish the main 3ds Max scene
 
@@ -226,19 +226,13 @@ class PrimaryPublishHook(Hook):
                                 to the UI
         :returns:               The path to the file that has been published        
         """
+        import max_sdk
 
         progress_cb(0.0, "Finding scene dependencies", task)
         dependencies = self._3dsmax_find_additional_scene_dependencies()
 
         # get scene path
-        scene_path = ''
-        if engine_name == "tk-3dsmax":
-            from Py3dsMax import mxs
-            scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
-        elif engine_name == "tk-3dsmax-plus":
-            import MaxPlus
-            scene_path = MaxPlus.FileManager.GetFileNameAndPath()
-        
+        scene_path = MaxSdk.GetScenePath(engine_name)
         
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
@@ -258,12 +252,7 @@ class PrimaryPublishHook(Hook):
         self.parent.log_debug("Saving the scene...")
 
         # Save scene
-        if engine_name == "tk-3dsmax":
-            from Py3dsMax import mxs
-            mxs.saveMaxFile(scene_path)
-        elif engine_name == "tk-3dsmax-plus":
-            import MaxPlus
-            MaxPlus.FileManager.Save(scene_path)
+        MaxSdk.Save(scene_path, engine_name)
         
         # copy the file:
         progress_cb(50.0, "Copying the file")
