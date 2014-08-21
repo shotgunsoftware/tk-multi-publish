@@ -146,7 +146,7 @@ class PrimaryPrePublishHook(Hook):
 
         return script_errors
 
-    def _do_3dsmax_pre_publish(self, task, work_template, progress_cb, engine_name):
+    def _do_3dsmax_pre_publish(self, task, work_template, progress_cb):
         """
         Do 3ds Max primary pre-publish/scene validation
 
@@ -171,7 +171,7 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
         
-    def _do_3dsmax_plus_pre_publish(self, task, work_template, progress_cb, engine_name):
+    def _do_3dsmax_plus_pre_publish(self, task, work_template, progress_cb):
         """
         Do 3ds Max primary pre-publish/scene validation
 
