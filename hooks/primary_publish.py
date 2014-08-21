@@ -11,10 +11,13 @@
 import os
 import uuid
 import tempfile
+import sys
 
 import tank
 from tank import Hook
 from tank import TankError
+
+sys.path.append( os.path.abspath(os.path.dirname(__file__)) )
 
 class PrimaryPublishHook(Hook):
     """
@@ -82,8 +85,10 @@ class PrimaryPublishHook(Hook):
             return self._do_motionbuilder_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
-        elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
-            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb, engine_name)
+        elif engine_name == "tk-3dsmax":
+            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-3dsmax-plus":
+            return self._do_3dsmax_plus_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-houdini":
@@ -290,7 +295,7 @@ class PrimaryPublishHook(Hook):
         return []
 
 
-    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb, engine_name):
+    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
 
@@ -303,13 +308,13 @@ class PrimaryPublishHook(Hook):
                                 to the UI
         :returns:               The path to the file that has been published        
         """
-        import max_sdk
+        from Py3dsMax import mxs
         
         progress_cb(0.0, "Finding scene dependencies", task)
         dependencies = self._3dsmax_find_additional_scene_dependencies()
         
         # get scene path
-        scene_path = MaxSdk.GetScenePath(engine_name)
+        scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
         
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
@@ -327,7 +332,74 @@ class PrimaryPublishHook(Hook):
         # save the scene:
         progress_cb(10.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
-        MaxSdk.Save(scene_path, engine_name)
+        mxs.saveMaxFile(scene_path)
+        
+        # copy the file:
+        progress_cb(50.0, "Copying the file")
+        try:
+            publish_folder = os.path.dirname(publish_path)
+            self.parent.ensure_folder_exists(publish_folder)
+            self.parent.log_debug("Copying %s --> %s..." % (scene_path, publish_path))
+            self.parent.copy_file(scene_path, publish_path, task)
+        except Exception, e:
+            raise TankError("Failed to copy file from %s to %s - %s" % (scene_path, publish_path, e))
+
+        # work out publish name:
+        publish_name = self._get_publish_name(publish_path, publish_template, fields)
+
+        # finally, register the publish:
+        progress_cb(75.0, "Registering the publish")
+        self._register_publish(publish_path, 
+                               publish_name, 
+                               sg_task, 
+                               fields["version"], 
+                               output["tank_type"],
+                               comment,
+                               thumbnail_path, 
+                               dependencies)
+        
+        progress_cb(100)
+        
+        return publish_path
+
+    def _do_3dsmax_plus_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+        """
+        Publish the main 3ds Max scene
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               The path to the file that has been published        
+        """
+        import MaxPlus
+        
+        progress_cb(0.0, "Finding scene dependencies", task)
+        dependencies = self._3dsmax_find_additional_scene_dependencies()
+        
+        # get scene path
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
+        
+        if not work_template.validate(scene_path):
+            raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
+        
+        # use templates to convert to publish path:
+        output = task["output"]
+        fields = work_template.get_fields(scene_path)
+        fields["TankType"] = output["tank_type"]
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        if os.path.exists(publish_path):
+            raise TankError("The published file named '%s' already exists!" % publish_path)
+        
+        # save the scene:
+        progress_cb(10.0, "Saving the scene")
+        self.parent.log_debug("Saving the scene...")
+        MaxPlus.FileManager.Save(scene_path)
         
         # copy the file:
         progress_cb(50.0, "Copying the file")

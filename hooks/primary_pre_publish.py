@@ -9,10 +9,13 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import sys
 
 import tank
 from tank import Hook
 from tank import TankError
+
+sys.path.append( os.path.abspath(os.path.dirname(__file__)) )
 
 class PrimaryPrePublishHook(Hook):
     """
@@ -70,8 +73,10 @@ class PrimaryPrePublishHook(Hook):
             return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-3dsmax" or engine_name == "tk-3dsmax-plus":
-            return self._do_3dsmax_pre_publish(task, work_template, progress_cb, engine_name)
+        elif engine_name == "tk-3dsmax":
+            return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-3dsmax-plus":
+            return self._do_3dsmax_plus_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-houdini":
@@ -152,12 +157,12 @@ class PrimaryPrePublishHook(Hook):
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
-        import max_sdk
+        from Py3dsMax import mxs
         
         progress_cb(0.0, "Validating current scene", task)
         
         # get scene path
-        scene_path = MaxSdk.GetScenePath(engine_name)
+        scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
             
         # validate it:
         scene_errors = self._validate_work_file(scene_path, work_template, task["output"], progress_cb)
@@ -166,6 +171,31 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
         
+    def _do_3dsmax_plus_pre_publish(self, task, work_template, progress_cb, engine_name):
+        """
+        Do 3ds Max primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
+        """
+        import MaxPlus
+        
+        progress_cb(0.0, "Validating current scene", task)
+        
+        # get scene path
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
+            
+        # validate it:
+        scene_errors = self._validate_work_file(scene_path, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
+        return scene_errors
+
     def _do_nuke_pre_publish(self, task, work_template, progress_cb):
         """
         Do Nuke primary pre-publish/scene validation
