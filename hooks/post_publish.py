@@ -15,8 +15,6 @@ import tank
 from tank import Hook
 from tank import TankError
 
-sys.path.append( os.path.abspath(os.path.dirname(__file__)) )
-
 class PostPublishHook(Hook):
     """
     Single hook that implements post-publish functionality
@@ -136,7 +134,7 @@ class PostPublishHook(Hook):
 
         progress_cb(100)
 
-    def _do_3dsmax_post_publish(self, work_template, progress_cb, engine_name):
+    def _do_3dsmax_post_publish(self, work_template, progress_cb):
         """
         Do any 3ds Max post-publish work
 
@@ -162,7 +160,7 @@ class PostPublishHook(Hook):
         
         # rename and save the file
         progress_cb(50, "Saving the scene file")
-        mxs.saveMaxFile(scene_path)
+        mxs.saveMaxFile(new_scene_path)
         
         progress_cb(100)
 
@@ -192,7 +190,7 @@ class PostPublishHook(Hook):
         
         # rename and save the file
         progress_cb(50, "Saving the scene file")
-        MaxPlus.FileManager.Save(scene_path)
+        MaxPlus.FileManager.Save(new_scene_path)
         
         progress_cb(100)
         

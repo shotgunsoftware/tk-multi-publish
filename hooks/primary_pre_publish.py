@@ -9,13 +9,10 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import sys
 
 import tank
 from tank import Hook
 from tank import TankError
-
-sys.path.append( os.path.abspath(os.path.dirname(__file__)) )
 
 class PrimaryPrePublishHook(Hook):
     """

@@ -12,9 +12,9 @@ import os
 
 import MaxPlus
 
-import tank
-from tank import Hook
-from tank import TankError
+import sgtk
+from sgtk import Hook
+from sgtk import TankError
 
 
 class ScanSceneHook(Hook):
@@ -59,7 +59,7 @@ class ScanSceneHook(Hook):
         items = []
 
         # get the main scene:
-        filename = MaxPlus.FileManager.GetFileNameAndPath()
+        filename = MaxPlus.FileManager.GetFileName()
         if not filename:
             raise TankError("Please Save your file before Publishing")
 

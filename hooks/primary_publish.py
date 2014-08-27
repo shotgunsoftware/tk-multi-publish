@@ -11,13 +11,11 @@
 import os
 import uuid
 import tempfile
-import sys
 
 import tank
 from tank import Hook
 from tank import TankError
 
-sys.path.append( os.path.abspath(os.path.dirname(__file__)) )
 
 class PrimaryPublishHook(Hook):
     """
@@ -362,6 +360,13 @@ class PrimaryPublishHook(Hook):
         
         return publish_path
 
+    def _3dsmax_find_additional_scene_dependencies(self):
+        """
+        Find additional dependencies from the scene
+        """
+        # default implementation does nothing!
+        return []
+
     def _do_3dsmax_plus_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
@@ -378,7 +383,7 @@ class PrimaryPublishHook(Hook):
         import MaxPlus
         
         progress_cb(0.0, "Finding scene dependencies", task)
-        dependencies = self._3dsmax_find_additional_scene_dependencies()
+        dependencies = self._3dsmax_plus_find_additional_scene_dependencies()
         
         # get scene path
         scene_path = MaxPlus.FileManager.GetFileNameAndPath()
@@ -429,13 +434,12 @@ class PrimaryPublishHook(Hook):
         
         return publish_path
 
-    def _3dsmax_find_additional_scene_dependencies(self):
+    def _3dsmax_plus_find_additional_scene_dependencies(self):
         """
         Find additional dependencies from the scene
         """
         # default implementation does nothing!
         return []
-
 
     def _do_hiero_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
