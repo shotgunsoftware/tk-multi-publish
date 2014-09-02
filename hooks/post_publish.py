@@ -55,6 +55,8 @@ class PostPublishHook(Hook):
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             self._do_3dsmax_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-3dsmax-plus":
+            self._do_3dsmax_plus_post_publish(work_template, progress_cb)
         elif engine_name == "tk-hiero":
             self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-houdini":
@@ -143,7 +145,7 @@ class PostPublishHook(Hook):
         
         progress_cb(0, "Versioning up the scene file")
         
-        # get the current scene path:
+        # get scene path
         scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
         
         # increment version and construct new file name:
@@ -159,6 +161,36 @@ class PostPublishHook(Hook):
         # rename and save the file
         progress_cb(50, "Saving the scene file")
         mxs.saveMaxFile(new_scene_path)
+        
+        progress_cb(100)
+
+    def _do_3dsmax_plus_post_publish(self, work_template, progress_cb):
+        """
+        Do any 3ds Max post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        """        
+        import MaxPlus
+        
+        progress_cb(0, "Versioning up the scene file")
+        
+        # get scene path
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
+        
+        # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(scene_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version 
+        new_scene_path = work_template.apply_fields(fields)
+        
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
+        
+        # rename and save the file
+        progress_cb(50, "Saving the scene file")
+        MaxPlus.FileManager.Save(new_scene_path)
         
         progress_cb(100)
         

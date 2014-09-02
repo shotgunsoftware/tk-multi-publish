@@ -9,11 +9,11 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-from Py3dsMax import mxs
 
 import sgtk
 from sgtk import Hook
 from sgtk import TankError
+
 
 class PrePublishHook(Hook):
     """
@@ -72,31 +72,28 @@ class PrePublishHook(Hook):
                                 }
         """      
         results = []
-        
+
         # validate tasks:
         for task in tasks:
             item = task["item"]
             output = task["output"]
             errors = []
-        
+
             # report progress:
             progress_cb(0, "Validating", task)
-        
+
             # pre-publish item here, e.g.
             #if output["name"] == "foo":
             #    ...
             #else:
             # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")        
+            errors.append("Don't know how to publish this item!")
 
             # if there is anything to report then add to result
             if len(errors) > 0:
                 # add result:
-                results.append({"task":task, "errors":errors})
-                
-            progress_cb(100)
-            
-        return results
+                results.append({"task": task, "errors": errors})
 
-    
-    
+            progress_cb(100)
+
+        return results

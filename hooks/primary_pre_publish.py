@@ -72,6 +72,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-3dsmax-plus":
+            return self._do_3dsmax_plus_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-houdini":
@@ -156,16 +158,41 @@ class PrimaryPrePublishHook(Hook):
         
         progress_cb(0.0, "Validating current scene", task)
         
-        # get the current scene file:
-        scene_file = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
+        # get scene path
+        scene_path = os.path.abspath(os.path.join(mxs.maxFilePath, mxs.maxFileName))
             
         # validate it:
-        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
+        scene_errors = self._validate_work_file(scene_path, work_template, task["output"], progress_cb)
         
         progress_cb(100)
           
         return scene_errors
         
+    def _do_3dsmax_plus_pre_publish(self, task, work_template, progress_cb):
+        """
+        Do 3ds Max primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
+        """
+        import MaxPlus
+        
+        progress_cb(0.0, "Validating current scene", task)
+        
+        # get scene path
+        scene_path = MaxPlus.FileManager.GetFileNameAndPath()
+            
+        # validate it:
+        scene_errors = self._validate_work_file(scene_path, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
+        return scene_errors
+
     def _do_nuke_pre_publish(self, task, work_template, progress_cb):
         """
         Do Nuke primary pre-publish/scene validation
