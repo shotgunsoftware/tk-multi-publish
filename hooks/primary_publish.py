@@ -85,8 +85,8 @@ class PrimaryPublishHook(Hook):
             return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
-        elif engine_name == "tk-3dsmax-plus":
-            return self._do_3dsmax_plus_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+        elif engine_name == "tk-3dsmaxplus":
+            return self._do_3dsmaxplus_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
         elif engine_name == "tk-houdini":
@@ -367,7 +367,7 @@ class PrimaryPublishHook(Hook):
         # default implementation does nothing!
         return []
 
-    def _do_3dsmax_plus_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_3dsmaxplus_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
         """
         Publish the main 3ds Max scene
 

@@ -72,8 +72,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-3dsmax-plus":
-            return self._do_3dsmax_plus_pre_publish(task, work_template, progress_cb)
+        elif engine_name == "tk-3dsmaxplus":
+            return self._do_3dsmaxplus_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-hiero":
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-houdini":
@@ -168,7 +168,7 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
         
-    def _do_3dsmax_plus_pre_publish(self, task, work_template, progress_cb):
+    def _do_3dsmaxplus_pre_publish(self, task, work_template, progress_cb):
         """
         Do 3ds Max primary pre-publish/scene validation
 
