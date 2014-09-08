@@ -55,8 +55,8 @@ class PostPublishHook(Hook):
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             self._do_3dsmax_post_publish(work_template, progress_cb)
-        elif engine_name == "tk-3dsmax-plus":
-            self._do_3dsmax_plus_post_publish(work_template, progress_cb)
+        elif engine_name == "tk-3dsmaxplus":
+            self._do_3dsmaxplus_post_publish(work_template, progress_cb)
         elif engine_name == "tk-hiero":
             self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-houdini":
@@ -164,7 +164,7 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
 
-    def _do_3dsmax_plus_post_publish(self, work_template, progress_cb):
+    def _do_3dsmaxplus_post_publish(self, work_template, progress_cb):
         """
         Do any 3ds Max post-publish work
 
