@@ -20,6 +20,16 @@ class PublishHook(Hook):
     """
     Single hook that implements publish functionality for secondary tasks
     """
+    def __init__(self, *args, **kwargs):
+        """
+        Construction
+        """
+        # call base init
+        Hook.__init__(self, *args, **kwargs)
+        
+        # cache a couple of apps that we may need later on:
+        self.__write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
+        self.__review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
             
     def execute(self, tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb, **kwargs):
         """
@@ -106,18 +116,14 @@ class PublishHook(Hook):
                 output_order.append(output_name)
 
         # make sure we have any apps required by the publish process:
-        write_node_app = None
-        if tasks_by_output.get("render") or tasks_by_output.get("quicktime"):
+        if "render" in tasks_by_output or "quicktime" in tasks_by_output:
             # we will need the write node app if we have any render outputs to validate
-            write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
-            if not write_node_app:
+            if not self.__write_node_app:
                 raise TankError("Unable to publish Shotgun Write Nodes without the tk-nuke-writenode app!")
 
-        review_submission_app = None
-        if tasks_by_output.get("quicktime"):
+        if "quicktime" in tasks_by_output:
             # If we have the tk-multi-reviewsubmission app we can create versions
-            review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
-            if not review_submission_app:
+            if not self.__review_submission_app:
                 raise TankError("Unable to publish Review Versions without the tk-multi-reviewsubmission app!")
 
                 
@@ -150,7 +156,6 @@ class PublishHook(Hook):
                     try:
                         (sg_publish, thumbnail_path) = self._publish_write_node_render(task, 
                                                                                        write_node, 
-                                                                                       write_node_app, 
                                                                                        primary_publish_path, 
                                                                                        sg_task, 
                                                                                        comment, 
@@ -179,8 +184,6 @@ class PublishHook(Hook):
                         
                         self._send_to_screening_room (
                             write_node,
-                            write_node_app,
-                            review_submission_app,
                             sg_publish,
                             sg_task,
                             comment,
@@ -206,45 +209,89 @@ class PublishHook(Hook):
         return results
 
 
-    def _send_to_screening_room(self, write_node, write_node_app, review_submission_app, sg_publish, sg_task, comment, thumbnail_path, progress_cb):
+    def _send_to_screening_room(self, write_node, sg_publish, sg_task, comment, thumbnail_path, progress_cb):
         """
-        Take a write node's published files and run them through the
-        review_submission app to get a movie and Shotgun Version.
+        Take a write node's published files and run them through the review_submission app 
+        to get a movie and Shotgun Version.
+
+        :param write_node:      The Shotgun Write node to submit a review version for
+        :param sg_publish:      The Shotgun publish entity dictionary to link the version with
+        :param sg_task:         The Shotgun task entity dictionary for the publish
+        :param comment:         The publish comment
+        :param thumbnail_path:  The path to a thumbnail for the publish
+        :param progress_cb:     A callback to use to report any progress
         """
-        render_path = write_node_app.get_node_render_path(write_node)
-        render_template = write_node_app.get_node_render_template(write_node)
-        publish_template = write_node_app.get_node_publish_template(write_node)                        
+        render_path = self.__write_node_app.get_node_render_path(write_node)
+        render_template = self.__write_node_app.get_node_render_template(write_node)
+        publish_template = self.__write_node_app.get_node_publish_template(write_node)                        
         render_path_fields = render_template.get_fields(render_path)
 
-        review_submission_app.render_and_submit(
-            publish_template,
-            render_path_fields,
-            int(nuke.root()["first_frame"].value()),
-            int(nuke.root()["last_frame"].value()),
-            [sg_publish],
-            sg_task,
-            comment,
-            thumbnail_path,
-            progress_cb,
-        )
+        if hasattr(self.__review_submission_app, "render_and_submit_version"):
+            # this is a recent version of the review submission app that contains
+            # the new method that also accepts a colorspace argument.
+            colorspace = self._get_node_colorspace(write_node)
+            self.__review_submission_app.render_and_submit_version(
+                publish_template,
+                render_path_fields,
+                int(nuke.root()["first_frame"].value()),
+                int(nuke.root()["last_frame"].value()),
+                [sg_publish],
+                sg_task,
+                comment,
+                thumbnail_path,
+                progress_cb,
+                colorspace
+            )
+        else:
+            # This is an older version of the app so fall back to the legacy
+            # method - this may mean the colorspace of the rendered movie is
+            # inconsistent/wrong!
+            self.__review_submission_app.render_and_submit(
+                publish_template,
+                render_path_fields,
+                int(nuke.root()["first_frame"].value()),
+                int(nuke.root()["last_frame"].value()),
+                [sg_publish],
+                sg_task,
+                comment,
+                thumbnail_path,
+                progress_cb
+            )
 
-    def _publish_write_node_render(self, task, write_node, write_node_app, published_script_path, sg_task, comment, progress_cb):
+    def _get_node_colorspace(self, node):
+        """
+        Get the colorspace for the specified nuke node
+
+        :param node:    The nuke node to find the colorspace for
+        :returns:       The string representing the colorspace for the node
+        """
+        cs_knob = node.knob("colorspace")
+        if not cs_knob:
+            return
+    
+        cs = cs_knob.value()
+        # handle default value where cs would be something like: 'default (linear)'
+        if cs.startswith("default (") and cs.endswith(")"):
+            cs = cs[9:-1]
+        return cs
+
+    def _publish_write_node_render(self, task, write_node, published_script_path, sg_task, comment, progress_cb):
         """
         Publish render output for write node
         """
  
-        if write_node_app.is_node_render_path_locked(write_node):
+        if self.__write_node_app.is_node_render_path_locked(write_node):
             # this is a fatal error as publishing would result in inconsistent paths for the rendered files!
             raise TankError("The render path is currently locked and does not match match the current Work Area.")
  
         progress_cb(10, "Finding renders")
  
         # get info we need in order to do the publish:
-        render_path = write_node_app.get_node_render_path(write_node)
-        render_files = write_node_app.get_node_render_files(write_node)
-        render_template = write_node_app.get_node_render_template(write_node)
-        publish_template = write_node_app.get_node_publish_template(write_node)                        
-        tank_type = write_node_app.get_node_tank_type(write_node)
+        render_path = self.__write_node_app.get_node_render_path(write_node)
+        render_files = self.__write_node_app.get_node_render_files(write_node)
+        render_template = self.__write_node_app.get_node_render_template(write_node)
+        publish_template = self.__write_node_app.get_node_publish_template(write_node)                        
+        tank_type = self.__write_node_app.get_node_tank_type(write_node)
         
         # publish (copy files):
         
@@ -290,7 +337,7 @@ class PublishHook(Hook):
         publish_version = render_path_fields["version"]
             
         # get/generate thumbnail:
-        thumbnail_path = write_node_app.generate_node_thumbnail(write_node)
+        thumbnail_path = self.__write_node_app.generate_node_thumbnail(write_node)
             
         # register the publish:
         sg_publish = self._register_publish(publish_path, 
