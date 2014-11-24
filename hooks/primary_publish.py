@@ -824,7 +824,7 @@ class PrimaryPublishHook(Hook):
         # save the scene:
         progress_cb(0.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
-        doc.save()
+        photoshop.save_as(doc, scene_path)
         
         # copy the file:
         progress_cb(25.0, "Copying the file")
