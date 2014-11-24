@@ -382,10 +382,9 @@ class PostPublishHook(Hook):
         
         # rename and save the file
         progress_cb(50, "Saving the scene file")
-        new_file_name = photoshop.RemoteObject('flash.filesystem::File', new_scene_path)
-        # no options and do not save as a copy
-        # http://cssdk.host.adobe.com/sdk/1.5/docs/WebHelp/references/csawlib/com/adobe/photoshop/Document.html#saveAs()
-        doc.saveAs(new_file_name, None, False)
+
+        import photoshop
+        photoshop.save_as(doc, new_scene_path)
                 
         progress_cb(100)
 
