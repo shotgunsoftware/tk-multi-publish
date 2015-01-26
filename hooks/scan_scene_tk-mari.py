@@ -71,12 +71,15 @@ class ScanSceneHook(Hook):
 
                 params = {"geo":geo.name(), "channel":channel.name()}
 
+                # find all publishable layers:
+                publishable_layers = self.find_publishable_layers_r(channel.layerList())
+                if not publishable_layers:
+                    # no layers to publish!
+                    continue
+
                 # add item for whole flattened channel:
                 item_name = "%s, %s" % (geo.name(), channel.name())
                 items.append({"type":"channel", "name":item_name, "other_params":params})
-                
-                # find all publishable layers:
-                publishable_layers = self.find_publishable_layers_r(channel.layerList())
                 
                 # add item for each publishable layer:
                 found_layer_names = set()
