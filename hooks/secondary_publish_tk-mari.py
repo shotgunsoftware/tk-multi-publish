@@ -223,21 +223,35 @@ class PublishHook(Hook):
             progress_cb(50, "Exporting layer")
             layer.exportImages(output_path)
         else:
-            # flatten layers in the channel and publish the flattened layer:
+            # publish the entire channel, flattened
             progress_cb(50, "Exporting channel")
-            # remember the current channel:
-            current_channel = geo.currentChannel()
-            # duplicate the channel so we don't operate on the original:
-            duplicate_channel = geo.createDuplicateChannel(channel)
-            # flatten it into a single layer:
-            flattened_layer = duplicate_channel.flatten()
-            # export the images for it:
-            flattened_layer.exportImages(output_path)
-            # set the current channel back - not doing this will result in Mari crashing
-            # when the duplicated channel is removed!
-            geo.setCurrentChannel(current_channel)
-            # remove the duplicate channel, destroying the channel and the flattened layer:
-            geo.removeChannel(duplicate_channel, geo.DESTROY_ALL)
+            layers = channel.layerList()
+            if len(layers) == 1:
+                # only one layer so just publish it:
+                # Note - this works around an issue that was reported (#27945) where flattening a channel
+                # with only a single layer would cause Mari to crash - this bug was not reproducible by
+                # us but happened 100% for the client!
+                layer = layers[0]
+                layer.exportImages(output_path)
+            elif len(layers) > 1:
+                # flatten layers in the channel and publish the flattened layer:
+                # remember the current channel:
+                current_channel = geo.currentChannel()
+                # duplicate the channel so we don't operate on the original:
+                duplicate_channel = geo.createDuplicateChannel(channel)
+                try:
+                    # flatten it into a single layer:
+                    flattened_layer = duplicate_channel.flatten()
+                    # export the images for it:
+                    flattened_layer.exportImages(output_path)
+                finally:
+                    # set the current channel back - not doing this will result in Mari crashing
+                    # when the duplicated channel is removed!
+                    geo.setCurrentChannel(current_channel)
+                    # remove the duplicate channel, destroying the channel and the flattened layer:
+                    geo.removeChannel(duplicate_channel, geo.DESTROY_ALL)
+            else:
+                raise TankError("Channel '%s' doesn't appear to have any layers!" % channel.name())            
 
         # register the publish:
         progress_cb(80, "Registering the publish")
