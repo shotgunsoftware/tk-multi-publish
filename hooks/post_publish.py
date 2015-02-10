@@ -316,7 +316,7 @@ class PostPublishHook(Hook):
         progress_cb(75, "Saving the scene file")
         if sys.platform == 'win32':
             new_path = new_path.replace(os.path.sep, '/')
-        hou.hipFile.save(new_path)
+        hou.hipFile.save(new_path.encode("utf-8"))
 
         progress_cb(100)
 
