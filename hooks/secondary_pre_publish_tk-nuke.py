@@ -72,7 +72,7 @@ class PrePublishHook(Hook):
                                 }
         """        
         results = []
-        
+
         # we will need the write node app if we have any render outputs to validate
         write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
         
@@ -105,6 +105,18 @@ class PrePublishHook(Hook):
                 if not self._get_render_task_for_task(tasks, task):
                     raise TankError("If you have the 'Send to Screening Room' box ticked, you "
                                     "must also have the 'Publish Renders' box ticked!")
+
+                # the render task will always render full-res frames when publishing. If we're
+                # in proxy mode in Nuke, that task will fail since there will be no full-res 
+                # frames rendered. The exceptions are if there is no proxy_render_template set 
+                # in the tk-nuke-writenode app, then the write node app falls back on the
+                # full-res template. Or if they rendered in full res and then switched to 
+                # proxy mode later. In this case, this is likely user error, so we catch it.
+                root_node = nuke.root()
+                proxy_mode_on = root_node['proxy'].value()
+                if proxy_mode_on:
+                    raise TankError("You cannot publish to Screening Room while Nuke is in proxy "
+                                    "mode. Please toggle proxy mode OFF and try again.")
             
             else:
                 # don't know how to publish other output types!
