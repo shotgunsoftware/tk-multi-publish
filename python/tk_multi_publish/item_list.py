@@ -117,7 +117,7 @@ class ItemList(QtGui.QWidget):
         self._ui.line.setVisible(not collapse)
         
         # set icon:
-        self._ui.expand_label.setPixmap([":/res/group_collapse.png", ":/res/group_expand.png"][collapse])
+        self._ui.expand_label.setPixmap([QtGui.QPixmap(":/res/group_collapse.png"), QtGui.QPixmap(":/res/group_expand.png")][collapse])
         
         self._is_collapsed = collapse
         
