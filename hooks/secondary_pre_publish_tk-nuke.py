@@ -19,7 +19,7 @@ class PrePublishHook(Hook):
     """
     Single hook that implements pre-publish functionality
     """
-    def execute(self, tasks, work_template, progress_cb, **kwargs):
+    def execute(self, *args, **kwargs):
         """
         Main hook entry point
         :param tasks:           List of tasks to be pre-published.  Each task is be a 
@@ -70,7 +70,19 @@ class PrePublishHook(Hook):
                                     errors: List
                                             A list of error messages (strings) to report    
                                 }
-        """        
+        """
+        engine = self.parent.engine
+        if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._hiero_execute(*args, **kwargs)
+        else:
+            return self._nuke_execute(*args, **kwargs)
+
+    def _hiero_execute(self, tasks, work_template, progress_cb, **kwargs):
+        results = []
+        progress_cb(100)
+        return results
+
+    def _nuke_execute(self, tasks, work_template, progress_cb, **kwargs):
         results = []
 
         # we will need the write node app if we have any render outputs to validate

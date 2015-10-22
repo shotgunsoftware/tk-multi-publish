@@ -30,13 +30,13 @@ class ThumbnailHook(Hook):
                         If the hook returns None then the screenshot functionality
                         will be enabled in the UI.
         """
-        
-
         # get the engine name from the parent object (app/engine/etc.)
-        engine_name = self.parent.engine.name
+        engine = self.parent.engine
+        engine_name = engine.name
         
         # depending on engine:
-        if engine_name == "tk-hiero":
+        if (engine_name == "tk_hiero" or
+            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
             return self._extract_hiero_thumbnail()
         elif engine_name == "tk-photoshop":
             return self._extract_photoshop_thumbnail()

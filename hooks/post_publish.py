@@ -44,21 +44,23 @@ class PostPublishHook(Hook):
         :raises:                Raise a TankError to notify the user of a problem
         """
         # get the engine name from the parent object (app/engine/etc.)
-        engine_name = self.parent.engine.name
+        engine = self.parent.engine
+        engine_name = engine.name
         
         # depending on engine:
         if engine_name == "tk-maya":
             self._do_maya_post_publish(work_template, progress_cb)
         elif engine_name == "tk-motionbuilder":
             self._do_motionbuilder_post_publish(work_template, progress_cb)
+        elif (engine_name == "tk_hiero" or
+            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+            self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             self._do_3dsmax_post_publish(work_template, progress_cb)
         elif engine_name == "tk-3dsmaxplus":
             self._do_3dsmaxplus_post_publish(work_template, progress_cb)
-        elif engine_name == "tk-hiero":
-            self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-houdini":
             self._do_houdini_post_publish(work_template, progress_cb)
         elif engine_name == "tk-softimage":

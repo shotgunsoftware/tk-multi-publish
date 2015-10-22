@@ -61,21 +61,23 @@ class PrimaryPrePublishHook(Hook):
                                 can't be published!
         """
         # get the engine name from the parent object (app/engine/etc.)
-        engine_name = self.parent.engine.name
+        engine = self.parent.engine
+        engine_name = engine.name
         
         # depending on engine:
         if engine_name == "tk-maya":
             return self._do_maya_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-motionbuilder":
             return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
+        elif (engine_name == "tk_hiero" or
+            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+            return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmax":
             return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-3dsmaxplus":
             return self._do_3dsmaxplus_pre_publish(task, work_template, progress_cb)
-        elif engine_name == "tk-hiero":
-            return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-houdini":
             return self._do_houdini_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-softimage":
