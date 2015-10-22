@@ -30,8 +30,8 @@ class PublishHook(Hook):
         # cache a couple of apps that we may need later on:
         self.__write_node_app = self.parent.engine.apps.get("tk-nuke-writenode")
         self.__review_submission_app = self.parent.engine.apps.get("tk-multi-reviewsubmission")
-            
-    def execute(self, tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb, **kwargs):
+
+    def execute(self, *args, **kwargs):
         """
         Main hook entry point
         :param tasks:                   List of secondary tasks to be published.  Each task is a 
@@ -100,6 +100,47 @@ class PublishHook(Hook):
                                                     A list of error messages (strings) to report    
                                         }
         """
+        engine = self.parent.engine
+        if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._hiero_execute(*args, **kwargs)
+        else:
+            return self._nuke_execute(*args, **kwargs)
+
+    def _hiero_execute(
+        self, tasks, work_template, comment, thumbnail_path, sg_task,
+        primary_task, primary_publish_path, progress_cb, **kwargs
+    ):
+        results = []
+        
+        # publish all tasks:
+        for task in tasks:
+            item = task["item"]
+            output = task["output"]
+            errors = []
+        
+            # report progress:
+            progress_cb(0, "Publishing", task)
+        
+            # publish item here, e.g.
+            #if output["name"] == "foo":
+            #    ...
+            #else:
+            # don't know how to publish this output types!
+            errors.append("Don't know how to publish this item!")   
+
+            # if there is anything to report then add to result
+            if len(errors) > 0:
+                # add result:
+                results.append({"task":task, "errors":errors})
+             
+            progress_cb(100)
+             
+        return results
+            
+    def _nuke_execute(
+        self, tasks, work_template, comment, thumbnail_path, sg_task,
+        primary_task, primary_publish_path, progress_cb, **kwargs
+    ):
         results = []
 
         # it's important that tasks for render output are processed

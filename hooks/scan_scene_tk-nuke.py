@@ -19,8 +19,8 @@ class ScanSceneHook(Hook):
     """
     Hook to scan scene for items to publish
     """
-    
-    def execute(self, **kwargs):
+
+    def execute(self, *args, **kwargs):
         """
         Main hook entry point
         :returns:       A list of any items that were found to be published.  
@@ -53,7 +53,40 @@ class ScanSceneHook(Hook):
                                             pre-publish and publish hooks
                         }
         """
+        engine = self.parent.engine
+        if hasattr(engine, "hiero_enabled") and self.parent.engine.hiero_enabled:
+            return self._hiero_execute(*args, **kwargs)
+        else:
+            return self._nuke_execute(*args, **kwargs)
+
+    def _hiero_execute(self, *args, **kwargs):
+        import hiero.core
+        items = []
         
+        # first find which the current project is. Hiero is a multi project 
+        # environment so we can ask the engine which project was clicked in order
+        # to launch this publish.        
+        selection = self.parent.engine.get_menu_selection()
+        
+        # these values should in theory already be validated, but just in case...
+        if len(selection) != 1:
+            raise TankError("Please select a single Project!")
+        if not isinstance(selection[0] , hiero.core.Bin):
+            raise TankError("Please select a Hiero Project!")
+        project = selection[0].project()
+        if project is None:
+            # apparently bins can be without projects (child bins I think)
+            raise TankError("Please select a Hiero Project!")
+        
+        if project.path() == "":
+            raise TankError("Please save your scene before publishing!")
+        
+        # create the primary item            
+        items.append({"type": "work_file", "name": project.name()})
+
+        return items
+    
+    def _nuke_execute(self, *args, **kwargs):
         items = []
         
         # get current script:
@@ -82,5 +115,4 @@ class ScanSceneHook(Hook):
                               "description":"Render Profile: %s" % profile_name,
                               "selected":not is_disabled,
                               "other_params":{"node":write_node}})
-                 
         return items
