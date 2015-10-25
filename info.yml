@@ -68,23 +68,6 @@ configuration:
                      The hook is responsible for the entire publish process and should
                      ensure to register the publish with Shotgun.
 
-    hook_secondary_pre_publish:
-        type: hook
-        parameters: [tasks, progress_cb]
-        default_value: "secondary_pre_publish_{engine_name}"
-        description: Specify the hook that will run before the publish.  This hook can be
-                     used to perform any validaiton on the secondary tasks that are passed 
-                     in to ensure that they are ready to be published.
-        
-    hook_secondary_publish:
-        type: hook
-        parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb]
-        default_value: "secondary_publish_{engine_name}"
-        description: Specify the hook that will be used to do the publish.  This hook is 
-                     passed a list of secondary tasks that are to be published.
-                     The hook is responsible for the entire publish process and should
-                     ensure it registers the published files with Shotgun
-
     hook_post_publish:
         type: hook
         parameters: [work_template, primary_task, secondary_tasks, progress_cb]
@@ -168,12 +151,37 @@ configuration:
                                  files for this output with Shotgun.  
                                  If set to '' then this must be determined within the publish hook.
                     allows_empty: True
+
                 publish_template:
                     type: template
                     fields: context, * 
                     allows_empty: True
                     description: Template used to locate published files within the file system.
                                  If null then this must be determined within the publish hook.
+
+                hook_scan_scene: 
+                    type: hook
+                    parameters: []
+                    description: Specify a hook to scan for items to publish.  
+                                 The hook should return a list dictionaries that represent the items
+                                 to be published.
+
+                hook_secondary_pre_publish:
+                    type: hook
+                    parameters: [tasks, progress_cb]
+                    description: Specify the hook that will run before the publish.  This hook can be
+                                 used to perform any validaiton on the secondary tasks that are passed 
+                                 in to ensure that they are ready to be published.
+                    
+                hook_secondary_publish:
+                    type: hook
+                    parameters: [tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb]
+                    description: Specify the hook that will be used to do the publish.  This hook is 
+                                 passed a list of secondary tasks that are to be published.
+                                 The hook is responsible for the entire publish process and should
+                                 ensure it registers the published files with Shotgun
+
+
 
         decription: Specify all other outputs that are supported.
                     All non-primary items returned from the scan scene hook must match
@@ -204,7 +212,7 @@ description: "Provides UI and functionality to publish files to Shotgun."
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.14.58"
+requires_core_version: "v0.14.11"
 requires_engine_version: 
 
 # this app works in all engines - it does not contain 
@@ -213,5 +221,5 @@ supported_engines:
 
 # the frameworks required to run this app
 frameworks:
-    - {"name": "tk-framework-widget", "version": "v0.2.x"}    
+    - {"name": "tk-framework-widget", "version": "v0.1.19"}
     

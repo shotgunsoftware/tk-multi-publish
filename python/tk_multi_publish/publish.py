@@ -318,8 +318,18 @@ class PublishHandler(object):
         """
         Find the list of 'items' to publish
         """
+
         # find the items:
         items = [Item(item) for item in self._app.execute_hook("hook_scan_scene")]
+
+        for output in self._secondary_outputs:
+            # execute scan scene hooks for each output
+            # and append the resulted items to items
+            hook_expression = '{config}/' + output.hook_scan_scene + '.py'
+            method_name = "execute"
+            for item in self._app.execute_hook_expression(hook_expression, method_name):
+                obj_item = Item(item)
+                items.append(obj_item)
     
         # validate that only one matches the primary type
         # and that all items are valid:
@@ -355,10 +365,28 @@ class PublishHandler(object):
 
         # do pre-publish of secondary tasks:
         hook_tasks = [task.as_dictionary() for task in secondary_tasks]
+
+        '''
         pp_results = self._app.execute_hook("hook_secondary_pre_publish",  
                                             tasks=hook_tasks, 
                                             work_template = self._work_template,
                                             progress_cb=progress_cb)
+        '''
+        pp_results = []
+
+
+        for output in self._secondary_outputs:
+            # execute secondary_pre_publish hooks for each output
+            # and extend the results to pp_results
+            hook_expression = '{config}/' + output.hook_secondary_pre_publish + '.py'
+            method_name = "execute"
+            hook_results = self._app.execute_hook_expression(hook_expression, method_name,
+                                                  tasks=hook_tasks, 
+                                                  work_template = self._work_template,
+                                                  progress_cb=progress_cb)
+            pp_results.extend(hook_results)
+
+
         
         # push any errors back to tasks:
         result_index = {}
@@ -402,6 +430,7 @@ class PublishHandler(object):
         """
         # do publish of secondary tasks:            
         hook_tasks = [task.as_dictionary() for task in secondary_tasks]
+        '''
         p_results = self._app.execute_hook("hook_secondary_publish",  
                                              tasks=hook_tasks, 
                                              work_template = self._work_template,
@@ -411,6 +440,25 @@ class PublishHandler(object):
                                              primary_task = primary_task.as_dictionary(),
                                              primary_publish_path=primary_publish_path,
                                              progress_cb=progress_cb)
+        '''
+        p_results = []
+
+        for output in self._secondary_outputs:
+            # execute secondary_publish hooks for each output
+            # and extend the results to p_results
+            hook_expression = '{config}/' + output.hook_secondary_publish + '.py'
+            method_name = "execute"
+            hook_results = self._app.execute_hook_expression(hook_expression, method_name,
+                                                 tasks=hook_tasks, 
+                                                 work_template = self._work_template,
+                                                 comment = comment,
+                                                 thumbnail_path = thumbnail_path,
+                                                 sg_task = sg_task,
+                                                 primary_task = primary_task.as_dictionary(),
+                                                 primary_publish_path=primary_publish_path,
+                                                 progress_cb=progress_cb)
+            p_results.extend(hook_results)
+
         
         # push any errors back to tasks:
         result_index = {}
