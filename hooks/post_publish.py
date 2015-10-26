@@ -52,7 +52,7 @@ class PostPublishHook(Hook):
             self._do_maya_post_publish(work_template, progress_cb)
         elif engine_name == "tk-motionbuilder":
             self._do_motionbuilder_post_publish(work_template, progress_cb)
-        elif (engine_name == "tk_hiero" or
+        elif (engine_name == "tk-hiero" or
             (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
             self._do_hiero_post_publish(work_template, progress_cb)
         elif engine_name == "tk-nuke":

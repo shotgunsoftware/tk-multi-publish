@@ -35,7 +35,7 @@ class ThumbnailHook(Hook):
         engine_name = engine.name
         
         # depending on engine:
-        if (engine_name == "tk_hiero" or
+        if (engine_name == "tk-hiero" or
             (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
             return self._extract_hiero_thumbnail()
         elif engine_name == "tk-photoshop":

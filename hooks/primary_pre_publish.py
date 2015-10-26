@@ -69,7 +69,7 @@ class PrimaryPrePublishHook(Hook):
             return self._do_maya_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-motionbuilder":
             return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
-        elif (engine_name == "tk_hiero" or
+        elif (engine_name == "tk-hiero" or
             (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
             return self._do_hiero_pre_publish(task, work_template, progress_cb)
         elif engine_name == "tk-nuke":
