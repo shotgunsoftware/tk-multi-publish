@@ -131,7 +131,6 @@ class PublishHandler(object):
         """
         Slot called when publish signal is emitted from the UI
         """
-        
         # get list of tasks from UI:
         selected_tasks = publish_form.selected_tasks
 
@@ -200,7 +199,11 @@ class PublishHandler(object):
             publish_form.window().setGeometry(geom)
             QtGui.QApplication.processEvents()
             """
-            pass
+            # We have cases where the DCC's window is brought to foreground
+            # when certain operations are performed, so after each phase of
+            # the publish process is complete we'll make sure our window is
+            # still on top.
+            publish_form.window().raise_()
         
         # check that we can continue:
         num_errors = 0
@@ -240,6 +243,11 @@ class PublishHandler(object):
                 # do primary publish:
                 primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
                 do_post_publish = True
+                # We have cases where the DCC's window is brought to foreground
+                # when certain operations are performed, so after each phase of
+                # the publish process is complete we'll make sure our window is
+                # still on top.
+                publish_form.window().raise_()
                 
                 # do secondary publishes:
                 self._do_secondary_publish(secondary_tasks, primary_task, primary_path, sg_task, thumbnail_path, 
@@ -252,6 +260,11 @@ class PublishHandler(object):
                 self._app.log_exception("Publish Failed")
                 publish_errors.append("%s" % e)
         finally:
+            # We have cases where the DCC's window is brought to foreground
+            # when certain operations are performed, so after each phase of
+            # the publish process is complete we'll make sure our window is
+            # still on top.
+            publish_form.window().raise_()
             # delete temporary thumbnail file:
             if thumbnail_path:
                 os.remove(thumbnail_path)
@@ -274,6 +287,12 @@ class PublishHandler(object):
             except Exception, e:
                 self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
+            finally:
+                # We have cases where the DCC's window is brought to foreground
+                # when certain operations are performed, so after each phase of
+                # the publish process is complete we'll make sure our window is
+                # still on top.
+                publish_form.window().raise_()
         else:
             # inform that post-publish didn't run
             publish_errors.append("Post-publish was not run due to previous errors!")
