@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_form.ui'
 #
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -63,20 +63,12 @@ class Ui_PublishForm(object):
         self.pages.setObjectName("pages")
         self.publish_details = PublishDetailsForm()
         self.publish_details.setObjectName("publish_details")
-        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.publish_details)
-        self.horizontalLayout_3.setSpacing(0)
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.pages.addWidget(self.publish_details)
         self.publish_progress = PublishProgressForm()
         self.publish_progress.setObjectName("publish_progress")
         self.pages.addWidget(self.publish_progress)
         self.publish_result = PublishResultForm()
         self.publish_result.setObjectName("publish_result")
-        self.horizontalLayout = QtGui.QHBoxLayout(self.publish_result)
-        self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
         self.pages.addWidget(self.publish_result)
         self.verticalLayout.addWidget(self.pages)
         self.verticalLayout.setStretch(1, 1)

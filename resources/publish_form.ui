@@ -138,27 +138,9 @@
      <property name="currentIndex">
       <number>1</number>
      </property>
-     <widget class="PublishDetailsForm" name="publish_details">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="margin">
-        <number>0</number>
-       </property>
-      </layout>
-     </widget>
+     <widget class="PublishDetailsForm" name="publish_details"/>
      <widget class="PublishProgressForm" name="publish_progress"/>
-     <widget class="PublishResultForm" name="publish_result">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="margin">
-        <number>0</number>
-       </property>
-      </layout>
-     </widget>
+     <widget class="PublishResultForm" name="publish_result"/>
     </widget>
    </item>
   </layout>
