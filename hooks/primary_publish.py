@@ -21,7 +21,10 @@ class PrimaryPublishHook(Hook):
     """
     Single hook that implements publish of the primary task
     """    
-    def execute(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb, **kwargs):
+    def execute(
+        self, task, work_template, comment, thumbnail_path, sg_task, progress_cb,
+        user_data, **kwargs
+    ):
         """
         Main hook entry point
         :param task:            Primary task to be published.  This is a
@@ -65,6 +68,10 @@ class PrimaryPublishHook(Hook):
                                     progress_cb(percentage, msg)
                                      
                                 to report progress to the UI
+
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         
         :returns:               Path String
                                 Hook should return the path of the primary publish so that it
@@ -76,33 +83,45 @@ class PrimaryPublishHook(Hook):
         # get the engine name from the parent object (app/engine/etc.)
         engine = self.parent.engine
         engine_name = engine.name
+        args = [
+            task,
+            work_template,
+            comment,
+            thumbnail_path,
+            sg_task,
+            progress_cb,
+            user_data,
+        ]
         
         # depending on engine:
         if engine_name == "tk-maya":
-            return self._do_maya_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_maya_publish(*args)
         elif engine_name == "tk-motionbuilder":
-            return self._do_motionbuilder_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_motionbuilder_publish(*args)
         elif (engine_name == "tk-hiero" or
             (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
-            return self._do_hiero_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_hiero_publish(*args)
         elif engine_name == "tk-nuke":
-            return self._do_nuke_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_nuke_publish(*args)
         elif engine_name == "tk-3dsmax":
-            return self._do_3dsmax_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_3dsmax_publish(*args)
         elif engine_name == "tk-3dsmaxplus":
-            return self._do_3dsmaxplus_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_3dsmaxplus_publish(*args)
         elif engine_name == "tk-houdini":
-            return self._do_houdini_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_houdini_publish(*args)
         elif engine_name == "tk-softimage":
-            return self._do_softimage_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_softimage_publish(*args)
         elif engine_name == "tk-photoshop":
-            return self._do_photoshop_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)
+            return self._do_photoshop_publish(*args)
         elif engine_name == "tk-mari":
-            return self._do_mari_publish(task, work_template, comment, thumbnail_path, sg_task, progress_cb)        
+            return self._do_mari_publish(*args)        
         else:
             raise TankError("Unable to perform publish for unhandled engine %s" % engine_name)
         
-    def _do_maya_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_maya_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main Maya scene
 
@@ -113,6 +132,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import maya.cmds as cmds
@@ -218,7 +241,10 @@ class PrimaryPublishHook(Hook):
         return dependency_paths
     
         
-    def _do_motionbuilder_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_motionbuilder_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main Motion Builder scene
 
@@ -229,6 +255,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         from pyfbsdk import FBApplication
@@ -295,7 +325,10 @@ class PrimaryPublishHook(Hook):
         return []
 
 
-    def _do_3dsmax_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_3dsmax_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main 3ds Max scene
 
@@ -306,6 +339,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         from Py3dsMax import mxs
@@ -369,7 +406,10 @@ class PrimaryPublishHook(Hook):
         # default implementation does nothing!
         return []
 
-    def _do_3dsmaxplus_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_3dsmaxplus_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main 3ds Max scene
 
@@ -380,6 +420,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import MaxPlus
@@ -443,7 +487,10 @@ class PrimaryPublishHook(Hook):
         # default implementation does nothing!
         return []
 
-    def _do_hiero_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_hiero_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the currently selected hiero project.
 
@@ -454,6 +501,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import hiero.core
@@ -537,7 +588,10 @@ class PrimaryPublishHook(Hook):
 
 
         
-    def _do_nuke_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_nuke_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main Nuke script
 
@@ -548,6 +602,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import nuke
@@ -637,7 +695,10 @@ class PrimaryPublishHook(Hook):
 
         return dependency_paths
 
-    def _do_houdini_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_houdini_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main Houdini scene
 
@@ -648,6 +709,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import hou
@@ -711,7 +776,10 @@ class PrimaryPublishHook(Hook):
         # initial implementation does nothing!
         return []
 
-    def _do_softimage_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_softimage_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main Softimage scene
 
@@ -722,6 +790,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import win32com
@@ -788,7 +860,10 @@ class PrimaryPublishHook(Hook):
         # initial implementation does nothing!
         return []
 
-    def _do_photoshop_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_photoshop_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Publish the main Photoshop scene
 
@@ -799,6 +874,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import photoshop
@@ -902,7 +981,10 @@ class PrimaryPublishHook(Hook):
         
         return publish_path
     
-    def _do_mari_publish(self, task, work_template, comment, thumbnail_path, sg_task, progress_cb):
+    def _do_mari_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
         """
         Perform the primary publish for Mari
         
@@ -913,6 +995,10 @@ class PrimaryPublishHook(Hook):
         :param sg_task:         The Shotgun task that this publish should be associated with
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               The path to the file that has been published        
         """
         import mari

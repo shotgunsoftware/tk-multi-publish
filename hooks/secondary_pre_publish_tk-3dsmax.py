@@ -19,7 +19,7 @@ class PrePublishHook(Hook):
     """
     Single hook that implements pre-publish functionality
     """
-    def execute(self, tasks, work_template, progress_cb, **kwargs):
+    def execute(self, tasks, work_template, progress_cb, user_data, **kwargs):
         """
         Main hook entry point
         :param tasks:           List of tasks to be pre-published.  Each task is be a 
@@ -54,6 +54,10 @@ class PrePublishHook(Hook):
                                     progress_cb(percentage, msg)
                                      
                                 to report progress to the UI
+
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
                         
         :returns:               A list of any tasks that were found which have problems that
                                 need to be reported in the UI.  Each item in the list should

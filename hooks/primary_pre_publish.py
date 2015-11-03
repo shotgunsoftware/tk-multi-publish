@@ -18,7 +18,7 @@ class PrimaryPrePublishHook(Hook):
     """
     Single hook that implements pre-publish of the primary task
     """    
-    def execute(self, task, work_template, progress_cb, **kwargs):
+    def execute(self, task, work_template, progress_cb, user_data, **kwargs):
         """
         Main hook entry point
         :param task:            Primary task to be pre-published.  This is a
@@ -53,6 +53,10 @@ class PrimaryPrePublishHook(Hook):
                              
                                 to report progress to the UI
 
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               List 
                                 A list of non-critical problems that should be 
                                 reported to the user but not stop the publish.
@@ -66,30 +70,30 @@ class PrimaryPrePublishHook(Hook):
         
         # depending on engine:
         if engine_name == "tk-maya":
-            return self._do_maya_pre_publish(task, work_template, progress_cb)
+            return self._do_maya_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-motionbuilder":
-            return self._do_motionbuilder_pre_publish(task, work_template, progress_cb)
+            return self._do_motionbuilder_pre_publish(task, work_template, progress_cb, user_data)
         elif (engine_name == "tk-hiero" or
             (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
-            return self._do_hiero_pre_publish(task, work_template, progress_cb)
+            return self._do_hiero_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-nuke":
-            return self._do_nuke_pre_publish(task, work_template, progress_cb)
+            return self._do_nuke_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-3dsmax":
-            return self._do_3dsmax_pre_publish(task, work_template, progress_cb)
+            return self._do_3dsmax_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-3dsmaxplus":
-            return self._do_3dsmaxplus_pre_publish(task, work_template, progress_cb)
+            return self._do_3dsmaxplus_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-houdini":
-            return self._do_houdini_pre_publish(task, work_template, progress_cb)
+            return self._do_houdini_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-softimage":
-            return self._do_softimage_pre_publish(task, work_template, progress_cb)
+            return self._do_softimage_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-photoshop":
-            return self._do_photoshop_pre_publish(task, work_template, progress_cb)
+            return self._do_photoshop_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-mari":
-            return self._do_mari_pre_publish(task, work_template, progress_cb)
+            return self._do_mari_pre_publish(task, work_template, progress_cb, user_data)
         else:
             raise TankError("Unable to perform pre-publish for unhandled engine %s" % engine_name)
         
-    def _do_maya_pre_publish(self, task, work_template, progress_cb):
+    def _do_maya_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Maya primary pre-publish/scene validation
 
@@ -97,6 +101,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -116,7 +124,7 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
         
-    def _do_motionbuilder_pre_publish(self, task, work_template, progress_cb):
+    def _do_motionbuilder_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Motion Builder primary pre-publish/scene validation
 
@@ -124,6 +132,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -145,7 +157,7 @@ class PrimaryPrePublishHook(Hook):
 
         return script_errors
 
-    def _do_3dsmax_pre_publish(self, task, work_template, progress_cb):
+    def _do_3dsmax_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do 3ds Max primary pre-publish/scene validation
 
@@ -153,6 +165,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -170,7 +186,7 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
         
-    def _do_3dsmaxplus_pre_publish(self, task, work_template, progress_cb):
+    def _do_3dsmaxplus_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do 3ds Max primary pre-publish/scene validation
 
@@ -178,6 +194,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -195,7 +215,7 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
 
-    def _do_nuke_pre_publish(self, task, work_template, progress_cb):
+    def _do_nuke_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Nuke primary pre-publish/scene validation
 
@@ -203,6 +223,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -222,7 +246,7 @@ class PrimaryPrePublishHook(Hook):
         
         return script_errors
         
-    def _do_hiero_pre_publish(self, task, work_template, progress_cb):
+    def _do_hiero_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Hiero primary pre-publish/scene validation
 
@@ -230,6 +254,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -262,7 +290,7 @@ class PrimaryPrePublishHook(Hook):
         
         return project_errors
         
-    def _do_houdini_pre_publish(self, task, work_template, progress_cb):
+    def _do_houdini_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Houdini primary pre-publish/scene validation
 
@@ -270,6 +298,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -289,7 +321,7 @@ class PrimaryPrePublishHook(Hook):
 
         return script_errors
 
-    def _do_softimage_pre_publish(self, task, work_template, progress_cb):
+    def _do_softimage_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Softimage primary pre-publish/scene validation
 
@@ -297,6 +329,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -327,7 +363,7 @@ class PrimaryPrePublishHook(Hook):
 
         return scene_errors
 
-    def _do_photoshop_pre_publish(self, task, work_template, progress_cb):
+    def _do_photoshop_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Do Photoshop primary pre-publish/scene validation
 
@@ -335,6 +371,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
@@ -356,7 +396,7 @@ class PrimaryPrePublishHook(Hook):
           
         return scene_errors
 
-    def _do_mari_pre_publish(self, task, work_template, progress_cb):
+    def _do_mari_pre_publish(self, task, work_template, progress_cb, user_data):
         """
         Perform any pre-publish for the primary task in Mari.
         
@@ -364,6 +404,10 @@ class PrimaryPrePublishHook(Hook):
         :param work_template:   The primary work template to use
         :param progress_cb:     A callback to use when reporting any progress
                                 to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """

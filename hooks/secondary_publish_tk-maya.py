@@ -21,7 +21,9 @@ class PublishHook(Hook):
     """
     Single hook that implements publish functionality for secondary tasks
     """    
-    def execute(self, tasks, work_template, comment, thumbnail_path, sg_task, primary_task, primary_publish_path, progress_cb, **kwargs):
+    def execute(
+        self, tasks, work_template, comment, thumbnail_path, sg_task, primary_task,
+        primary_publish_path, progress_cb, user_data, **kwargs):
         """
         Main hook entry point
         :param tasks:                   List of secondary tasks to be published.  Each task is a 
@@ -73,6 +75,10 @@ class PublishHook(Hook):
         :param primary_task:            The primary task that was published by the primary publish hook.  Passed
                                         in here for reference.  This is a dictionary in the same format as the
                                         secondary tasks above.
+
+        :param user_data:               A dictionary containing any data shared by other hooks run prior to
+                                        this hook. Additional data may be added to this dictionary that will
+                                        then be accessible from user_data in any hooks run after this one.
         
         :returns:                       A list of any tasks that had problems that need to be reported 
                                         in the UI.  Each item in the list should be a dictionary containing 
@@ -104,8 +110,16 @@ class PublishHook(Hook):
             # publish alembic_cache output
             if output["name"] == "alembic_cache":
                 try:
-                   self.__publish_alembic_cache(item, output, work_template, primary_publish_path, 
-                                                         sg_task, comment, thumbnail_path, progress_cb)
+                   self.__publish_alembic_cache(
+                        item,
+                        output,
+                        work_template,
+                        primary_publish_path,
+                        sg_task,
+                        comment,
+                        thumbnail_path,
+                        progress_cb,
+                    )
                 except Exception, e:
                    errors.append("Publish failed - %s" % e)
             else:
