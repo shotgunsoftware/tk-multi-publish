@@ -19,7 +19,10 @@ class PostPublishHook(Hook):
     """
     Single hook that implements post-publish functionality
     """    
-    def execute(self, work_template, primary_task, secondary_tasks, progress_cb, **kwargs):
+    def execute(
+        self, work_template, primary_task, secondary_tasks, progress_cb,
+        user_data, **kwargs
+    ):
         """
         Main hook entry point
         
@@ -40,6 +43,10 @@ class PostPublishHook(Hook):
                              
                                 to report progress to the UI
 
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
         :returns:               None
         :raises:                Raise a TankError to notify the user of a problem
         """
@@ -49,35 +56,38 @@ class PostPublishHook(Hook):
         
         # depending on engine:
         if engine_name == "tk-maya":
-            self._do_maya_post_publish(work_template, progress_cb)
+            self._do_maya_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-motionbuilder":
-            self._do_motionbuilder_post_publish(work_template, progress_cb)
+            self._do_motionbuilder_post_publish(work_template, progress_cb, user_data)
         elif (engine_name == "tk-hiero" or
             (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
-            self._do_hiero_post_publish(work_template, progress_cb)
+            self._do_hiero_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-nuke":
-            self._do_nuke_post_publish(work_template, progress_cb)
+            self._do_nuke_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-3dsmax":
-            self._do_3dsmax_post_publish(work_template, progress_cb)
+            self._do_3dsmax_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-3dsmaxplus":
-            self._do_3dsmaxplus_post_publish(work_template, progress_cb)
+            self._do_3dsmaxplus_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-houdini":
-            self._do_houdini_post_publish(work_template, progress_cb)
+            self._do_houdini_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-softimage":
-            self._do_softimage_post_publish(work_template, progress_cb)
+            self._do_softimage_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-photoshop":
-            self._do_photoshop_post_publish(work_template, progress_cb)
+            self._do_photoshop_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-mari":
-            self._do_mari_post_publish(work_template, progress_cb)            
+            self._do_mari_post_publish(work_template, progress_cb, user_data)
         else:
             raise TankError("Unable to perform post publish for unhandled engine %s" % engine_name)
         
-    def _do_maya_post_publish(self, work_template, progress_cb):
+    def _do_maya_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any Maya post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         import maya.cmds as cmds
         
@@ -103,12 +113,15 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
 
-    def _do_motionbuilder_post_publish(self, work_template, progress_cb):
+    def _do_motionbuilder_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any Motion Builder post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """
         from pyfbsdk import FBApplication
 
@@ -136,12 +149,15 @@ class PostPublishHook(Hook):
 
         progress_cb(100)
 
-    def _do_3dsmax_post_publish(self, work_template, progress_cb):
+    def _do_3dsmax_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any 3ds Max post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         from Py3dsMax import mxs
         
@@ -166,12 +182,15 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
 
-    def _do_3dsmaxplus_post_publish(self, work_template, progress_cb):
+    def _do_3dsmaxplus_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any 3ds Max post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         import MaxPlus
         
@@ -196,12 +215,15 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
         
-    def _do_hiero_post_publish(self, work_template, progress_cb):
+    def _do_hiero_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any Hiero post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         import hiero.core
         
@@ -242,12 +264,15 @@ class PostPublishHook(Hook):
         progress_cb(100)
 
 
-    def _do_nuke_post_publish(self, work_template, progress_cb):
+    def _do_nuke_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any nuke post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         import nuke
         
@@ -289,12 +314,15 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
 
-    def _do_houdini_post_publish(self, work_template, progress_cb):
+    def _do_houdini_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any nuke post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """
         import hou
         
@@ -322,12 +350,15 @@ class PostPublishHook(Hook):
 
         progress_cb(100)
 
-    def _do_softimage_post_publish(self, work_template, progress_cb):
+    def _do_softimage_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any Softimage post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         import win32com
         from win32com.client import Dispatch, constants
@@ -355,12 +386,15 @@ class PostPublishHook(Hook):
         
         progress_cb(100)
 
-    def _do_photoshop_post_publish(self, work_template, progress_cb):
+    def _do_photoshop_post_publish(self, work_template, progress_cb, user_data):
         """
         Do any Photoshop post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """        
         import photoshop
         
@@ -390,12 +424,15 @@ class PostPublishHook(Hook):
                 
         progress_cb(100)
 
-    def _do_mari_post_publish(self, work_template, progress_cb):
+    def _do_mari_post_publish(self, work_template, progress_cb, user_data):
         """
         Mari specific post-publish
         
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
         """
         # nothing to do for Mari post-publish
         pass

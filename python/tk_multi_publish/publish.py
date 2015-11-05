@@ -177,10 +177,19 @@ class PublishHandler(object):
         publish_form.window().show()
         publish_form.window().setGeometry(geom)
         """
+
+        # We're going to pass a dict through the hooks that will allow
+        # data to be passed from one hook down the line to the rest.
+        user_data = dict()
                     
         # do pre-publish:
         try:
-            self._do_pre_publish(primary_task, secondary_tasks, progress.report)
+            self._do_pre_publish(
+                primary_task,
+                secondary_tasks,
+                progress.report,
+                user_data=user_data,
+            )
         except TankError, e:
             QtGui.QMessageBox.information(publish_form, "Pre-publish Failed", 
                                           "Pre-Publish Failed!\n\n%s" % e)
@@ -241,7 +250,14 @@ class PublishHandler(object):
             do_post_publish = False
             try:            
                 # do primary publish:
-                primary_path = self._do_primary_publish(primary_task, sg_task, thumbnail_path, comment, progress.report)
+                primary_path = self._do_primary_publish(
+                    primary_task,
+                    sg_task,
+                    thumbnail_path,
+                    comment,
+                    progress.report,
+                    user_data=user_data,
+                )
                 do_post_publish = True
                 # We have cases where the DCC's window is brought to foreground
                 # when certain operations are performed, so after each phase of
@@ -250,9 +266,16 @@ class PublishHandler(object):
                 publish_form.window().raise_()
                 
                 # do secondary publishes:
-                self._do_secondary_publish(secondary_tasks, primary_task, primary_path, sg_task, thumbnail_path, 
-                                           comment, progress.report)
-                
+                self._do_secondary_publish(
+                    secondary_tasks,
+                    primary_task,
+                    primary_path,
+                    sg_task,
+                    thumbnail_path,
+                    comment,
+                    progress.report,
+                    user_data=user_data,
+                )
             except TankError, e:
                 self._app.log_exception("Publish Failed")
                 publish_errors.append("%s" % e)
@@ -280,7 +303,12 @@ class PublishHandler(object):
             progress.reset(1)
             
             try:
-                self._do_post_publish(primary_task, secondary_tasks, progress.report)
+                self._do_post_publish(
+                    primary_task,
+                    secondary_tasks,
+                    progress.report,
+                    user_data=user_data,
+                )
             except TankError, e:
                 self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
@@ -361,23 +389,29 @@ class PublishHandler(object):
                 
         return items
         
-    def _do_pre_publish(self, primary_task, secondary_tasks, progress_cb):
+    def _do_pre_publish(self, primary_task, secondary_tasks, progress_cb, user_data):
         """
         Do pre-publish pass on tasks using the pre-publish hook
         """
         
         # do pre-publish of primary task:
-        primary_task.pre_publish_errors = self._app.execute_hook("hook_primary_pre_publish",  
-                                                                task=primary_task.as_dictionary(), 
-                                                                work_template = self._work_template,
-                                                                progress_cb=progress_cb)
+        primary_task.pre_publish_errors = self._app.execute_hook(
+            "hook_primary_pre_publish",  
+            task=primary_task.as_dictionary(), 
+            work_template=self._work_template,
+            progress_cb=progress_cb,
+            user_data=user_data,
+        )
 
         # do pre-publish of secondary tasks:
         hook_tasks = [task.as_dictionary() for task in secondary_tasks]
-        pp_results = self._app.execute_hook("hook_secondary_pre_publish",  
-                                            tasks=hook_tasks, 
-                                            work_template = self._work_template,
-                                            progress_cb=progress_cb)
+        pp_results = self._app.execute_hook(
+            "hook_secondary_pre_publish",  
+            tasks=hook_tasks, 
+            work_template=self._work_template,
+            progress_cb=progress_cb,
+            user_data=user_data,
+        )
         
         # push any errors back to tasks:
         result_index = {}
@@ -401,35 +435,47 @@ class PublishHandler(object):
                 task.pre_publish_errors = []
     
     
-    def _do_primary_publish(self, primary_task, sg_task, thumbnail_path, comment, progress_cb):
+    def _do_primary_publish(
+        self, primary_task, sg_task, thumbnail_path, comment, progress_cb,
+        user_data
+    ):
         """
         Do publish of primary task with the primary publish hook
         """
-        primary_path = self._app.execute_hook("hook_primary_publish",  
-                                              task=primary_task.as_dictionary(), 
-                                              work_template = self._work_template,
-                                              comment = comment,
-                                              thumbnail_path = thumbnail_path,
-                                              sg_task = sg_task,
-                                              progress_cb=progress_cb)
+        primary_path = self._app.execute_hook(
+            "hook_primary_publish",  
+            task=primary_task.as_dictionary(), 
+            work_template=self._work_template,
+            comment=comment,
+            thumbnail_path=thumbnail_path,
+            sg_task=sg_task,
+            progress_cb=progress_cb,
+            user_data=user_data,
+        )
         return primary_path
         
         
-    def _do_secondary_publish(self, secondary_tasks, primary_task, primary_publish_path, sg_task, thumbnail_path, comment, progress_cb):
+    def _do_secondary_publish(
+        self, secondary_tasks, primary_task, primary_publish_path, sg_task,
+        thumbnail_path, comment, progress_cb, user_data
+    ):
         """
         Do publish of secondary tasks using the secondary publish hook
         """
         # do publish of secondary tasks:            
         hook_tasks = [task.as_dictionary() for task in secondary_tasks]
-        p_results = self._app.execute_hook("hook_secondary_publish",  
-                                             tasks=hook_tasks, 
-                                             work_template = self._work_template,
-                                             comment = comment,
-                                             thumbnail_path = thumbnail_path,
-                                             sg_task = sg_task,
-                                             primary_task = primary_task.as_dictionary(),
-                                             primary_publish_path=primary_publish_path,
-                                             progress_cb=progress_cb)
+        p_results = self._app.execute_hook(
+            "hook_secondary_publish",  
+            tasks=hook_tasks, 
+            work_template=self._work_template,
+            comment=comment,
+            thumbnail_path=thumbnail_path,
+            sg_task=sg_task,
+            primary_task=primary_task.as_dictionary(),
+            primary_publish_path=primary_publish_path,
+            progress_cb=progress_cb,
+            user_data=user_data,
+        )
         
         # push any errors back to tasks:
         result_index = {}
@@ -452,19 +498,21 @@ class PublishHandler(object):
             else:
                 task.publish_errors = []
                 
-    def _do_post_publish(self, primary_task, secondary_tasks, progress_cb):
+    def _do_post_publish(self, primary_task, secondary_tasks, progress_cb, user_data):
         """
         Do post-publish using the post-publish hook
         """
-        
         # do post-publish using post-publish hook:
         primary_hook_task = primary_task.as_dictionary()
         secondary_hook_tasks = [task.as_dictionary() for task in secondary_tasks]
-        self._app.execute_hook( "hook_post_publish",  
-                                work_template = self._work_template,
-                                primary_task = primary_hook_task,
-                                secondary_tasks = secondary_hook_tasks,
-                                progress_cb=progress_cb)
+        self._app.execute_hook(
+            "hook_post_publish",  
+            work_template=self._work_template,
+            primary_task=primary_hook_task,
+            secondary_tasks=secondary_hook_tasks,
+            progress_cb=progress_cb,
+            user_data=user_data,
+        )
     
 
     
