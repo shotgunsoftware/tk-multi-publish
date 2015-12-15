@@ -98,11 +98,8 @@ class PrimaryPublishHook(Hook):
             return self._do_maya_publish(*args)
         elif engine_name == "tk-motionbuilder":
             return self._do_motionbuilder_publish(*args)
-        elif (engine_name == "tk-hiero" or
-            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+        elif engine_name == "tk-hiero"
             return self._do_hiero_publish(*args)
-        elif engine_name == "tk-nuke" and hasattr(engine, "studio_enabled") and engine.studio_enabled:
-            return self._do_nukestudio_publish(*args)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(*args)
         elif engine_name == "tk-3dsmax":
@@ -642,6 +639,29 @@ class PrimaryPublishHook(Hook):
 
         :returns:               The path to the file that has been published        
         """
+        # If we're in Nuke Studio or Hiero, run those publish routines.
+        engine = self.parent.engine
+        if hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._do_nukestudio_publish(
+                task,
+                work_template,
+                comment,
+                thumbnail_path,
+                sg_task,
+                progress_cb,
+                user_data,
+            )
+        elif hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._do_hiero_publish(
+                task,
+                work_template,
+                comment,
+                thumbnail_path,
+                sg_task,
+                progress_cb,
+                user_data,
+            )
+
         import nuke
         
         progress_cb(0.0, "Finding dependencies", task)
