@@ -56,10 +56,22 @@ class ScanSceneHook(Hook):
         engine = self.parent.engine
         if hasattr(engine, "hiero_enabled") and self.parent.engine.hiero_enabled:
             return self._hiero_execute(*args, **kwargs)
+        elif hasattr(engine, "studio_enabled") and self.parent.engine.studio_enabled:
+            return self._studio_execute(*args, **kwargs)
         else:
             return self._nuke_execute(*args, **kwargs)
 
+    def _studio_execute(self, *args, **kwargs):
+        """
+        The Nuke Studio specific scan_scene routine.
+        """
+        # Out of the box, Nuke Studio is treated the same as Hiero.
+        return self._hiero_execute(self, *args, **kwargs)
+
     def _hiero_execute(self, *args, **kwargs):
+        """
+        The Hiero specific scan_scene routine.
+        """
         import hiero.core
         items = []
         
@@ -87,6 +99,9 @@ class ScanSceneHook(Hook):
         return items
     
     def _nuke_execute(self, *args, **kwargs):
+        """
+        The Nuke specific scan_scene routine.
+        """
         items = []
         
         # get current script:
@@ -116,3 +131,4 @@ class ScanSceneHook(Hook):
                               "selected":not is_disabled,
                               "other_params":{"node":write_node}})
         return items
+
