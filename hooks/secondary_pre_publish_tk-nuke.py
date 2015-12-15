@@ -78,15 +78,30 @@ class PrePublishHook(Hook):
         engine = self.parent.engine
         if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
             return self._hiero_execute(*args, **kwargs)
+        elif hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._studio_execute(*args, **kwargs)
         else:
             return self._nuke_execute(*args, **kwargs)
 
+    def _studio_execute(self, tasks, work_template, progress_cb, **kwargs):
+        """
+        The Nuke Studio specific routine for secondary pre-publish.
+        """
+        # We treat Nuke Studio the same as Hiero, so call through.
+        return self._hiero_execute(self, tasks, work_template, progress_cb, **kwargs)
+
     def _hiero_execute(self, tasks, work_template, progress_cb, **kwargs):
+        """
+        The Hiero specific routine for secondary pre-publish.
+        """
         results = []
         progress_cb(100)
         return results
 
     def _nuke_execute(self, tasks, work_template, progress_cb, **kwargs):
+        """
+        The Nuke specific routine for secondary pre-publish.
+        """
         results = []
 
         # we will need the write node app if we have any render outputs to validate

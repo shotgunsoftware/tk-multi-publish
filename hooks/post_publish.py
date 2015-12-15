@@ -59,8 +59,7 @@ class PostPublishHook(Hook):
             self._do_maya_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-motionbuilder":
             self._do_motionbuilder_post_publish(work_template, progress_cb, user_data)
-        elif (engine_name == "tk-hiero" or
-            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+        elif engine_name == "tk-hiero":
             self._do_hiero_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-nuke":
             self._do_nuke_post_publish(work_template, progress_cb, user_data)
@@ -263,17 +262,37 @@ class PostPublishHook(Hook):
 
         progress_cb(100)
 
-
-    def _do_nuke_post_publish(self, work_template, progress_cb, user_data):
+    def _do_nukestudio_post_publish(self, work_template, progress_cb, user_data):
         """
-        Do any nuke post-publish work
+        Do any Nuke Studio post-publish work
 
         :param work_template:   The primary work template used for the publish
         :param progress_cb:     Callback to be used when reporting progress
         :param user_data:       A dictionary containing any data shared by other hooks run prior to
                                 this hook. Additional data may be added to this dictionary that will
                                 then be accessible from user_data in any hooks run after this one.
-        """        
+        """
+        # Out of the box, we treat Nuke Studio the same as Hiero.
+        return self._do_hiero_post_publish(work_template, progress_cb, user_data)
+
+    def _do_nuke_post_publish(self, work_template, progress_cb, user_data):
+        """
+        Do any Nuke post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+        """
+        # If we're in Hiero or Nuke Studio we need to call through to those.
+        engine = self.parent.engine
+
+        if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._do_hiero_post_publish(work_template, progress_cb, user_data)
+        elif hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._do_nukestudio_post_publish(work_template, progress_cb, user_data)
+
         import nuke
         
         progress_cb(0, "Versioning up the script")
