@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Shotgun Software Inc.
+# Copyright (c) 2015 Shotgun Software Inc.
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
@@ -42,7 +42,14 @@ class MultiPublish(tank.platform.Application):
         self.engine.register_command("%s..." % display_name, 
                                      self._publish_handler.show_publish_dlg, 
                                      params)
-        
+
+    @property
+    def context_change_allowed(self):
+        """
+        Specifies that context changes are allowed.
+        """
+        return True
+
     def destroy_app(self):
         self.log_debug("Destroying tk-multi-publish")
         
