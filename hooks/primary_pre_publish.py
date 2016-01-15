@@ -73,8 +73,7 @@ class PrimaryPrePublishHook(Hook):
             return self._do_maya_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-motionbuilder":
             return self._do_motionbuilder_pre_publish(task, work_template, progress_cb, user_data)
-        elif (engine_name == "tk-hiero" or
-            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+        elif engine_name == "tk-hiero":
             return self._do_hiero_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-nuke":
             return self._do_nuke_pre_publish(task, work_template, progress_cb, user_data)
@@ -230,6 +229,14 @@ class PrimaryPrePublishHook(Hook):
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
+        # If we're in Hiero or Nuke Studio, then we call through to those.
+        engine = self.parent.engine
+
+        if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._do_hiero_pre_publish(task, work_template, progress_cb, user_data)
+        elif hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._do_nukestudio_pre_publish(task, work_template, progress_cb, user_data)
+
         import nuke
         
         progress_cb(0, "Validating current script", task)
@@ -245,6 +252,24 @@ class PrimaryPrePublishHook(Hook):
         progress_cb(100)
         
         return script_errors
+
+    def _do_nukestudio_pre_publish(self, task, work_template, progress_cb, user_data):
+        """
+        Do Nuke Studio primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
+        """
+        # Out of the box, we treat Nuke Studio the same as we do Hiero.
+        return self._do_hiero_pre_publish(task, work_template, progress_cb, user_data)
         
     def _do_hiero_pre_publish(self, task, work_template, progress_cb, user_data):
         """

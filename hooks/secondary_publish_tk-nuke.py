@@ -107,13 +107,38 @@ class PublishHook(Hook):
         engine = self.parent.engine
         if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
             return self._hiero_execute(*args, **kwargs)
+        elif hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._studio_execute(*args, **kwargs)
         else:
             return self._nuke_execute(*args, **kwargs)
+
+    def _studio_execute(
+        self, tasks, work_template, comment, thumbnail_path, sg_task,
+        primary_task, primary_publish_path, progress_cb, **kwargs
+    ):
+        """
+        The Nuke Studio specific secondary publish routine.
+        """
+        # We treat Nuke Studio the same as Hiero, so call through.
+        return self._hiero_execute(
+            tasks,
+            work_template,
+            comment,
+            thumbnail_path,
+            sg_task,
+            primary_task,
+            primary_publish_path,
+            progress_cb,
+            **kwargs
+        )
 
     def _hiero_execute(
         self, tasks, work_template, comment, thumbnail_path, sg_task,
         primary_task, primary_publish_path, progress_cb, **kwargs
     ):
+        """
+        The Hiero specific secondary publish routine.
+        """
         results = []
         
         # publish all tasks:
@@ -145,6 +170,9 @@ class PublishHook(Hook):
         self, tasks, work_template, comment, thumbnail_path, sg_task,
         primary_task, primary_publish_path, progress_cb, **kwargs
     ):
+        """
+        The Nuke specific secondary publish routine.
+        """
         results = []
 
         # it's important that tasks for render output are processed

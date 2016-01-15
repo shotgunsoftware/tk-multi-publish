@@ -98,8 +98,7 @@ class PrimaryPublishHook(Hook):
             return self._do_maya_publish(*args)
         elif engine_name == "tk-motionbuilder":
             return self._do_motionbuilder_publish(*args)
-        elif (engine_name == "tk-hiero" or
-            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+        elif engine_name == "tk-hiero"
             return self._do_hiero_publish(*args)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(*args)
@@ -487,6 +486,38 @@ class PrimaryPublishHook(Hook):
         # default implementation does nothing!
         return []
 
+    def _do_nukestudio_publish(
+        self, task, work_template, comment, thumbnail_path, sg_task,
+        progress_cb, user_data
+    ):
+        """
+        Publish the currently selected hiero project.
+
+        :param task:            The primary task to publish
+        :param work_template:   The primary work template to use
+        :param comment:         The publish description/comment
+        :param thumbnail_path:  The path to the thumbnail to associate with the published file
+        :param sg_task:         The Shotgun task that this publish should be associated with
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
+        :returns:               The path to the file that has been published        
+        """
+        # The routine, out of the box, is the same as in Hiero, so
+        # we can just call through to that.
+        return self._do_hiero_publish(
+            task,
+            work_template,
+            comment,
+            thumbnail_path,
+            sg_task,
+            progress_cb,
+            user_data,
+        )
+
     def _do_hiero_publish(
         self, task, work_template, comment, thumbnail_path, sg_task,
         progress_cb, user_data
@@ -608,6 +639,29 @@ class PrimaryPublishHook(Hook):
 
         :returns:               The path to the file that has been published        
         """
+        # If we're in Nuke Studio or Hiero, run those publish routines.
+        engine = self.parent.engine
+        if hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._do_nukestudio_publish(
+                task,
+                work_template,
+                comment,
+                thumbnail_path,
+                sg_task,
+                progress_cb,
+                user_data,
+            )
+        elif hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._do_hiero_publish(
+                task,
+                work_template,
+                comment,
+                thumbnail_path,
+                sg_task,
+                progress_cb,
+                user_data,
+            )
+
         import nuke
         
         progress_cb(0.0, "Finding dependencies", task)

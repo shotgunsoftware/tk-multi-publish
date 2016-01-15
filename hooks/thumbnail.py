@@ -35,8 +35,9 @@ class ThumbnailHook(Hook):
         engine_name = engine.name
         
         # depending on engine:
-        if (engine_name == "tk-hiero" or
-            (engine_name == "tk-nuke" and hasattr(engine, "hiero_enabled") and engine.hiero_enabled)):
+        if engine_name == "tk-nuke":
+            return self._extract_nuke_thumbnail()
+        elif engine_name == "tk-hiero":
             return self._extract_hiero_thumbnail()
         elif engine_name == "tk-photoshop":
             return self._extract_photoshop_thumbnail()
@@ -95,11 +96,35 @@ class ThumbnailHook(Hook):
             thumb.save(png_thumb_path)
         
         return png_thumb_path
-    
+
+    def _extract_nuke_thumbnail(self):
+        """
+        Render a thumbnail from the first valid sequence in supported Nuke modes.
+
+        :returns:   The path to the thumbnail on disk
+        """
+        engine = self.parent.engine
+
+        if hasattr(engine, "hiero_enabled") and engine.hiero_enabled:
+            return self._extract_hiero_thumbnail()
+        elif hasattr(engine, "studio_enabled") and engine.studio_enabled:
+            return self._extract_nukestudio_thumbnail()
+        else:
+            # This means we're in Nuke, which we won't do anything with.
+            return None
+
+    def _extract_nukestudio_thumbnail(self):
+        """
+        Render a thumbnail from the first valid sequence in Nuke Studio.
+
+        :returns:   The path to the thumbnail on disk
+        """
+        # We treat Nuke Studio exactly like Hiero out of the box.
+        return self._extract_hiero_thumbnail()
     
     def _extract_hiero_thumbnail(self):
         """
-        Render a thumbnail from the first valid sequence in Hiero
+        Render a thumbnail from the first valid sequence in Hiero.
 
         :returns:   The path to the thumbnail on disk
         """
