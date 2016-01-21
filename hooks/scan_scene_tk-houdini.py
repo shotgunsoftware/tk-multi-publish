@@ -97,11 +97,16 @@ class ScanSceneHook(Hook):
             out_path_parm = tk_alembic_node.parm("filename")
             out_path = out_path_parm.menuLabels()[out_path_parm.eval()]
 
+            # only select the item if the path exists and the node is not
+            # bypassed
+            should_select = out_path and os.path.exists(out_path) and \
+                not is_bypassed
+
             alembic_items.append({
                 "name": "Shotgun Alembic Node: %s" % (tk_alembic_node.name(),),
                 "type": "alembic_cache",
                 "description": "Full Path: %s" % (tk_alembic_node.path(),),
-                "selected": not is_bypassed,
+                "selected": should_select,
                 "other_params": {
                     "path": out_path,
                     "node": tk_alembic_node,
@@ -162,11 +167,15 @@ class ScanSceneHook(Hook):
                 output_template, {"SEQ": "FORMAT: %d", "version": cur_version}
             )
 
+            # only select the item if the output path exists and the node is
+            # not bypassed.
+            should_select = len(paths) == 1 and not is_bypassed
+
             render_items.append({
                 "type": "rendered_image",
                 "name": "Shotgun Mantra Node: %s" % (tk_mantra_node.name(),),
                 "description": "Full Path: %s" % (tk_mantra_node.path(),),
-                "selected": not is_bypassed,
+                "selected": should_select,
                 "other_params": {
                     "paths": paths,
                     "node": tk_mantra_node,
