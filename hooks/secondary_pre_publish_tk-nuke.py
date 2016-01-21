@@ -88,7 +88,7 @@ class PrePublishHook(Hook):
         The Nuke Studio specific routine for secondary pre-publish.
         """
         # We treat Nuke Studio the same as Hiero, so call through.
-        return self._hiero_execute(self, tasks, work_template, progress_cb, **kwargs)
+        return self._hiero_execute(tasks, work_template, progress_cb, **kwargs)
 
     def _hiero_execute(self, tasks, work_template, progress_cb, **kwargs):
         """

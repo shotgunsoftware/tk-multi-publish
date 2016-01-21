@@ -66,7 +66,7 @@ class ScanSceneHook(Hook):
         The Nuke Studio specific scan_scene routine.
         """
         # Out of the box, Nuke Studio is treated the same as Hiero.
-        return self._hiero_execute(self, *args, **kwargs)
+        return self._hiero_execute(*args, **kwargs)
 
     def _hiero_execute(self, *args, **kwargs):
         """
