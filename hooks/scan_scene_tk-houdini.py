@@ -62,14 +62,14 @@ class ScanSceneHook(Hook):
         items.append({"type": "work_file", "name": name})
 
         # look for alembic caches to publish
-        items.extend(self._get_exported_alembic_items())
+        items.extend(self._get_alembic_items())
 
         # look for rendered images to publish
         items.extend(self._get_rendered_image_items())
 
         return items
 
-    def _get_exported_alembic_items(self):
+    def _get_alembic_items(self):
         """Scan the file for tk alembic nodes with already exported caches."""
 
         app = self.parent
@@ -89,19 +89,24 @@ class ScanSceneHook(Hook):
 
         alembic_items = []
 
-        # for each tk alembic node, see if the output file has been 
-        # created on disk. The node will have already evaluated the 
-        # all th fields, so current version should be correct.
+        # add all tk alembic nodes to the list of secondary publish items.
         for tk_alembic_node in tk_alembic_nodes:
+
+            is_bypassed = tk_alembic_node.isBypassed()
+
             out_path_parm = tk_alembic_node.parm("filename")
             out_path = out_path_parm.menuLabels()[out_path_parm.eval()]
 
-            if os.path.exists(out_path):
-                alembic_items.append({
-                    "type": "alembic_cache",
-                    "name": tk_alembic_node.name(),
-                    "other_params": {'path': out_path},
-                })
+            alembic_items.append({
+                "name": "Shotgun Alembic Node: %s" % (tk_alembic_node.name(),),
+                "type": "alembic_cache",
+                "description": "Full Path: %s" % (tk_alembic_node.path(),),
+                "selected": not is_bypassed,
+                "other_params": {
+                    "path": out_path,
+                    "node": tk_alembic_node,
+                },
+            })
 
         return alembic_items
 
@@ -123,6 +128,8 @@ class ScanSceneHook(Hook):
         tk_mantra_nodes = hou.nodeType(hou.ropNodeTypeCategory(),
             "sgtk_mantra").instances()
 
+        render_items = []
+
         # get the current version from the work file
         work_template = mantra_app.get_template("work_file_template")
         scene_name = str(hou.hipFile.name())
@@ -130,19 +137,18 @@ class ScanSceneHook(Hook):
         fields = work_template.get_fields(scene_path)
         cur_version = fields["version"]
 
-        # get the output_profiles for the app
+        # get the output_profiles for the app. More efficient to do this here
+        # than to repeat this logic per item in the secondary publish hook.
         output_profiles = {}
         for output_profile in mantra_app.get_setting("output_profiles"):
             name = output_profile["name"]
             output_profiles[name] = output_profile
 
-        render_items = []
-
         # for each mantra node, see which output profile is selected.
-        # get the template for the selected profile and see if there are 
-        # any images on disk matching the pattern. if so, add them to the
-        # list of rendered items to be returned.
+        # get the template for the selected profile. the validation hook will
+        # check see if there are any images on disk matching the pattern
         for tk_mantra_node in tk_mantra_nodes:
+
             output_profile_parm = tk_mantra_node.parm("sgtk_output_profile")
             output_profile_name = \
                 output_profile_parm.menuLabels()[output_profile_parm.eval()]
@@ -150,25 +156,22 @@ class ScanSceneHook(Hook):
             output_template = mantra_app.get_template_by_name(
                 output_profile["output_render_template"])
 
+            is_bypassed = tk_mantra_node.isBypassed()
+
             paths = mantra_app.engine.tank.abstract_paths_from_template(
-                    output_template, {"SEQ": "FORMAT: %d", "version": cur_version})
+                output_template, {"SEQ": "FORMAT: %d", "version": cur_version}
+            )
 
-            if not paths:
-                continue
+            render_items.append({
+                "type": "rendered_image",
+                "name": "Shotgun Mantra Node: %s" % (tk_mantra_node.name(),),
+                "description": "Full Path: %s" % (tk_mantra_node.path(),),
+                "selected": not is_bypassed,
+                "other_params": {
+                    "paths": paths,
+                    "node": tk_mantra_node,
+                },
+            })
 
-            if len(paths) == 1:
-                if paths:
-                    render_items.append({
-                        "type": "rendered_image",
-                        "name": tk_mantra_node.name(),
-                        "other_params": {'path': paths[0]},
-                    })
-            else:
-                app.log_warning(
-                    "Found multiple potential rendered image paths for "
-                    "mantra node '%s'. Skipping these paths:\n  '%s'" % 
-                    (tk_mantra_node.name(), "\n  ".join(paths))
-                )
-    
         return render_items
 

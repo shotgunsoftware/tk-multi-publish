@@ -13,7 +13,7 @@ import os
 import hou
 
 import tank
-from tank import Hook
+from tank import Hook, TankError
 
 
 class PublishHook(Hook):
@@ -183,6 +183,12 @@ class PublishHook(Hook):
         # pull it from that dictionary.
         other_params = item["other_params"]
         publish_path = other_params["path"]
+        node = other_params["node"]
+
+        if not os.path.exists(publish_path):
+            raise TankError(
+                "No rendered images found for node '%s'." % (node.path(),)
+            )
 
         # register the publish:
         progress_cb(75, "Registering the publish")        
@@ -235,7 +241,21 @@ class PublishHook(Hook):
         # we already determined the path in the scan_scene code. so just 
         # pull it from that dictionary.
         other_params = item["other_params"]
-        publish_path = other_params["path"]
+        paths = other_params["paths"]
+        node = other_params["node"]
+
+        if not paths:
+            raise TankError(
+                "No rendered images found for node '%s'." % (node.path(),)
+            )   
+        elif len(paths) > 1:
+            raise TankError(
+                "Found multiple potential rendered image paths for node '%s'." 
+                "Skipping these paths:\n  '%s'" %
+                (node.path(), "\n  ".join(paths))
+            )
+
+        publish_path = paths[0]
 
         # register the publish:
         progress_cb(75, "Registering the publish")        

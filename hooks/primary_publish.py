@@ -98,7 +98,7 @@ class PrimaryPublishHook(Hook):
             return self._do_maya_publish(*args)
         elif engine_name == "tk-motionbuilder":
             return self._do_motionbuilder_publish(*args)
-        elif engine_name == "tk-hiero"
+        elif engine_name == "tk-hiero":
             return self._do_hiero_publish(*args)
         elif engine_name == "tk-nuke":
             return self._do_nuke_publish(*args)

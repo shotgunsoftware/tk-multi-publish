@@ -8,8 +8,9 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-from tank import Hook
+import os
 
+from tank import Hook
 
 class PrePublishHook(Hook):
     """
@@ -110,6 +111,11 @@ class PrePublishHook(Hook):
     
         # validate the exported alembic cache and add any errors found here
         errors = []
+
+        node = item["other_params"]["node"]
+        path = item["other_params"]["path"]
+        if not os.path.exists(path):
+            errors.append("No cache exists to be published!")
         
         # finally return any errors
         return errors    
@@ -126,6 +132,19 @@ class PrePublishHook(Hook):
         # validate the exported rendered images and add any errors found here
         errors = []
         
+        node = item["other_params"]["node"]
+        paths = item["other_params"]["paths"]
+        if not paths:
+            errors.append(
+                "No rendered images found for node '%s'." % (node.path(),)
+            )   
+        elif len(paths) > 1:
+            errors.append(
+                "Found multiple potential rendered image paths for node '%s'." 
+                "Skipping these paths:\n  '%s'" %
+                (node.path(), "\n  ".join(paths))
+            )
+
         # finally return any errors
         return errors    
 
