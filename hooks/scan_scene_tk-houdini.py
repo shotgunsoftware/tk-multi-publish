@@ -50,7 +50,7 @@ class ScanSceneHook(Hook):
         """
         items = []
 
-        if hou.hipFile.hasUnsavedChanges():
+        if hou.hipFile.name() == "untitled.hip":
             raise TankError("Please save your file before Publishing")
 
         # get the main scene:
