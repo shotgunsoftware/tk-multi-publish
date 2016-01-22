@@ -70,7 +70,7 @@ class ScanSceneHook(Hook):
         return items
 
     def _get_alembic_items(self):
-        """Scan the file for tk alembic nodes with already exported caches."""
+        """Scan the file for tk alembic nodes to potentially publish."""
 
         app = self.parent
         
@@ -116,7 +116,7 @@ class ScanSceneHook(Hook):
         return alembic_items
 
     def _get_rendered_image_items(self):
-        """Scan the file for tk mantra nodes with already rendered images."""
+        """Scan the file for tk mantra nodes to potentially publish."""
 
         app = self.parent
 

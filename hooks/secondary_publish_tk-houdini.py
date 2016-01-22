@@ -150,7 +150,7 @@ class PublishHook(Hook):
     def __publish_alembic_cache(self, item, output, work_template, primary_publish_path, 
                                 sg_task, comment, thumbnail_path, progress_cb):
         """
-        Publish rendered images and register with Shotgun.
+        Publish an alembic cache and register with Shotgun.
         
         :param item:                    The item to publish
         :param output:                  The output definition to publish with
@@ -175,7 +175,7 @@ class PublishHook(Hook):
         tank_type = output["tank_type"]
 
         # this is pretty straight forward since the publish file(s) have
-        # already been created (rendered). We're really just populating the
+        # already been written to disk. We're really just populating the
         # arguments to send to the sg publish file registration below.
         publish_name = item["name"]
 
@@ -187,7 +187,7 @@ class PublishHook(Hook):
 
         if not os.path.exists(publish_path):
             raise TankError(
-                "No rendered images found for node '%s'." % (node.path(),)
+                "No alembic caches found for node '%s'." % (node.path(),)
             )
 
         # register the publish:

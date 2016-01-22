@@ -115,7 +115,8 @@ class PrePublishHook(Hook):
         node = item["other_params"]["node"]
         path = item["other_params"]["path"]
         if not os.path.exists(path):
-            errors.append("No cache exists to be published!")
+            errors.append(
+                "No alembic cache has been written to disk for this node.")
         
         # finally return any errors
         return errors    
