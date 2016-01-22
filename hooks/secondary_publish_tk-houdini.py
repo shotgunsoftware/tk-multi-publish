@@ -8,7 +8,12 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
-from tank import Hook
+import os
+
+import hou
+
+import tank
+from tank import Hook, TankError
 
 
 class PublishHook(Hook):
@@ -69,7 +74,6 @@ class PublishHook(Hook):
         :param primary_task:            The primary task that was published by the primary publish hook.  Passed
                                         in here for reference.  This is a dictionary in the same format as the
                                         secondary tasks above.
-
         :param user_data:               A dictionary containing any data shared by other hooks run prior to
                                         this hook. Additional data may be added to this dictionary that will
                                         then be accessible from user_data in any hooks run after this one.
@@ -101,12 +105,38 @@ class PublishHook(Hook):
             # report progress:
             progress_cb(0, "Publishing", task)
 
-            # publish item here, e.g.
-            #if output["name"] == "foo":
-            #    ...
-            #else:
-            # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")
+            # publish alembic_cache output
+            if output["name"] == "alembic_cache":
+                try:
+                   self.__publish_alembic_cache(
+                        item,
+                        output,
+                        work_template,
+                        primary_publish_path,
+                        sg_task,
+                        comment,
+                        thumbnail_path,
+                        progress_cb,
+                    )
+                except Exception, e:
+                    errors.append("Publish failed - %s" % e)
+            elif output["name"] == "rendered_image":
+                try:
+                    self.__publish_rendered_images(
+                        item,
+                        output,
+                        work_template,
+                        primary_publish_path,
+                        sg_task,
+                        comment,
+                        thumbnail_path,
+                        progress_cb,
+                    )
+                except Exception, e:
+                    errors.append("Publish failed - %s" % e) 
+            else:
+                # don't know how to publish this output types!
+                errors.append("Don't know how to publish this item!")
 
             # if there is anything to report then add to result
             if len(errors) > 0:
@@ -116,3 +146,130 @@ class PublishHook(Hook):
             progress_cb(100)
 
         return results
+
+    def __publish_alembic_cache(self, item, output, work_template, primary_publish_path, 
+                                sg_task, comment, thumbnail_path, progress_cb):
+        """
+        Publish an alembic cache and register with Shotgun.
+        
+        :param item:                    The item to publish
+        :param output:                  The output definition to publish with
+        :param work_template:           The work template for the current scene
+        :param primary_publish_path:    The path to the primary published file
+        :param sg_task:                 The Shotgun task we are publishing for
+        :param comment:                 The publish comment/description
+        :param thumbnail_path:          The path to the publish thumbnail
+        :param progress_cb:             A callback that can be used to report progress
+        """
+
+        # determine the publish info to use
+        #
+        progress_cb(10, "Determining publish details")
+
+        # get the current scene path and extract fields from it
+        # using the work template:
+        scene_name = str(hou.hipFile.name())
+        scene_path = os.path.abspath(scene_name)
+        fields = work_template.get_fields(scene_path)
+        publish_version = fields["version"]
+        tank_type = output["tank_type"]
+
+        # this is pretty straight forward since the publish file(s) have
+        # already been written to disk. We're really just populating the
+        # arguments to send to the sg publish file registration below.
+        publish_name = item["name"]
+
+        # we already determined the path in the scan_scene code. so just 
+        # pull it from that dictionary.
+        other_params = item["other_params"]
+        publish_path = other_params["path"]
+        node = other_params["node"]
+
+        if not os.path.exists(publish_path):
+            raise TankError(
+                "No alembic caches found for node '%s'." % (node.path(),)
+            )
+
+        # register the publish:
+        progress_cb(75, "Registering the publish")        
+        args = {
+            "tk": self.parent.tank,
+            "context": self.parent.context,
+            "comment": comment,
+            "path": publish_path,
+            "name": publish_name,
+            "version_number": publish_version,
+            "thumbnail_path": thumbnail_path,
+            "task": sg_task,
+            "dependency_paths": [primary_publish_path],
+            "published_file_type": tank_type
+        }
+        tank.util.register_publish(**args)
+    
+    def __publish_rendered_images(self, item, output, work_template, primary_publish_path, 
+                                  sg_task, comment, thumbnail_path, progress_cb):
+        """
+        Publish rendered images and register with Shotgun.
+        
+        :param item:                    The item to publish
+        :param output:                  The output definition to publish with
+        :param work_template:           The work template for the current scene
+        :param primary_publish_path:    The path to the primary published file
+        :param sg_task:                 The Shotgun task we are publishing for
+        :param comment:                 The publish comment/description
+        :param thumbnail_path:          The path to the publish thumbnail
+        :param progress_cb:             A callback that can be used to report progress
+        """
+
+        # determine the publish info to use
+        #
+        progress_cb(10, "Determining publish details")
+
+        # get the current scene path and extract fields from it
+        # using the work template:
+        scene_name = str(hou.hipFile.name())
+        scene_path = os.path.abspath(scene_name)
+        fields = work_template.get_fields(scene_path)
+        publish_version = fields["version"]
+        tank_type = output["tank_type"]
+
+        # this is pretty straight forward since the publish file(s) have
+        # already been created (rendered). We're really just populating the
+        # arguments to send to the sg publish file registration below.
+        publish_name = item["name"]
+
+        # we already determined the path in the scan_scene code. so just 
+        # pull it from that dictionary.
+        other_params = item["other_params"]
+        paths = other_params["paths"]
+        node = other_params["node"]
+
+        if not paths:
+            raise TankError(
+                "No rendered images found for node '%s'." % (node.path(),)
+            )   
+        elif len(paths) > 1:
+            raise TankError(
+                "Found multiple potential rendered image paths for node '%s'." 
+                "Skipping these paths:\n  '%s'" %
+                (node.path(), "\n  ".join(paths))
+            )
+
+        publish_path = paths[0]
+
+        # register the publish:
+        progress_cb(75, "Registering the publish")        
+        args = {
+            "tk": self.parent.tank,
+            "context": self.parent.context,
+            "comment": comment,
+            "path": publish_path,
+            "name": publish_name,
+            "version_number": publish_version,
+            "thumbnail_path": thumbnail_path,
+            "task": sg_task,
+            "dependency_paths": [primary_publish_path],
+            "published_file_type": tank_type
+        }
+        tank.util.register_publish(**args)
+        
