@@ -144,6 +144,7 @@ class ScanSceneHook(Hook):
         scene_path = os.path.abspath(scene_name)
         fields = work_template.get_fields(scene_path)
         cur_version = fields["version"]
+        fields["SEQ"] = "FORMAT: %d"
 
         # get the output_profiles for the app. More efficient to do this here
         # than to repeat this logic per item in the secondary publish hook.
@@ -167,8 +168,7 @@ class ScanSceneHook(Hook):
             is_bypassed = tk_mantra_node.isBypassed()
 
             paths = mantra_app.engine.tank.abstract_paths_from_template(
-                output_template, {"SEQ": "FORMAT: %d", "version": cur_version}
-            )
+                output_template, fields)
 
             # normalize the paths
             paths = [os.path.normpath(p) for p in paths]
