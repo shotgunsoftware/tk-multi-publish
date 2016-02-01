@@ -177,7 +177,7 @@ class PublishHook(Hook):
         # this is pretty straight forward since the publish file(s) have
         # already been written to disk. We're really just populating the
         # arguments to send to the sg publish file registration below.
-        publish_name = item["name"]
+        publish_name = "%s_%s" % (fields["name"], item["name"])
 
         # we already determined the path in the scan_scene code. so just 
         # pull it from that dictionary.
@@ -236,7 +236,7 @@ class PublishHook(Hook):
         # this is pretty straight forward since the publish file(s) have
         # already been created (rendered). We're really just populating the
         # arguments to send to the sg publish file registration below.
-        publish_name = item["name"]
+        publish_name = "%s_%s" % (fields["name"], item["name"])
 
         # we already determined the path in the scan_scene code. so just 
         # pull it from that dictionary.
