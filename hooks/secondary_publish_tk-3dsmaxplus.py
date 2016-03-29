@@ -108,19 +108,16 @@ class PublishHook(Hook):
             progress_cb(0, "Publishing", task)
 
             if output["name"] == "alembic_cache":
-                if app.engine._max_version_to_year(app.engine._get_max_version()) < 2016:
-                    errors.append("Alembic export requires 3ds Max 2016 or newer.")
-                else:
-                    self.__publish_alembic_cache(
-                        item,
-                        output,
-                        work_template,
-                        primary_publish_path,
-                        sg_task,
-                        comment,
-                        thumbnail_path,
-                        progress_cb,
-                    )
+                self.__publish_alembic_cache(
+                    item,
+                    output,
+                    work_template,
+                    primary_publish_path,
+                    sg_task,
+                    comment,
+                    thumbnail_path,
+                    progress_cb,
+                )
             else:
                 errors.append("Don't know how to publish this item!")
 
