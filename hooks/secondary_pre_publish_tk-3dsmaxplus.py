@@ -82,16 +82,16 @@ class PrePublishHook(Hook):
             item = task["item"]
             output = task["output"]
             errors = []
+            app = self.parent
 
             # report progress:
             progress_cb(0, "Validating", task)
 
-            # pre-publish item here, e.g.
-            #if output["name"] == "foo":
-            #    ...
-            #else:
-            # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")
+            if output["name"] == "alembic_cache":
+                if app.engine._max_version_to_year(app.engine._get_max_version()) < 2016:
+                    errors.append("Alembic export requires 3ds Max 2016 or newer.")
+            else:
+                errors.append("Don't know how to publish this item!")
 
             # if there is anything to report then add to result
             if len(errors) > 0:

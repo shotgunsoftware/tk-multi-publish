@@ -102,16 +102,24 @@ class PublishHook(Hook):
             item = task["item"]
             output = task["output"]
             errors = []
+            app = self.parent
 
             # report progress:
             progress_cb(0, "Publishing", task)
 
-            # publish item here, e.g.
-            #if output["name"] == "foo":
-            #    ...
-            #else:
-            # don't know how to publish this output types!
-            errors.append("Don't know how to publish this item!")
+            if output["name"] == "alembic_cache":
+                self.__publish_alembic_cache(
+                    item,
+                    output,
+                    work_template,
+                    primary_publish_path,
+                    sg_task,
+                    comment,
+                    thumbnail_path,
+                    progress_cb,
+                )
+            else:
+                errors.append("Don't know how to publish this item!")
 
             # if there is anything to report then add to result
             if len(errors) > 0:
@@ -121,3 +129,69 @@ class PublishHook(Hook):
             progress_cb(100)
 
         return results
+
+    def __publish_alembic_cache(
+        self, item, output, work_template, primary_publish_path, 
+        sg_task, comment, thumbnail_path, progress_cb
+    ):
+        """
+        Publish an Alembic cache file for the scene and publish it to Shotgun.
+        
+        :param item:                    The item to publish
+        :param output:                  The output definition to publish with
+        :param work_template:           The work template for the current scene
+        :param primary_publish_path:    The path to the primary published file
+        :param sg_task:                 The Shotgun task we are publishing for
+        :param comment:                 The publish comment/description
+        :param thumbnail_path:          The path to the publish thumbnail
+        :param progress_cb:             A callback that can be used to report progress
+        """
+        # determine the publish info to use
+        #
+        progress_cb(10, "Determining publish details")
+
+        # get the current scene path and extract fields from it
+        # using the work template:
+        scene_path = os.path.abspath(MaxPlus.FileManager.GetFileNameAndPath())
+        fields = work_template.get_fields(scene_path)
+        publish_version = fields["version"]
+        tank_type = output["tank_type"]
+                
+        # create the publish path by applying the fields 
+        # with the publish template:
+        publish_template = output["publish_template"]
+        publish_path = publish_template.apply_fields(fields)
+        
+        # ensure the publish folder exists:
+        publish_folder = os.path.dirname(publish_path)
+        self.parent.ensure_folder_exists(publish_folder)
+
+        # determine the publish name:
+        publish_name = fields.get("name")
+        if not publish_name:
+            publish_name = os.path.basename(publish_path)
+
+        # ...and execute it:
+        progress_cb(30, "Exporting Alembic cache")
+        try:
+            abc_export_cmd = "exportFile @\"%s\" #noPrompt using:AlembicExport" % publish_path
+            self.parent.log_debug("Executing command: %s" % abc_export_cmd)
+            MaxPlus.Core.EvalMAXScript(abc_export_cmd)
+        except Exception, e:
+            raise TankError("Failed to export Alembic Cache: %s" % e)
+
+        # register the publish:
+        progress_cb(75, "Registering the publish")        
+        args = {
+            "tk": self.parent.tank,
+            "context": self.parent.context,
+            "comment": comment,
+            "path": publish_path,
+            "name": publish_name,
+            "version_number": publish_version,
+            "thumbnail_path": thumbnail_path,
+            "task": sg_task,
+            "dependency_paths": [primary_publish_path],
+            "published_file_type":tank_type
+        }
+        tank.util.register_publish(**args)
