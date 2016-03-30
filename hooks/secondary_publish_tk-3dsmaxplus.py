@@ -181,17 +181,20 @@ class PublishHook(Hook):
             raise TankError("Failed to export Alembic Cache: %s" % e)
 
         # register the publish:
-        progress_cb(75, "Registering the publish")        
-        args = {
-            "tk": self.parent.tank,
-            "context": self.parent.context,
-            "comment": comment,
-            "path": publish_path,
-            "name": publish_name,
-            "version_number": publish_version,
-            "thumbnail_path": thumbnail_path,
-            "task": sg_task,
-            "dependency_paths": [primary_publish_path],
-            "published_file_type":tank_type
-        }
-        tank.util.register_publish(**args)
+        if os.path.exists(publish_path):
+            progress_cb(75, "Registering the publish")        
+            args = {
+                "tk": self.parent.tank,
+                "context": self.parent.context,
+                "comment": comment,
+                "path": publish_path,
+                "name": publish_name,
+                "version_number": publish_version,
+                "thumbnail_path": thumbnail_path,
+                "task": sg_task,
+                "dependency_paths": [primary_publish_path],
+                "published_file_type":tank_type
+            }
+            tank.util.register_publish(**args)
+        else:
+            raise TankError("Alembic export did not write a file to disk!")

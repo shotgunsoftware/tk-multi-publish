@@ -66,9 +66,15 @@ class ScanSceneHook(Hook):
         # create the primary item - 'type' should match the 'primary_scene_item_type':
         items.append({"type": "work_file", "name": filename})
 
-        # If there's geometry in the scene, then we'll register that
-        # so that the secondary publish can perhaps dump an Alembic cache.
-        if MaxPlus.Core.EvalMAXScript("geometry.count") > 0:
+        # If there are objects in the scene, then we will register
+        # a geometry item. This is a bit simplistic in it's approach
+        # to determining whether there's exportable data in the scene
+        # that's useful when exported as an Alembic cache, but it will
+        # work in most cases.
+        if list(MaxPlus.Core.GetRootNode().Children):
             items.append({"type": "geometry", "name": "All Scene Geometry"})
 
         return items
+
+
+
