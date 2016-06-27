@@ -63,9 +63,8 @@ class PublishResultForm(QtGui.QWidget):
         
         details = ""
         if self._status:
-            details = ("Your Publish has  successfully completed. Your "
-                      "work has been shared, your scene has been "
-                      "versioned up and your mates have been notified!")
+            app = tank.platform.current_bundle()
+            details = app.execute_hook("hook_successful_publish_result")
         else:
             details = "\n\n".join(self._errors)
         self._ui.status_details.setText(details)
