@@ -63,3 +63,12 @@ class MultiPublish(tank.platform.Application):
                           source_path=source_path, 
                           target_path=target_path,
                           task=task)
+
+    def post_context_change(self, old_context, new_context):
+        """
+        Runs after a context change has completed.
+
+        :param old_context: The sgtk.context.Context being switched from.
+        :param new_context: The sgtk.context.Context being switched to.
+        """
+        self._publish_handler.rebuild_primary_output()

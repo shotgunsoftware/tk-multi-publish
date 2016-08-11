@@ -34,8 +34,6 @@ class PublishHandler(object):
         """
         self._app = app
 
-        self._work_template = self._app.get_template("template_work")
-
         # load outputs from configuration:
         primary_output_dict = {}
         primary_output_dict["scene_item_type"] = self._app.get_setting("primary_scene_item_type")
@@ -67,6 +65,34 @@ class PublishHandler(object):
             if output.scene_item_type == self._primary_output.scene_item_type:
                 raise TankError("Secondary output is defined with the same scene_item_type (%s) as the primary output - this is not allowed"
                                 % self._primary_output.scene_item_type)
+
+    @property
+    def work_template(self):
+        """
+        The current work file template as sourced from the parent app.
+        """
+        return self._app.get_template("template_work")
+
+    def rebuild_primary_output(self):
+        """
+        Rebuilds the primary output object based on the parent app's current settings.
+        """
+        # load outputs from configuration:
+        primary_output_dict = {}
+        primary_output_dict["scene_item_type"] = self._app.get_setting("primary_scene_item_type")
+        primary_output_dict["display_name"] = self._app.get_setting("primary_display_name")
+        primary_output_dict["description"] = self._app.get_setting("primary_description")
+        primary_output_dict["icon"] = self._app.get_setting("primary_icon")
+        primary_output_dict["tank_type"] = self._app.get_setting("primary_tank_type")
+        primary_output_dict["publish_template"] = self._app.get_setting("primary_publish_template")
+
+        self._primary_output = PublishOutput(
+            self._app,
+            primary_output_dict,
+            name=PublishOutput.PRIMARY_NAME,
+            selected=True,
+            required=True,
+        )
         
     def show_publish_dlg(self):
         """
@@ -393,12 +419,12 @@ class PublishHandler(object):
         """
         Do pre-publish pass on tasks using the pre-publish hook
         """
-        
+        self._app.log_error(str(self.work_template))
         # do pre-publish of primary task:
         primary_task.pre_publish_errors = self._app.execute_hook(
             "hook_primary_pre_publish",  
             task=primary_task.as_dictionary(), 
-            work_template=self._work_template,
+            work_template=self.work_template,
             progress_cb=progress_cb,
             user_data=user_data,
         )
@@ -408,7 +434,7 @@ class PublishHandler(object):
         pp_results = self._app.execute_hook(
             "hook_secondary_pre_publish",  
             tasks=hook_tasks, 
-            work_template=self._work_template,
+            work_template=self.work_template,
             progress_cb=progress_cb,
             user_data=user_data,
         )
@@ -445,7 +471,7 @@ class PublishHandler(object):
         primary_path = self._app.execute_hook(
             "hook_primary_publish",  
             task=primary_task.as_dictionary(), 
-            work_template=self._work_template,
+            work_template=self.work_template,
             comment=comment,
             thumbnail_path=thumbnail_path,
             sg_task=sg_task,
@@ -467,7 +493,7 @@ class PublishHandler(object):
         p_results = self._app.execute_hook(
             "hook_secondary_publish",  
             tasks=hook_tasks, 
-            work_template=self._work_template,
+            work_template=self.work_template,
             comment=comment,
             thumbnail_path=thumbnail_path,
             sg_task=sg_task,
@@ -507,7 +533,7 @@ class PublishHandler(object):
         secondary_hook_tasks = [task.as_dictionary() for task in secondary_tasks]
         self._app.execute_hook(
             "hook_post_publish",  
-            work_template=self._work_template,
+            work_template=self.work_template,
             primary_task=primary_hook_task,
             secondary_tasks=secondary_hook_tasks,
             progress_cb=progress_cb,

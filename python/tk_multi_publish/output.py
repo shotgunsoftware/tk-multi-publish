@@ -23,10 +23,8 @@ class PublishOutput(object):
         """
         Construction
         """
+        self._app = app
         self._raw_fields = fields
-
-        # have to resolve publish template to an actual template:
-        self._publish_template = app.get_template_by_name(self._raw_fields["publish_template"])
         
         # special case handling of some fields that can be provided either
         # as args or through the fields
@@ -64,7 +62,7 @@ class PublishOutput(object):
     
     @property
     def publish_template(self):
-        return self._publish_template
+        return self._app.get_template_by_name(self._raw_fields["publish_template"])
         
     @property
     def selected(self):
