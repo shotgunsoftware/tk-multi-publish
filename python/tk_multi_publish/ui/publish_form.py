@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_PublishForm(object):
     def setupUi(self, PublishForm):
         PublishForm.setObjectName("PublishForm")
-        PublishForm.resize(794, 549)
+        PublishForm.resize(794, 492)
         PublishForm.setAutoFillBackground(False)
         self.verticalLayout = QtGui.QVBoxLayout(PublishForm)
         self.verticalLayout.setSpacing(20)
