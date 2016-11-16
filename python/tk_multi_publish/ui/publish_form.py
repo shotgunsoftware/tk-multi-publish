@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_form.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_PublishForm(object):
     def setupUi(self, PublishForm):
         PublishForm.setObjectName("PublishForm")
-        PublishForm.resize(794, 492)
+        PublishForm.resize(794, 549)
         PublishForm.setAutoFillBackground(False)
         self.verticalLayout = QtGui.QVBoxLayout(PublishForm)
         self.verticalLayout.setSpacing(20)

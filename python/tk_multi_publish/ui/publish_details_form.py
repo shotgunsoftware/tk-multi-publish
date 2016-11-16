@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'publish_details_form.ui'
 #
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,12 @@ from tank.platform.qt import QtCore, QtGui
 class Ui_PublishDetailsForm(object):
     def setupUi(self, PublishDetailsForm):
         PublishDetailsForm.setObjectName("PublishDetailsForm")
-        PublishDetailsForm.resize(771, 592)
+        PublishDetailsForm.resize(771, 540)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(PublishDetailsForm.sizePolicy().hasHeightForWidth())
+        PublishDetailsForm.setSizePolicy(sizePolicy)
         self.verticalLayout = QtGui.QVBoxLayout(PublishDetailsForm)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -170,8 +175,13 @@ class Ui_PublishDetailsForm(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.thumbnail_widget = ThumbnailWidget(self.thumbnail_frame)
-        self.thumbnail_widget.setMinimumSize(QtCore.QSize(200, 130))
-        self.thumbnail_widget.setMaximumSize(QtCore.QSize(200, 130))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.thumbnail_widget.sizePolicy().hasHeightForWidth())
+        self.thumbnail_widget.setSizePolicy(sizePolicy)
+        self.thumbnail_widget.setMinimumSize(QtCore.QSize(200, 150))
+        self.thumbnail_widget.setMaximumSize(QtCore.QSize(200, 150))
         self.thumbnail_widget.setStyleSheet("")
         self.thumbnail_widget.setObjectName("thumbnail_widget")
         self.horizontalLayout_3.addWidget(self.thumbnail_widget)
@@ -179,8 +189,6 @@ class Ui_PublishDetailsForm(object):
         spacerItem5 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem5)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
-        spacerItem6 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        self.verticalLayout_6.addItem(spacerItem6)
         self.label_8 = QtGui.QLabel(self.info_frame)
         self.label_8.setStyleSheet("QLabel {\n"
 "font-size: 12px;\n"
@@ -191,7 +199,7 @@ class Ui_PublishDetailsForm(object):
         self.comments_edit.setMinimumSize(QtCore.QSize(300, 0))
         self.comments_edit.setObjectName("comments_edit")
         self.verticalLayout_6.addWidget(self.comments_edit)
-        self.verticalLayout_6.setStretch(7, 1)
+        self.verticalLayout_6.setStretch(6, 1)
         self.verticalLayout_5.addWidget(self.info_frame)
         self.verticalLayout_5.setStretch(1, 1)
         self.horizontalLayout.addLayout(self.verticalLayout_5)
@@ -199,8 +207,8 @@ class Ui_PublishDetailsForm(object):
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem7)
+        spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem6)
         self.cancel_btn = QtGui.QPushButton(PublishDetailsForm)
         self.cancel_btn.setMinimumSize(QtCore.QSize(80, 0))
         self.cancel_btn.setObjectName("cancel_btn")
