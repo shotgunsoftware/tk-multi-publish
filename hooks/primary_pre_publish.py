@@ -85,7 +85,7 @@ class PrimaryPrePublishHook(Hook):
             return self._do_houdini_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-softimage":
             return self._do_softimage_pre_publish(task, work_template, progress_cb, user_data)
-        elif engine_name == "tk-photoshop":
+        elif engine_name == "tk-adobecc":
             return self._do_photoshop_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-mari":
             return self._do_mari_pre_publish(task, work_template, progress_cb, user_data)
@@ -403,16 +403,17 @@ class PrimaryPrePublishHook(Hook):
         :returns:               A list of any errors or problems that were found
                                 during pre-publish
         """
-        import photoshop
+        adobe = self.parent.engine.adobe
         
         progress_cb(0.0, "Validating current scene", task)
         
         # get the current scene file:
-        doc = photoshop.app.activeDocument
+        doc = adobe.app.activeDocument
+
         if doc is None:
             raise TankError("There is no currently active document!")
         
-        scene_file = doc.fullName.nativePath
+        scene_file = doc.fullName.fsName
             
         # validate it:
         scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)

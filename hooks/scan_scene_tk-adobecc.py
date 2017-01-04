@@ -9,11 +9,11 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import photoshop
 
-import tank
-from tank import Hook
-from tank import TankError
+import sgtk
+
+from sgtk import Hook
+from sgtk import TankError
 
 class ScanSceneHook(Hook):
     """
@@ -55,16 +55,18 @@ class ScanSceneHook(Hook):
         """   
                 
         items = []
-        
+        adobe = self.parent.engine.adobe
+
         # get the main scene:
-        doc = photoshop.app.activeDocument
+        doc = adobe.app.activeDocument
+
         if doc is None:
             raise TankError("There is no currently active document!")
         
         if not doc.saved:
             raise TankError("Please Save your file before Publishing")
         
-        scene_path = doc.fullName.nativePath
+        scene_path = doc.fullName.fsName
         name = os.path.basename(scene_path)
 
         # create the primary item - this will match the primary output 'scene_item_type':            

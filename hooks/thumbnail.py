@@ -39,7 +39,7 @@ class ThumbnailHook(Hook):
             return self._extract_nuke_thumbnail()
         elif engine_name == "tk-hiero":
             return self._extract_hiero_thumbnail()
-        elif engine_name == "tk-photoshop":
+        elif engine_name == "tk-adobecc":
             return self._extract_photoshop_thumbnail()
         elif engine_name == "tk-mari":
             return self._extract_mari_thumbnail()
@@ -168,19 +168,18 @@ class ThumbnailHook(Hook):
         
         :returns:   The path to the thumbnail on disk
         """
-        import photoshop
         MAX_THUMB_SIZE = 512
+        adobe = self.parent.engine.adobe
 
         # set unit system to pixels:
-        original_ruler_units = photoshop.app.preferences.rulerUnits
-        pixel_units = photoshop.StaticObject('com.adobe.photoshop.Units', 'PIXELS')
-        photoshop.app.preferences.rulerUnits = pixel_units        
+        original_ruler_units = adobe.app.preferences.rulerUnits
+        adobe.app.preferences.rulerUnits = adobe.Units.PIXELS
 
         try:
-            active_doc = photoshop.app.activeDocument
+            active_doc = adobe.app.activeDocument
             orig_name = active_doc.name
-            width_str = active_doc.width
-            height_str = active_doc.height
+            width_str = str(active_doc.width.value)
+            height_str = str(active_doc.height.value)
             
             # build temp name for the thumbnail doc (just in case we fail to close it!):
             name, sfx = os.path.splitext(orig_name)
@@ -209,11 +208,11 @@ class ThumbnailHook(Hook):
             png_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.png" % uuid.uuid4().hex)
             
             # get a file object from Photoshop for this path and the current PNG save options:
-            thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', png_pub_path)
-            png_options = photoshop.RemoteObject('com.adobe.photoshop::PNGSaveOptions')
+            thumbnail_file = adobe.File(png_pub_path)
+            png_options = adobe.PNGSaveOptions
     
             # duplicate the original doc:
-            save_options = photoshop.flexbase.requestStatic('com.adobe.photoshop.SaveOptions', 'DONOTSAVECHANGES')        
+            save_options = adobe.SaveOptions.DONOTSAVECHANGES     
             thumb_doc = active_doc.duplicate(thumb_name)
     
             try:
@@ -235,5 +234,5 @@ class ThumbnailHook(Hook):
                         
         finally:
             # set units back to original
-            photoshop.app.preferences.rulerUnits = original_ruler_units
+            adobe.app.preferences.rulerUnits = original_ruler_units
 

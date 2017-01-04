@@ -110,7 +110,7 @@ class PrimaryPublishHook(Hook):
             return self._do_houdini_publish(*args)
         elif engine_name == "tk-softimage":
             return self._do_softimage_publish(*args)
-        elif engine_name == "tk-photoshop":
+        elif engine_name == "tk-adobecc":
             return self._do_photoshop_publish(*args)
         elif engine_name == "tk-mari":
             return self._do_mari_publish(*args)        
@@ -934,14 +934,14 @@ class PrimaryPublishHook(Hook):
 
         :returns:               The path to the file that has been published        
         """
-        import photoshop
-                
-        doc = photoshop.app.activeDocument
+        adobe = self.parent.engine.adobe
+        doc = adobe.app.activeDocument
+
         if doc is None:
             raise TankError("There is no currently active document!")
                 
         # get scene path
-        scene_path = doc.fullName.nativePath
+        scene_path = doc.fullName.fsName
         
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)
@@ -959,7 +959,7 @@ class PrimaryPublishHook(Hook):
         # save the scene:
         progress_cb(0.0, "Saving the scene")
         self.parent.log_debug("Saving the scene...")
-        photoshop.save_as(doc, scene_path)
+        doc.saveAs(adobe.File(scene_path))
         
         # copy the file:
         progress_cb(25.0, "Copying the file")
@@ -990,12 +990,12 @@ class PrimaryPublishHook(Hook):
         
         jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
         
-        thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
-        jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::JPEGSaveOptions')
+        thumbnail_file = adobe.File(jpg_pub_path)
+        jpeg_options = adobe.JPEGSaveOptions
         jpeg_options.quality = 12
 
         # save as a copy
-        photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
+        adobe.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
         
         # then register version
         progress_cb(60.0, "Creating Version...")

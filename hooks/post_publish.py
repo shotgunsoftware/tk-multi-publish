@@ -71,7 +71,7 @@ class PostPublishHook(Hook):
             self._do_houdini_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-softimage":
             self._do_softimage_post_publish(work_template, progress_cb, user_data)
-        elif engine_name == "tk-photoshop":
+        elif engine_name == "tk-adobecc":
             self._do_photoshop_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-mari":
             self._do_mari_post_publish(work_template, progress_cb, user_data)
@@ -415,15 +415,17 @@ class PostPublishHook(Hook):
                                 this hook. Additional data may be added to this dictionary that will
                                 then be accessible from user_data in any hooks run after this one.
         """        
-        import photoshop
+        adobe = self.parent.engine.adobe
         
         progress_cb(0, "Versioning up the scene file")
         
         # get the current scene path:
-        doc = photoshop.app.activeDocument
+        doc = adobe.app.activeDocument
+
         if doc is None:
             raise TankError("There is no currently active document!")
-        scene_path = doc.fullName.nativePath
+
+        scene_path = doc.fullName.fsName
         
         # increment version and construct new file name:
         progress_cb(25, "Finding next version number")
@@ -438,8 +440,7 @@ class PostPublishHook(Hook):
         # rename and save the file
         progress_cb(50, "Saving the scene file")
 
-        import photoshop
-        photoshop.save_as(doc, new_scene_path)
+        doc.saveAs(adobe.File(new_scene_path))
                 
         progress_cb(100)
 
