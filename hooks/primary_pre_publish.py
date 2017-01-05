@@ -87,6 +87,8 @@ class PrimaryPrePublishHook(Hook):
             return self._do_softimage_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-adobecc":
             return self._do_photoshop_pre_publish(task, work_template, progress_cb, user_data)
+        elif engine_name == "tk-photoshop":
+            return self._do_legacy_photoshop_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-mari":
             return self._do_mari_pre_publish(task, work_template, progress_cb, user_data)
         else:
@@ -414,6 +416,39 @@ class PrimaryPrePublishHook(Hook):
             raise TankError("There is no currently active document!")
         
         scene_file = doc.fullName.fsName
+            
+        # validate it:
+        scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)
+        
+        progress_cb(100)
+          
+        return scene_errors
+
+    def _do_legacy_photoshop_pre_publish(self, task, work_template, progress_cb, user_data):
+        """
+        Do Photoshop primary pre-publish/scene validation
+
+        :param task:            The primary task to pre-publish
+        :param work_template:   The primary work template to use
+        :param progress_cb:     A callback to use when reporting any progress
+                                to the UI
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+
+        :returns:               A list of any errors or problems that were found
+                                during pre-publish
+        """
+        import photoshop
+        
+        progress_cb(0.0, "Validating current scene", task)
+        
+        # get the current scene file:
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+        
+        scene_file = doc.fullName.nativePath
             
         # validate it:
         scene_errors = self._validate_work_file(scene_file, work_template, task["output"], progress_cb)

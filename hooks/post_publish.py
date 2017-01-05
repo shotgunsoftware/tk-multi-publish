@@ -73,6 +73,8 @@ class PostPublishHook(Hook):
             self._do_softimage_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-adobecc":
             self._do_photoshop_post_publish(work_template, progress_cb, user_data)
+        elif engine_name == "tk-photoshop":
+            self._do_legacy_photoshop_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-mari":
             self._do_mari_post_publish(work_template, progress_cb, user_data)
         else:
@@ -441,6 +443,44 @@ class PostPublishHook(Hook):
         progress_cb(50, "Saving the scene file")
 
         doc.saveAs(adobe.File(new_scene_path))
+                
+        progress_cb(100)
+
+    def _do_legacy_photoshop_post_publish(self, work_template, progress_cb, user_data):
+        """
+        Do any Photoshop post-publish work
+
+        :param work_template:   The primary work template used for the publish
+        :param progress_cb:     Callback to be used when reporting progress
+        :param user_data:       A dictionary containing any data shared by other hooks run prior to
+                                this hook. Additional data may be added to this dictionary that will
+                                then be accessible from user_data in any hooks run after this one.
+        """        
+        import photoshop
+        
+        progress_cb(0, "Versioning up the scene file")
+        
+        # get the current scene path:
+        doc = photoshop.app.activeDocument
+        if doc is None:
+            raise TankError("There is no currently active document!")
+        scene_path = doc.fullName.nativePath
+        
+        # increment version and construct new file name:
+        progress_cb(25, "Finding next version number")
+        fields = work_template.get_fields(scene_path)
+        next_version = self._get_next_work_file_version(work_template, fields)
+        fields["version"] = next_version 
+        new_scene_path = work_template.apply_fields(fields)
+        
+        # log info
+        self.parent.log_debug("Version up work file %s --> %s..." % (scene_path, new_scene_path))
+        
+        # rename and save the file
+        progress_cb(50, "Saving the scene file")
+
+        import photoshop
+        photoshop.save_as(doc, new_scene_path)
                 
         progress_cb(100)
 
