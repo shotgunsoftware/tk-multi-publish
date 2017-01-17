@@ -61,12 +61,13 @@ class ScanSceneHook(Hook):
         doc = adobe.app.activeDocument
 
         if doc is None:
-            raise TankError("There is no currently active document!")
+            raise TankError("There is no active document!")
         
-        if not doc.saved:
-            raise TankError("Please Save your file before Publishing")
-        
-        scene_path = doc.fullName.fsName
+        try:
+            scene_path = doc.fullName.fsName
+        except RuntimeError:
+            raise TankError("Please save your file before publishing!")
+
         name = os.path.basename(scene_path)
 
         # create the primary item - this will match the primary output 'scene_item_type':            

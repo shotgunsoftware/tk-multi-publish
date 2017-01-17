@@ -411,10 +411,6 @@ class PrimaryPrePublishHook(Hook):
         
         # get the current scene file:
         doc = adobe.app.activeDocument
-
-        if doc is None:
-            raise TankError("There is no currently active document!")
-        
         scene_file = doc.fullName.fsName
             
         # validate it:
