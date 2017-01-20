@@ -442,7 +442,8 @@ class PostPublishHook(Hook):
         # rename and save the file
         progress_cb(50, "Saving the scene file")
 
-        doc.saveAs(adobe.File(new_scene_path))
+        with self.parent.engine.context_changes_disabled():
+            doc.saveAs(adobe.File(new_scene_path))
                 
         progress_cb(100)
 
