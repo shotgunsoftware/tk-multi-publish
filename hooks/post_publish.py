@@ -71,7 +71,7 @@ class PostPublishHook(Hook):
             self._do_houdini_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-softimage":
             self._do_softimage_post_publish(work_template, progress_cb, user_data)
-        elif engine_name == "tk-adobecc":
+        elif engine_name == "tk-photoshopcc":
             self._do_photoshop_post_publish(work_template, progress_cb, user_data)
         elif engine_name == "tk-photoshop":
             self._do_legacy_photoshop_post_publish(work_template, progress_cb, user_data)

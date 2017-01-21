@@ -39,7 +39,7 @@ class ThumbnailHook(Hook):
             return self._extract_nuke_thumbnail()
         elif engine_name == "tk-hiero":
             return self._extract_hiero_thumbnail()
-        elif engine_name == "tk-adobecc":
+        elif engine_name == "tk-photoshopcc":
             return self._extract_photoshop_thumbnail()
         elif engine_name == "tk-photoshop":
             return self._extract_legacy_photoshop_thumbnail()

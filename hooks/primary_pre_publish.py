@@ -85,7 +85,7 @@ class PrimaryPrePublishHook(Hook):
             return self._do_houdini_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-softimage":
             return self._do_softimage_pre_publish(task, work_template, progress_cb, user_data)
-        elif engine_name == "tk-adobecc":
+        elif engine_name == "tk-photoshopcc":
             return self._do_photoshop_pre_publish(task, work_template, progress_cb, user_data)
         elif engine_name == "tk-photoshop":
             return self._do_legacy_photoshop_pre_publish(task, work_template, progress_cb, user_data)
