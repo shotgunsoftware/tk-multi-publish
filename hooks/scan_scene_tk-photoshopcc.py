@@ -58,9 +58,9 @@ class ScanSceneHook(Hook):
         adobe = self.parent.engine.adobe
 
         # get the main scene:
-        doc = adobe.app.activeDocument
-
-        if doc is None:
+        try:
+            doc = adobe.app.activeDocument
+        except RuntimeError:
             raise TankError("There is no active document!")
         
         try:

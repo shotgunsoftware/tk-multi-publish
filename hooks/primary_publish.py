@@ -937,13 +937,17 @@ class PrimaryPublishHook(Hook):
         :returns:               The path to the file that has been published        
         """
         adobe = self.parent.engine.adobe
-        doc = adobe.app.activeDocument
 
-        if doc is None:
-            raise TankError("There is no currently active document!")
+        try:
+            doc = adobe.app.activeDocument
+        except RuntimeError:
+            raise TankError("There is no active document!")
                 
         # get scene path
-        scene_path = doc.fullName.fsName
+        try:
+            scene_path = doc.fullName.fsName
+        except RuntimeError:
+            raise TankError("The active document has not been saved!")
         
         if not work_template.validate(scene_path):
             raise TankError("File '%s' is not a valid work path, unable to publish!" % scene_path)

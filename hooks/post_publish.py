@@ -420,14 +420,18 @@ class PostPublishHook(Hook):
         adobe = self.parent.engine.adobe
         
         progress_cb(0, "Versioning up the scene file")
-        
-        # get the current scene path:
-        doc = adobe.app.activeDocument
 
-        if doc is None:
-            raise TankError("There is no currently active document!")
+        try:
+            # get the current scene path:
+            doc = adobe.app.activeDocument
+        except RuntimeError:
+            raise TankError("There is no active document!")
 
-        scene_path = doc.fullName.fsName
+
+        try:
+            scene_path = doc.fullName.fsName
+        except RuntimeError:
+            raise TankError("The active document has not been saved!")
         
         # increment version and construct new file name:
         progress_cb(25, "Finding next version number")
