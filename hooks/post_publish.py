@@ -447,7 +447,7 @@ class PostPublishHook(Hook):
         progress_cb(50, "Saving the scene file")
 
         with self.parent.engine.context_changes_disabled():
-            doc.saveAs(adobe.File(new_scene_path))
+            adobe.save_as(doc, new_scene_path)
                 
         progress_cb(100)
 
