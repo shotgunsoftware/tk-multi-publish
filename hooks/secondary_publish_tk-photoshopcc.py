@@ -9,12 +9,10 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import shutil
-import photoshop
 
-import tank
-from tank import Hook
-from tank import TankError
+import sgtk
+from sgtk import Hook
+from sgtk import TankError
 
 class PublishHook(Hook):
     """
@@ -127,6 +125,7 @@ class PublishHook(Hook):
 
 
         
+
 
 
 

@@ -35,9 +35,22 @@ class MultiPublish(tank.platform.Application):
         command_name = display_name.lower().replace(" ", "_")
         if command_name.endswith("..."):
             command_name = command_name[:-3]
-        params = {"short_name": command_name, 
-                  "title": "%s..." % display_name,
-                  "description": "Publishing of data into Shotgun"}
+        params = {
+            "short_name": command_name,
+            "title": "%s..." % display_name,
+            "description": "Publishing of data into Shotgun",
+
+            # dark themed icon for engines that recognize this format
+            "icons": {
+                "dark": {
+                    "png": os.path.join(
+                        os.path.dirname(__file__),
+                        "resources",
+                        "publish_menu_icon.png"
+                    )
+                }
+            }
+        }
         
         self.engine.register_command("%s..." % display_name, 
                                      self._publish_handler.show_publish_dlg, 

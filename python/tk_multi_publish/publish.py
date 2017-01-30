@@ -103,13 +103,23 @@ class PublishHandler(object):
             # create new multi-publish dialog instance
             from .publish_form import PublishForm
             display_name = self._app.get_setting("display_name")
-            form = self._app.engine.show_dialog(display_name, self._app, PublishForm, self._app, self)
+            form = self._app.engine.show_dialog(
+                display_name,
+                self._app,
+                PublishForm,
+                self._app,
+                self,
+            )
             form.publish.connect(lambda f = form: self._on_publish(f))
         except TankError, e:
             QtGui.QMessageBox.information(None, "Unable To Publish!", "%s" % e)
-
-        except Exception, e:
-            self._app.log_exception("Unable to publish")
+        except Exception:
+            import traceback
+            QtGui.QMessageBox.information(
+                None,
+                "Unable To Publish!",
+                traceback.format_exc(),
+            )
     
     def get_publish_tasks(self):
         """
