@@ -738,9 +738,12 @@ class PrimaryPublishHook(Hook):
                 continue
             file_name = file_name.replace('/', os.path.sep)
 
+            print "READ NODE PATH: " + file_name
+
             # validate against all our templates
             for template in self.parent.tank.templates.values():
                 if template.validate(file_name):
+                    print "MATCHED A TEMPLATE"
                     fields = template.get_fields(file_name)
                     # translate into a form that represents the general
                     # tank write node path.
