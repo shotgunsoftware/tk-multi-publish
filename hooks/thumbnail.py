@@ -94,10 +94,10 @@ class ThumbnailHook(Hook):
         
         if thumb:
             # save the thumbnail
-            png_thumb_path = os.path.join(tempfile.gettempdir(), "sgtk_thumb_%s.png" % uuid.uuid4().hex)
-            thumb.save(png_thumb_path)
+            jpg_thumb_path = os.path.join(tempfile.gettempdir(), "sgtk_thumb_%s.jpg" % uuid.uuid4().hex)
+            thumb.save(jpg_thumb_path)
         
-        return png_thumb_path
+        return jpg_thumb_path
 
     def _extract_nuke_thumbnail(self):
         """
@@ -156,9 +156,9 @@ class ThumbnailHook(Hook):
                     # scale it down to 600px wide
                     thumb_qimage_scaled = thumb_qimage.scaledToWidth(600, QtCore.Qt.SmoothTransformation)
                     # save it to tmp location
-                    png_thumb = os.path.join(tempfile.gettempdir(), "sgtk_thumb_%s.png" % uuid.uuid4().hex)
-                    thumb_qimage_scaled.save(png_thumb)
-                    return png_thumb
+                    jpg_thumb = os.path.join(tempfile.gettempdir(), "sgtk_thumb_%s.jpg" % uuid.uuid4().hex)
+                    thumb_qimage_scaled.save(jpg_thumb)
+                    return jpg_thumb
                 except:
                     return None
         
@@ -208,11 +208,11 @@ class ThumbnailHook(Hook):
                         thumb_height = max(min(int(doc_height * scale), doc_height), 1)
         
                 # get a path in the temp dir to use for the thumbnail:
-                png_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.png" % uuid.uuid4().hex)
+                jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
                 
-                # get a file object from Photoshop for this path and the current PNG save options:
-                thumbnail_file = adobe.File(png_pub_path)
-                png_options = adobe.PNGSaveOptions
+                # get a file object from Photoshop for this path and the current jpg save options:
+                thumbnail_file = adobe.File(jpg_pub_path)
+                jpg_options = adobe.JPEGSaveOptions
         
                 # duplicate the original doc:
                 save_options = adobe.SaveOptions.DONOTSAVECHANGES     
@@ -227,13 +227,13 @@ class ThumbnailHook(Hook):
                         thumb_doc.resizeImage("%d px" % thumb_width, "%d px" % thumb_height)            
                 
                     # save:
-                    thumb_doc.saveAs(thumbnail_file, png_options, True)
+                    thumb_doc.saveAs(thumbnail_file, jpg_options, True)
         
                 finally:
                     # close the doc:
                     thumb_doc.close(save_options)
                     
-                return png_pub_path
+                return jpg_pub_path
                             
             finally:
                 # set units back to original
@@ -313,5 +313,4 @@ class ThumbnailHook(Hook):
         finally:
             # set units back to original
             photoshop.app.preferences.rulerUnits = original_ruler_units
-
 
