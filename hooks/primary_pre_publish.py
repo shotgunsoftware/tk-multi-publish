@@ -408,12 +408,10 @@ class PrimaryPrePublishHook(Hook):
         adobe = self.parent.engine.adobe
         
         progress_cb(0.0, "Validating current scene", task)
+
+        scene_file = adobe.get_active_document_path()
         
-        # get the current scene file:
-        try:
-            doc = adobe.app.activeDocument
-            scene_file = doc.fullName.fsName
-        except RuntimeError:
+        if not scene_file:
             return ["Unable to determine the active document's file path!"]
             
         # validate it:
