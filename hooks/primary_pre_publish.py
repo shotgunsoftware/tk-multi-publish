@@ -481,6 +481,13 @@ class PrimaryPrePublishHook(Hook):
         Return the new version number that the scene should be
         up'd to after publish
         """
+        # If the path is unicode for some reason, we need to make sure
+        # we encode it as utf-8. This is sometimes an issue with file
+        # names that have non-english accent marks or special characters
+        # of some kind.
+        if isinstance(path, unicode):
+            path = path.encode("utf-8")
+
         errors = []
         
         progress_cb(25, "Validating work file")
