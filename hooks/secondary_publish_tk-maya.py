@@ -170,7 +170,7 @@ class PublishHook(Hook):
         self.parent.ensure_folder_exists(publish_folder)
 
         # determine the publish name:
-        publish_name = fields.get("name")
+        publish_name = fields["name"]
         if not publish_name:
             publish_name = os.path.basename(publish_path)
         
