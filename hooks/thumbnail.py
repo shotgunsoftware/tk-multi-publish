@@ -15,6 +15,7 @@ import re
 
 import tank
 from tank import Hook
+from tank.platform.qt import QtCore
 
 class ThumbnailHook(Hook):
     """
@@ -131,7 +132,6 @@ class ThumbnailHook(Hook):
         :returns:   The path to the thumbnail on disk
         """
         import hiero.core
-        from PySide import QtCore
         
         # get the menu selection from hiero engine
         selection = self.parent.engine.get_menu_selection()
