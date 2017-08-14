@@ -22,7 +22,9 @@ from .publish_form import PublishForm
 from .output import PublishOutput
 from .item import Item
 from .task import Task
-    
+
+logger = tank.platform.get_logger(__name__)
+
 class PublishHandler(object):
     """
     Main publish handler
@@ -158,10 +160,24 @@ class PublishHandler(object):
 
     def get_initial_thumbnail(self):
         """
-        Get the initial thumbnail to use for the publish
+        Get the initial thumbnail to use for the publish.
+
+        :returns: A :class:`QtGui.QPixmap` instance or None if the thumbnail 
+                  generation failed.
         """
-        return QtGui.QPixmap(self._app.execute_hook("hook_thumbnail"))
-    
+        try:
+            thumb_path = self._app.execute_hook("hook_thumbnail")
+            # If the hook didn't return anything, don't try to build a QPixmap
+            # from it.
+            if thumb_path:
+                return QtGui.QPixmap(thumb_path)
+        except Exception, e:
+            logger.warning(
+                "Unable to generate initial thumbnail because of the following error:"
+            )
+            # Log the exception + traceback for debug purpose.
+            logger.exception(e)
+        return None
             
     def _on_publish(self, publish_form):
         """
