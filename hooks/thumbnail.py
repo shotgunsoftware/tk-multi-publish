@@ -180,7 +180,7 @@ class ThumbnailHook(Hook):
 
         # disable dialogs unless they are error dialogs
         original_dialog_mode = adobe.app.displayDialogs
-        adobe.app.displayDialogs = adobe.DialogModes.NO
+        #adobe.app.displayDialogs = adobe.DialogModes.NO
 
         with self.parent.engine.context_changes_disabled():
             try:
@@ -191,12 +191,15 @@ class ThumbnailHook(Hook):
                 
                 # build temp name for the thumbnail doc (just in case we fail to close it!):
                 name, sfx = os.path.splitext(orig_name)
-                thumb_name = "%s_tkthumb.%s" % (name, sfx)
+                # a "." is included in the extension returned by splitext
+                thumb_name = "%s_tkthumb%s" % (name, sfx)
                 
                 # find the doc size in pixels
                 # Note: this doesn't handle measurements other than pixels.
                 doc_width = doc_height = 0
-                exp = re.compile("^(?P<value>[0-9]+) px$")
+                # It seems we used to get back "<size> px" but now we receive back
+                # just a number, so let's have the " px" bit optional.
+                exp = re.compile("^(?P<value>[0-9]+)( px)?$")
                 mo = exp.match (width_str)
                 if mo:
                     doc_width = int(mo.group("value"))
@@ -211,7 +214,10 @@ class ThumbnailHook(Hook):
                         scale = min(float(MAX_THUMB_SIZE)/float(max_sz), 1.0)
                         thumb_width = max(min(int(doc_width * scale), doc_width), 1)
                         thumb_height = max(min(int(doc_height * scale), doc_height), 1)
-        
+                else:
+                    raise RuntimeError("Unable to retrieve document size from %s x %s " % (
+                        width_str, height_str,
+                    ))
                 # get a path in the temp dir to use for the thumbnail:
                 jpg_pub_path = os.path.join(
                     tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex
@@ -221,7 +227,8 @@ class ThumbnailHook(Hook):
                 # jpg save options:
                 thumbnail_file = adobe.File(jpg_pub_path)
                 jpg_options = adobe.JPEGSaveOptions
-        
+                jpg_options.embedColorProfile = False
+
                 # duplicate the original doc:
                 save_options = adobe.SaveOptions.DONOTSAVECHANGES     
                 thumb_doc = active_doc.duplicate(thumb_name)
@@ -229,7 +236,8 @@ class ThumbnailHook(Hook):
                 try:
                     # flatten image:
                     thumb_doc.flatten()            
-                    
+                    # Convert to eight bits
+                    thumb_doc.bitsPerChannel = adobe.BitsPerChannelType.EIGHT
                     # resize if needed:
                     if thumb_width and thumb_height:
                         thumb_doc.resizeImage("%d px" % thumb_width, "%d px" % thumb_height)            
@@ -240,7 +248,7 @@ class ThumbnailHook(Hook):
                 finally:
                     # close the doc:
                     thumb_doc.close(save_options)
-                    
+                self.parent.log_warning("Generated thumbnail %s" % jpg_pub_path)
                 return jpg_pub_path
                             
             finally:

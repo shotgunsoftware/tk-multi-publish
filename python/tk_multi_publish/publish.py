@@ -170,6 +170,7 @@ class PublishHandler(object):
             # If the hook didn't return anything, don't try to build a QPixmap
             # from it.
             if thumb_path:
+                self._app.log_warning("Building a pixmap from %s" % thumb_path)
                 return QtGui.QPixmap(thumb_path)
         except Exception, e:
             logger.warning(
