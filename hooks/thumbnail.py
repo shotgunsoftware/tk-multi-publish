@@ -17,6 +17,7 @@ import tank
 from tank import Hook
 from tank.platform.qt import QtCore
 
+
 class ThumbnailHook(Hook):
     """
     Hook that can be used to provide a pre-defined primary 
@@ -177,6 +178,10 @@ class ThumbnailHook(Hook):
         original_ruler_units = adobe.app.preferences.rulerUnits
         adobe.app.preferences.rulerUnits = adobe.Units.PIXELS
 
+        # disable dialogs unless they are error dialogs
+        original_dialog_mode = adobe.app.displayDialogs
+        adobe.app.displayDialogs = adobe.DialogModes.NO
+
         with self.parent.engine.context_changes_disabled():
             try:
                 active_doc = adobe.app.activeDocument
@@ -208,9 +213,12 @@ class ThumbnailHook(Hook):
                         thumb_height = max(min(int(doc_height * scale), doc_height), 1)
         
                 # get a path in the temp dir to use for the thumbnail:
-                jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
+                jpg_pub_path = os.path.join(
+                    tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex
+                )
                 
-                # get a file object from Photoshop for this path and the current jpg save options:
+                # get a file object from Photoshop for this path and the current
+                # jpg save options:
                 thumbnail_file = adobe.File(jpg_pub_path)
                 jpg_options = adobe.JPEGSaveOptions
         
@@ -238,6 +246,8 @@ class ThumbnailHook(Hook):
             finally:
                 # set units back to original
                 adobe.app.preferences.rulerUnits = original_ruler_units
+                # Set dialog mode back to original.
+                adobe.app.displayDialogs = original_dialog_mode
 
     def _extract_legacy_photoshop_thumbnail(self):
         """

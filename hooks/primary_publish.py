@@ -995,49 +995,62 @@ class PrimaryPublishHook(Hook):
         #################################################################################
         # create a version!
         
-        jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
-        
-        thumbnail_file = adobe.File(jpg_pub_path)
-        jpeg_options = adobe.JPEGSaveOptions
-        jpeg_options.quality = 12
-
-        # save as a copy
-        adobe.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
-        
-        # then register version
-        progress_cb(60.0, "Creating Version...")
-        ctx = self.parent.context
-        data = {
-            "user": ctx.user,
-            "description": comment,
-            "sg_first_frame": 1,
-            "frame_count": 1,
-            "frame_range": "1-1",
-            "sg_last_frame": 1,
-            "entity": ctx.entity,
-            "sg_path_to_frames": publish_path,
-            "project": ctx.project,
-            "sg_task": sg_task,
-            "code": tank_publish["code"],
-            "created_by": ctx.user,
-        }
-        
-        if tank.util.get_published_file_entity_type(self.parent.tank) == "PublishedFile":
-            data["published_files"] = [tank_publish]
-        else:# == "TankPublishedFile"
-            data["tank_published_file"] = tank_publish
-        
-        version = self.parent.shotgun.create("Version", data)
-        
-        # upload jpeg
-        progress_cb(70.0, "Uploading to Shotgun...")
-        self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
-        
+        jpg_pub_path = os.path.join(
+            tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex
+        )
+        # Prevent Photoshop from opening up dialogs. This can happen if the current
+        # document can't be saved as a Jpeg file with the given options.
+        original_dialog_mode = adobe.app.displayDialogs
+        adobe.app.displayDialogs = adobe.DialogModes.NO
         try:
-            os.remove(jpg_pub_path)
-        except:
-            pass
-        
+            thumbnail_file = adobe.File(jpg_pub_path)
+            jpeg_options = adobe.JPEGSaveOptions
+            jpeg_options.quality = 12
+
+            # save as a copy
+            adobe.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
+            
+            # then register version
+            progress_cb(60.0, "Creating Version...")
+            ctx = self.parent.context
+            data = {
+                "user": ctx.user,
+                "description": comment,
+                "sg_first_frame": 1,
+                "frame_count": 1,
+                "frame_range": "1-1",
+                "sg_last_frame": 1,
+                "entity": ctx.entity,
+                "sg_path_to_frames": publish_path,
+                "project": ctx.project,
+                "sg_task": sg_task,
+                "code": tank_publish["code"],
+                "created_by": ctx.user,
+            }
+            
+            if tank.util.get_published_file_entity_type(self.parent.tank) == "PublishedFile":
+                data["published_files"] = [tank_publish]
+            else:# == "TankPublishedFile"
+                data["tank_published_file"] = tank_publish
+            
+            version = self.parent.shotgun.create("Version", data)
+            
+            # upload jpeg
+            progress_cb(70.0, "Uploading to Shotgun...")
+            self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+            
+            try:
+                os.remove(jpg_pub_path)
+            except:
+                pass
+        except Exception, e:
+            self.parent.log_warning(
+                "Unable to create a Version in SG because of the following error:"
+            )
+            self.parent.log_exception(e)
+        finally:
+            # Restore dialog mode
+            adobe.app.displayDialogs = original_dialog_mode
         progress_cb(100)
         
         return publish_path
