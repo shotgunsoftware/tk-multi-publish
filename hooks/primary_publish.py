@@ -11,6 +11,7 @@
 import os
 import uuid
 import tempfile
+import re
 
 import tank
 from tank import Hook
@@ -935,6 +936,7 @@ class PrimaryPublishHook(Hook):
                                 then be accessible from user_data in any hooks run after this one.
 
         :returns:               The path to the file that has been published        
+        :raises:                TankError on failure.
         """
         adobe = self.parent.engine.adobe
 
@@ -995,22 +997,21 @@ class PrimaryPublishHook(Hook):
         #################################################################################
         # create a version!
         
-        jpg_pub_path = os.path.join(
-            tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex
-        )
-        # Prevent Photoshop from opening up dialogs. This can happen if the current
-        # document can't be saved as a Jpeg file with the given options.
-        original_dialog_mode = adobe.app.displayDialogs
-        adobe.app.displayDialogs = adobe.DialogModes.NO
         try:
-            thumbnail_file = adobe.File(jpg_pub_path)
-            jpeg_options = adobe.JPEGSaveOptions
-            jpeg_options.quality = 12
+            # The export_as_jpeg method was not available in early releases
+            # of the tk-photoshopcc engine. It is not possible to specify a minimum
+            # release for an engine in a multi app, so check if the method is
+            # available and issue a warning if not.
+            if not hasattr(self.parent.engine, "export_as_jpeg"):
+                raise UserWarning(
+                "A more recent release than %s %s is needed to generate a Jpeg Version." % (
+                    self.parent.engine.name,
+                    self.parent.engine.version,
+                ))
+            # Export a Jpeg image
+            jpeg_pub_path = self.parent.engine.export_as_jpeg()
 
-            # save as a copy
-            adobe.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
-            
-            # then register version
+            # Then register version
             progress_cb(60.0, "Creating Version...")
             ctx = self.parent.context
             data = {
@@ -1037,20 +1038,24 @@ class PrimaryPublishHook(Hook):
             
             # upload jpeg
             progress_cb(70.0, "Uploading to Shotgun...")
-            self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+            self.parent.shotgun.upload(
+                "Version",
+                version['id'],
+                jpeg_pub_path,
+                "sg_uploaded_movie"
+            )
             
             try:
-                os.remove(jpg_pub_path)
+                os.remove(jpeg_pub_path)
             except:
                 pass
         except Exception, e:
+            # Do not prevent publishing to complete if an error happened when
+            # creating a Version.
             self.parent.log_warning(
                 "Unable to create a Version in SG because of the following error:"
             )
             self.parent.log_exception(e)
-        finally:
-            # Restore dialog mode
-            adobe.app.displayDialogs = original_dialog_mode
         progress_cb(100)
         
         return publish_path
@@ -1129,14 +1134,14 @@ class PrimaryPublishHook(Hook):
         #################################################################################
         # create a version!
         
-        jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
+        jpeg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
         
-        thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
+        jpeg_file = photoshop.RemoteObject('flash.filesystem::File', jpeg_pub_path)
         jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::JPEGSaveOptions')
         jpeg_options.quality = 12
 
         # save as a copy
-        photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
+        photoshop.app.activeDocument.saveAs(jpeg_file, jpeg_options, True)
         
         # then register version
         progress_cb(60.0, "Creating Version...")
@@ -1165,10 +1170,10 @@ class PrimaryPublishHook(Hook):
         
         # upload jpeg
         progress_cb(70.0, "Uploading to Shotgun...")
-        self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+        self.parent.shotgun.upload("Version", version['id'], jpeg_pub_path, "sg_uploaded_movie" )
         
         try:
-            os.remove(jpg_pub_path)
+            os.remove(jpeg_pub_path)
         except:
             pass
         

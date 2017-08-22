@@ -167,95 +167,23 @@ class ThumbnailHook(Hook):
 
     def _extract_photoshop_thumbnail(self):
         """
-        Extract a thumbnail from the current doc in Photoshop
+        Extract a thumbnail from the current doc in Photoshop.
         
-        :returns:   The path to the thumbnail on disk
+        :returns: The path to the thumbnail on disk or None on failure.
         """
-        MAX_THUMB_SIZE = 512
-        adobe = self.parent.engine.adobe
-
-        # set unit system to pixels:
-        original_ruler_units = adobe.app.preferences.rulerUnits
-        adobe.app.preferences.rulerUnits = adobe.Units.PIXELS
-
-        # disable dialogs unless they are error dialogs
-        original_dialog_mode = adobe.app.displayDialogs
-        #adobe.app.displayDialogs = adobe.DialogModes.NO
-
-        with self.parent.engine.context_changes_disabled():
-            try:
-                active_doc = adobe.app.activeDocument
-                orig_name = active_doc.name
-                width_str = str(active_doc.width.value)
-                height_str = str(active_doc.height.value)
-                
-                # build temp name for the thumbnail doc (just in case we fail to close it!):
-                name, sfx = os.path.splitext(orig_name)
-                # a "." is included in the extension returned by splitext
-                thumb_name = "%s_tkthumb%s" % (name, sfx)
-                
-                # find the doc size in pixels
-                # Note: this doesn't handle measurements other than pixels.
-                doc_width = doc_height = 0
-                # It seems we used to get back "<size> px" but now we receive back
-                # just a number, so let's have the " px" bit optional.
-                exp = re.compile("^(?P<value>[0-9]+)( px)?$")
-                mo = exp.match (width_str)
-                if mo:
-                    doc_width = int(mo.group("value"))
-                mo = exp.match (height_str)
-                if mo:
-                    doc_height = int(mo.group("value"))
-        
-                thumb_width = thumb_height = 0
-                if doc_width and doc_height:
-                    max_sz = max(doc_width, doc_height)
-                    if max_sz > MAX_THUMB_SIZE:
-                        scale = min(float(MAX_THUMB_SIZE)/float(max_sz), 1.0)
-                        thumb_width = max(min(int(doc_width * scale), doc_width), 1)
-                        thumb_height = max(min(int(doc_height * scale), doc_height), 1)
-                else:
-                    raise RuntimeError("Unable to retrieve document size from %s x %s " % (
-                        width_str, height_str,
-                    ))
-                # get a path in the temp dir to use for the thumbnail:
-                jpg_pub_path = os.path.join(
-                    tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex
-                )
-                
-                # get a file object from Photoshop for this path and the current
-                # jpg save options:
-                thumbnail_file = adobe.File(jpg_pub_path)
-                jpg_options = adobe.JPEGSaveOptions
-                jpg_options.embedColorProfile = False
-
-                # duplicate the original doc:
-                save_options = adobe.SaveOptions.DONOTSAVECHANGES     
-                thumb_doc = active_doc.duplicate(thumb_name)
-        
-                try:
-                    # flatten image:
-                    thumb_doc.flatten()            
-                    # Convert to eight bits
-                    thumb_doc.bitsPerChannel = adobe.BitsPerChannelType.EIGHT
-                    # resize if needed:
-                    if thumb_width and thumb_height:
-                        thumb_doc.resizeImage("%d px" % thumb_width, "%d px" % thumb_height)            
-                
-                    # save:
-                    thumb_doc.saveAs(thumbnail_file, jpg_options, True)
-        
-                finally:
-                    # close the doc:
-                    thumb_doc.close(save_options)
-                self.parent.log_warning("Generated thumbnail %s" % jpg_pub_path)
-                return jpg_pub_path
-                            
-            finally:
-                # set units back to original
-                adobe.app.preferences.rulerUnits = original_ruler_units
-                # Set dialog mode back to original.
-                adobe.app.displayDialogs = original_dialog_mode
+        # The generate_thumbnail method was not available in early releases
+        # of the tk-photoshopcc engine. It is not possible to specify a minimum
+        # release for an engine in a multi app, so check if the method is
+        # available and issue a warning if not.
+        if not hasattr(self.parent.engine, "generate_thumbnail"):
+            self.parent.log_warning(
+                "A more recent release than %s %s is needed to generate a thumbnail." % (
+                self.parent.engine.name,
+                self.parent.engine.version,
+            ))
+            return None
+        thumb_path = self.parent.engine.generate_thumbnail()
+        return thumb_path
 
     def _extract_legacy_photoshop_thumbnail(self):
         """
