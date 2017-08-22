@@ -11,7 +11,6 @@
 import os
 import uuid
 import tempfile
-import re
 
 import tank
 from tank import Hook
