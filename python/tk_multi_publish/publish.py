@@ -170,7 +170,18 @@ class PublishHandler(object):
             # If the hook didn't return anything, don't try to build a QPixmap
             # from it.
             if thumb_path:
-                return QtGui.QPixmap(thumb_path)
+                pixmap = QtGui.QPixmap(thumb_path)
+                if pixmap.isNull():
+                    # Log debug information: sometimes the jpeg format is not
+                    # available from PySide, which can explain why no thumbnail
+                    # appears in the UI.
+                    self._app.log_debug(
+                        "Unable to build a pixmap from %s" % thumb_path
+                    )
+                    self._app.log_debug(
+                        "Supported formats are %s" % QtGui.QImageReader.supportedImageFormats()
+                    )
+                return pixmap
         except Exception, e:
             logger.warning(
                 "Unable to generate initial thumbnail because of the following error:"

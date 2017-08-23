@@ -935,6 +935,7 @@ class PrimaryPublishHook(Hook):
                                 then be accessible from user_data in any hooks run after this one.
 
         :returns:               The path to the file that has been published        
+        :raises:                TankError on failure.
         """
         adobe = self.parent.engine.adobe
 
@@ -995,49 +996,70 @@ class PrimaryPublishHook(Hook):
         #################################################################################
         # create a version!
         
-        jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
-        
-        thumbnail_file = adobe.File(jpg_pub_path)
-        jpeg_options = adobe.JPEGSaveOptions
-        jpeg_options.quality = 12
-
-        # save as a copy
-        adobe.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
-        
-        # then register version
-        progress_cb(60.0, "Creating Version...")
-        ctx = self.parent.context
-        data = {
-            "user": ctx.user,
-            "description": comment,
-            "sg_first_frame": 1,
-            "frame_count": 1,
-            "frame_range": "1-1",
-            "sg_last_frame": 1,
-            "entity": ctx.entity,
-            "sg_path_to_frames": publish_path,
-            "project": ctx.project,
-            "sg_task": sg_task,
-            "code": tank_publish["code"],
-            "created_by": ctx.user,
-        }
-        
-        if tank.util.get_published_file_entity_type(self.parent.tank) == "PublishedFile":
-            data["published_files"] = [tank_publish]
-        else:# == "TankPublishedFile"
-            data["tank_published_file"] = tank_publish
-        
-        version = self.parent.shotgun.create("Version", data)
-        
-        # upload jpeg
-        progress_cb(70.0, "Uploading to Shotgun...")
-        self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
-        
         try:
-            os.remove(jpg_pub_path)
-        except:
-            pass
-        
+            # The export_as_jpeg method was not available in early releases
+            # of the tk-photoshopcc engine. It is not possible to specify a minimum
+            # release for an engine in a multi app, so check if the method is
+            # available and issue a warning if not.
+            if not hasattr(self.parent.engine, "export_as_jpeg"):
+                raise UserWarning(
+                "A more recent release than %s %s is needed to generate a Jpeg Version." % (
+                    self.parent.engine.name,
+                    self.parent.engine.version,
+                ))
+            # Export a Jpeg image
+            jpeg_pub_path = self.parent.engine.export_as_jpeg()
+
+            # Then register version
+            progress_cb(60.0, "Creating Version...")
+            ctx = self.parent.context
+            data = {
+                "user": ctx.user,
+                "description": comment,
+                "sg_first_frame": 1,
+                "frame_count": 1,
+                "frame_range": "1-1",
+                "sg_last_frame": 1,
+                "entity": ctx.entity,
+                "sg_path_to_frames": publish_path,
+                "project": ctx.project,
+                "sg_task": sg_task,
+                "code": tank_publish["code"],
+                "created_by": ctx.user,
+            }
+            
+            if tank.util.get_published_file_entity_type(self.parent.tank) == "PublishedFile":
+                data["published_files"] = [tank_publish]
+            else:# == "TankPublishedFile"
+                data["tank_published_file"] = tank_publish
+            
+            version = self.parent.shotgun.create("Version", data)
+            
+            # upload jpeg
+            progress_cb(70.0, "Uploading to Shotgun...")
+            self.parent.shotgun.upload(
+                "Version",
+                version['id'],
+                jpeg_pub_path,
+                "sg_uploaded_movie"
+            )
+            
+            try:
+                os.remove(jpeg_pub_path)
+            except Exception, e:
+                # Catch the error if unable to remove the temp file, but log the
+                # error for debug purpose.
+                self.parent.log_debug(
+                    "Failed to remove tmp jpeg file %s: %s" % (jpeg_pub_path, e)
+                )
+
+        except Exception, e:
+            # Do not prevent publishing to complete if an error happened when
+            # creating a Version.
+            self.parent.log_warning(
+                "Unable to create a Version in SG because of the following error:"
+            )
+            self.parent.log_exception(e)
         progress_cb(100)
         
         return publish_path
@@ -1116,14 +1138,14 @@ class PrimaryPublishHook(Hook):
         #################################################################################
         # create a version!
         
-        jpg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
+        jpeg_pub_path = os.path.join(tempfile.gettempdir(), "%s_sgtk.jpg" % uuid.uuid4().hex)
         
-        thumbnail_file = photoshop.RemoteObject('flash.filesystem::File', jpg_pub_path)
+        jpeg_file = photoshop.RemoteObject('flash.filesystem::File', jpeg_pub_path)
         jpeg_options = photoshop.RemoteObject('com.adobe.photoshop::JPEGSaveOptions')
         jpeg_options.quality = 12
 
         # save as a copy
-        photoshop.app.activeDocument.saveAs(thumbnail_file, jpeg_options, True)        
+        photoshop.app.activeDocument.saveAs(jpeg_file, jpeg_options, True)
         
         # then register version
         progress_cb(60.0, "Creating Version...")
@@ -1152,10 +1174,10 @@ class PrimaryPublishHook(Hook):
         
         # upload jpeg
         progress_cb(70.0, "Uploading to Shotgun...")
-        self.parent.shotgun.upload("Version", version['id'], jpg_pub_path, "sg_uploaded_movie" )
+        self.parent.shotgun.upload("Version", version['id'], jpeg_pub_path, "sg_uploaded_movie" )
         
         try:
-            os.remove(jpg_pub_path)
+            os.remove(jpeg_pub_path)
         except:
             pass
         
