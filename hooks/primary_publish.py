@@ -1046,8 +1046,13 @@ class PrimaryPublishHook(Hook):
             
             try:
                 os.remove(jpeg_pub_path)
-            except:
-                pass
+            except Exception, e:
+                # Catch the error if unable to remove the temp file, but log the
+                # error for debug purpose.
+                self.parent.log_debug(
+                    "Failed to remove tmp jpeg file %s: %s" % (jpeg_pub_path, e)
+                )
+
         except Exception, e:
             # Do not prevent publishing to complete if an error happened when
             # creating a Version.
