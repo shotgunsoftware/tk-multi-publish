@@ -15,7 +15,8 @@ Multi Publish
 
 import os
 import tank
-from tank import TankError
+
+
 
 class MultiPublish(tank.platform.Application):
 
@@ -84,4 +85,6 @@ class MultiPublish(tank.platform.Application):
         :param old_context: The sgtk.context.Context being switched from.
         :param new_context: The sgtk.context.Context being switched to.
         """
-        self._publish_handler.rebuild_primary_output()
+        self.log_debug("Context change. Rebuilding outputs...")
+        self._publish_handler.build_outputs()
+        self.log_debug("Outputs Rebuilt!")
