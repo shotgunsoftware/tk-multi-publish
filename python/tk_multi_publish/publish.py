@@ -100,6 +100,16 @@ class PublishHandler(object):
                 PublishOutput(self._app, output)
             )
 
+    def rebuild_primary_output(self):
+        """
+        Deprecated in favor of `build_outputs()`. Left to ensure backward
+        compatibility for any client code that may be calling this.
+        :return:
+        """
+
+        # call the full output build
+        self.build_outputs()
+
     def show_publish_dlg(self):
         """
         Displays the publish dialog
