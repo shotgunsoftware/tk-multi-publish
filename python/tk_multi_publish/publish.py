@@ -9,7 +9,6 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
-import pprint
 import tempfile
 
 import tank
@@ -17,7 +16,6 @@ from tank import TankError
 from tank.platform.qt import QtCore, QtGui
 
 from .progress import TaskProgressReporter
-from .publish_form import PublishForm
 
 from .output import PublishOutput
 from .item import Item
@@ -37,17 +35,8 @@ class PublishHandler(object):
         self._app = app
 
         # load outputs from configuration:
-        primary_output_dict = {}
-        primary_output_dict["scene_item_type"] = self._app.get_setting("primary_scene_item_type")
-        primary_output_dict["display_name"] = self._app.get_setting("primary_display_name")
-        primary_output_dict["description"] = self._app.get_setting("primary_description")
-        primary_output_dict["icon"] = self._app.get_setting("primary_icon")
-        primary_output_dict["tank_type"] = self._app.get_setting("primary_tank_type")
-        primary_output_dict["publish_template"] = self._app.get_setting("primary_publish_template")
-        self._primary_output = PublishOutput(self._app, primary_output_dict, name=PublishOutput.PRIMARY_NAME, selected=True, required=True)
-        
-        self._secondary_outputs = [PublishOutput(self._app, output) for output in self._app.get_setting("secondary_outputs")]
-        
+        self.build_outputs()
+
         # validate the secondary outputs:
         unique_names = []
         for output in self._secondary_outputs:
@@ -75,11 +64,14 @@ class PublishHandler(object):
         """
         return self._app.get_template("template_work")
 
-    def rebuild_primary_output(self):
+    def build_outputs(self):
         """
-        Rebuilds the primary output object based on the parent app's current settings.
+        Rebuilds the primary and secondary outputs based on the parent app's
+        current settings.
         """
-        # load outputs from configuration:
+
+        # ---- load primary outputs from configuration:
+
         primary_output_dict = {}
         primary_output_dict["scene_item_type"] = self._app.get_setting("primary_scene_item_type")
         primary_output_dict["display_name"] = self._app.get_setting("primary_display_name")
@@ -88,6 +80,8 @@ class PublishHandler(object):
         primary_output_dict["tank_type"] = self._app.get_setting("primary_tank_type")
         primary_output_dict["publish_template"] = self._app.get_setting("primary_publish_template")
 
+        logger.debug("Primary Output: %s" % (primary_output_dict,))
+
         self._primary_output = PublishOutput(
             self._app,
             primary_output_dict,
@@ -95,7 +89,27 @@ class PublishHandler(object):
             selected=True,
             required=True,
         )
-        
+
+        # ---- load secondary outputs from configuration:
+
+        self._secondary_outputs = []
+
+        for output in self._app.get_setting("secondary_outputs"):
+            logger.debug("Secondary Output: %s" % (output,))
+            self._secondary_outputs.append(
+                PublishOutput(self._app, output)
+            )
+
+    def rebuild_primary_output(self):
+        """
+        Deprecated in favor of `build_outputs()`. Left to ensure backward
+        compatibility for any client code that may be calling this.
+        :return:
+        """
+
+        # call the full output build
+        self.build_outputs()
+
     def show_publish_dlg(self):
         """
         Displays the publish dialog
