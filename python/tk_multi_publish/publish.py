@@ -375,10 +375,7 @@ class PublishHandler(object):
 
                 # Log the toolkit "Published" metric
                 try:
-                    from sgtk.util.metrics import EventMetric as EventMetric
-                    EventMetric.log(EventMetric.GROUP_TOOLKIT,
-                                    "Published",
-                                    bundle=self._app)
+                    self._app.log_metric("Published")
                 except:
                     # ignore all errors. ex: using a core that doesn't support metrics
                     pass
