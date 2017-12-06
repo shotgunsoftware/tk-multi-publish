@@ -386,6 +386,14 @@ class PublishHandler(object):
                     progress.report,
                     user_data=user_data,
                 )
+
+                # Log the toolkit "Published" metric
+                try:
+                    self._app.log_metric("Published")
+                except:
+                    # ignore all errors. ex: using a core that doesn't support metrics
+                    pass
+
             except TankError, e:
                 self._app.log_exception("Post-publish Failed")
                 publish_errors.append("Post-publish: %s" % e)
