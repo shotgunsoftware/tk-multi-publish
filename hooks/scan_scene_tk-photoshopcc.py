@@ -10,8 +10,6 @@
 
 import os
 
-import sgtk
-
 from sgtk import Hook
 from sgtk import TankError
 
@@ -57,15 +55,9 @@ class ScanSceneHook(Hook):
         items = []
         adobe = self.parent.engine.adobe
 
-        # get the main scene:
-        try:
-            doc = adobe.app.activeDocument
-        except RuntimeError:
-            raise TankError("There is no active document!")
-        
-        try:
-            scene_path = doc.fullName.fsName
-        except RuntimeError:
+        scene_path = adobe.get_active_document_path()
+
+        if not scene_path:
             raise TankError("Please save your file before publishing!")
 
         name = os.path.basename(scene_path)
