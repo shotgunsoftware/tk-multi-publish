@@ -66,7 +66,7 @@ class PublishHandler(object):
         template = self._app.get_template(template_name)
         if template is None:
             raise TankError(
-                "Failed to retrieve the '%s' template. This most likely means that the template"
+                "Failed to retrieve the '%s' template. This most likely means that the template "
                 "is either not defined in the project's config, or is set to an improper value."
                 % (template_name)
             )
