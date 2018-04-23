@@ -31,6 +31,12 @@ configuration:
         default_value: thumbnail
         description: Specify a hook to pre-generate a thumbnail for the publish.
 
+    hook_successful_publish_result:
+        type: hook
+        parameters: []
+        default_value: successful_publish_result
+        description: Specify a hook to provide a custom message upon a sucessful publish
+
     hook_copy_file:
         type: hook
         parameters: [source_path, target_path, task]
