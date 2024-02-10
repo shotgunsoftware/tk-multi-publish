@@ -1057,7 +1057,7 @@ class PrimaryPublishHook(Hook):
             # Do not prevent publishing to complete if an error happened when
             # creating a Version.
             self.parent.log_warning(
-                "Unable to create a Version in SG because of the following error:"
+                "Unable to create a Version in PTR because of the following error:"
             )
             self.parent.log_exception(e)
         progress_cb(100)
