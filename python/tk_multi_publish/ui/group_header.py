@@ -1,44 +1,59 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'group_header.ui'
-#
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'group_header.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from tank.platform.qt import QtCore, QtGui
+from tank.platform.qt import QtCore
+for name, cls in QtCore.__dict__.items():
+    if isinstance(cls, type): globals()[name] = cls
+
+from tank.platform.qt import QtGui
+for name, cls in QtGui.__dict__.items():
+    if isinstance(cls, type): globals()[name] = cls
+
 
 class Ui_GroupHeader(object):
     def setupUi(self, GroupHeader):
-        GroupHeader.setObjectName("GroupHeader")
+        if not GroupHeader.objectName():
+            GroupHeader.setObjectName(u"GroupHeader")
         GroupHeader.resize(394, 50)
-        GroupHeader.setMinimumSize(QtCore.QSize(0, 50))
-        GroupHeader.setMaximumSize(QtCore.QSize(16777215, 50))
-        self.horizontalLayout = QtGui.QHBoxLayout(GroupHeader)
+        GroupHeader.setMinimumSize(QSize(0, 50))
+        GroupHeader.setMaximumSize(QSize(16777215, 50))
+        self.horizontalLayout = QHBoxLayout(GroupHeader)
         self.horizontalLayout.setContentsMargins(6, 6, 6, 6)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.verticalLayout = QtGui.QVBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setSpacing(3)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.name_label = QtGui.QLabel(GroupHeader)
-        self.name_label.setStyleSheet("#name_label {\n"
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.name_label = QLabel(GroupHeader)
+        self.name_label.setObjectName(u"name_label")
+        self.name_label.setStyleSheet(u"#name_label {\n"
 "font-size: 16px\n"
 "}")
-        self.name_label.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
-        self.name_label.setObjectName("name_label")
+        self.name_label.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
         self.verticalLayout.addWidget(self.name_label)
-        self.line = QtGui.QFrame(GroupHeader)
-        self.line.setFrameShadow(QtGui.QFrame.Plain)
-        self.line.setFrameShape(QtGui.QFrame.HLine)
-        self.line.setFrameShadow(QtGui.QFrame.Sunken)
-        self.line.setObjectName("line")
+
+        self.line = QFrame(GroupHeader)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShadow(QFrame.Plain)
+        self.line.setFrameShape(QFrame.HLine)
+
         self.verticalLayout.addWidget(self.line)
+
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.retranslateUi(GroupHeader)
-        QtCore.QMetaObject.connectSlotsByName(GroupHeader)
+
+        QMetaObject.connectSlotsByName(GroupHeader)
+    # setupUi
 
     def retranslateUi(self, GroupHeader):
-        GroupHeader.setWindowTitle(QtGui.QApplication.translate("GroupHeader", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_label.setText(QtGui.QApplication.translate("GroupHeader", "Group Display Name", None, QtGui.QApplication.UnicodeUTF8))
-
+        GroupHeader.setWindowTitle(QCoreApplication.translate("GroupHeader", u"Form", None))
+        self.name_label.setText(QCoreApplication.translate("GroupHeader", u"Group Display Name", None))
+    # retranslateUi
