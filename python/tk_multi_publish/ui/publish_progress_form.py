@@ -1,65 +1,100 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'publish_progress_form.ui'
-#
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'publish_progress_form.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from tank.platform.qt import QtCore, QtGui
+from tank.platform.qt import QtCore
+for name, cls in QtCore.__dict__.items():
+    if isinstance(cls, type): globals()[name] = cls
+
+from tank.platform.qt import QtGui
+for name, cls in QtGui.__dict__.items():
+    if isinstance(cls, type): globals()[name] = cls
+
+
+from  . import resources_rc
 
 class Ui_PublishProgressForm(object):
     def setupUi(self, PublishProgressForm):
-        PublishProgressForm.setObjectName("PublishProgressForm")
+        if not PublishProgressForm.objectName():
+            PublishProgressForm.setObjectName(u"PublishProgressForm")
         PublishProgressForm.resize(651, 384)
-        self.verticalLayout_4 = QtGui.QVBoxLayout(PublishProgressForm)
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.verticalLayout_3 = QtGui.QVBoxLayout()
+        self.verticalLayout_4 = QVBoxLayout(PublishProgressForm)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.verticalLayout_3 = QVBoxLayout()
+#ifndef Q_OS_MAC
         self.verticalLayout_3.setSpacing(-1)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        spacerItem1 = QtGui.QSpacerItem(20, 100, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        self.verticalLayout_3.addItem(spacerItem1)
-        self.title = QtGui.QLabel(PublishProgressForm)
-        self.title.setStyleSheet("#title {\n"
+#endif
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalSpacer_2 = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer_2)
+
+        self.title = QLabel(PublishProgressForm)
+        self.title.setObjectName(u"title")
+        self.title.setStyleSheet(u"#title {\n"
 "font-size: 24px;\n"
 "}")
-        self.title.setObjectName("title")
+
         self.verticalLayout_3.addWidget(self.title)
-        self.progress_bar = QtGui.QProgressBar(PublishProgressForm)
-        self.progress_bar.setProperty("value", 24)
-        self.progress_bar.setObjectName("progress_bar")
+
+        self.progress_bar = QProgressBar(PublishProgressForm)
+        self.progress_bar.setObjectName(u"progress_bar")
+        self.progress_bar.setValue(24)
+
         self.verticalLayout_3.addWidget(self.progress_bar)
-        self.details = QtGui.QLabel(PublishProgressForm)
-        self.details.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+
+        self.details = QLabel(PublishProgressForm)
+        self.details.setObjectName(u"details")
+        self.details.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
         self.details.setWordWrap(False)
-        self.details.setObjectName("details")
+
         self.verticalLayout_3.addWidget(self.details)
-        self.stage_progress_bar = QtGui.QProgressBar(PublishProgressForm)
-        self.stage_progress_bar.setProperty("value", 24)
-        self.stage_progress_bar.setObjectName("stage_progress_bar")
+
+        self.stage_progress_bar = QProgressBar(PublishProgressForm)
+        self.stage_progress_bar.setObjectName(u"stage_progress_bar")
+        self.stage_progress_bar.setValue(24)
+
         self.verticalLayout_3.addWidget(self.stage_progress_bar)
-        spacerItem2 = QtGui.QSpacerItem(20, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout_3.addItem(spacerItem2)
+
+        self.verticalSpacer = QSpacerItem(20, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer)
+
         self.verticalLayout_3.setStretch(5, 1)
+
         self.horizontalLayout.addLayout(self.verticalLayout_3)
-        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem3)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer_2)
+
         self.horizontalLayout.setStretch(0, 1)
         self.horizontalLayout.setStretch(1, 5)
         self.horizontalLayout.setStretch(2, 1)
+
         self.verticalLayout_4.addLayout(self.horizontalLayout)
+
         self.verticalLayout_4.setStretch(0, 1)
 
         self.retranslateUi(PublishProgressForm)
-        QtCore.QMetaObject.connectSlotsByName(PublishProgressForm)
+
+        QMetaObject.connectSlotsByName(PublishProgressForm)
+    # setupUi
 
     def retranslateUi(self, PublishProgressForm):
-        PublishProgressForm.setWindowTitle(QtGui.QApplication.translate("PublishProgressForm", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.title.setText(QtGui.QApplication.translate("PublishProgressForm", "Publishing...", None, QtGui.QApplication.UnicodeUTF8))
-        self.details.setText(QtGui.QApplication.translate("PublishProgressForm", "(Details)", None, QtGui.QApplication.UnicodeUTF8))
-
-from . import resources_rc
+        PublishProgressForm.setWindowTitle(QCoreApplication.translate("PublishProgressForm", u"Form", None))
+        self.title.setText(QCoreApplication.translate("PublishProgressForm", u"Publishing...", None))
+        self.details.setText(QCoreApplication.translate("PublishProgressForm", u"(Details)", None))
+    # retranslateUi
